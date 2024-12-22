@@ -5,6 +5,14 @@
 
 /** @type {import('jest').Config} */
 const config = {
+  // Use ts-jest preset to handle TypeScript files
+  preset: 'ts-jest',
+
+  // Transform TypeScript files using ts-jest
+  transform: {
+    '^.+\\.tsx?$': 'ts-jest',
+  },
+  
   // All imported modules in your tests should be mocked automatically
   // automock: false,
 
