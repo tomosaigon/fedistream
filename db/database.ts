@@ -1,10 +1,16 @@
 import Database from 'better-sqlite3';
 import { join } from 'path';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env.local file
+dotenv.config({ path: join(process.cwd(), '.env.local') });
 
 export class DatabaseManager {
   private db: Database.Database;
 
-  constructor(dbPath: string) {
+  constructor() {
+    // const dbPath = join(process.cwd(), process.env.DATABASE_FILE || 'mastodon.db');
+    const dbPath = process.env.DATABASE_FILE || 'mastodon.db';
     this.db = new Database(dbPath);
     this.initializeSchema();
   }

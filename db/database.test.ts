@@ -1,9 +1,10 @@
 import { DatabaseManager } from './database';
-import { join } from 'path';
-import fs from 'fs';
+// import { join } from 'path';
+// import fs from 'fs';
 
-// Use a temporary test database
-const testDbPath = join(process.cwd(), 'test-mastodon.db');
+// Set the environment variable for the database file to use an in-memory SQLite database
+process.env.DATABASE_FILE = ':memory:';
+
 let dbManager: DatabaseManager;
 
 // Mocked Post data
@@ -142,14 +143,18 @@ const testPost7 = {
 
 describe('DatabaseManager Tests', () => {
   beforeAll(() => {
-    dbManager = new DatabaseManager(testDbPath);
+    dbManager = new DatabaseManager();
   });
 
   afterAll(() => {
-    fs.unlinkSync(testDbPath); // Cleanup the test database file
+    // No need to clean up the in-memory database
   });
 
-  test('Insert posts into the database and get the latest post', () => {
+  test('Database initializes with schema', () => {
+    expect(dbManager.getLatestPost('test-server')).toBeUndefined();
+  });
+
+  test('Insert a post into the database and get the latest post', () => {
     dbManager.insertPost(testPost1);
     dbManager.insertPost(testPost2);
     const latestPost = dbManager.getLatestPost('test-server');
