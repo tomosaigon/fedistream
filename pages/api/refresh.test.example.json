@@ -1,0 +1,1029 @@
+[
+  {
+    "id": "113700238869579105",
+    "created_at": "2024-12-23T04:26:01.267Z",
+    "in_reply_to_id": null,
+    "in_reply_to_account_id": null,
+    "sensitive": false,
+    "spoiler_text": "",
+    "visibility": "public",
+    "language": "en",
+    "uri": "https://example.com/users/iammannyj/statuses/113700238869579105",
+    "url": "https://example.com/@iammannyj/113700238869579105",
+    "replies_count": 0,
+    "reblogs_count": 0,
+    "favourites_count": 1,
+    "edited_at": null,
+    "favourited": false,
+    "reblogged": false,
+    "muted": false,
+    "bookmarked": false,
+    "content": "\u003Cp\u003EGoogle is migrating ChromeOS to Android, which means Chromebooks will soon run Android instead of ChromeOS.\u003C/p\u003E\u003Cp\u003E\u003Ca href=\"https://www.androidpolice.com/google-not-good-os-ui-chromeos-to-android-editorial/\" target=\"_blank\" rel=\"nofollow noopener noreferrer\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://www.\u003C/span\u003E\u003Cspan class=\"ellipsis\"\u003Eandroidpolice.com/google-not-g\u003C/span\u003E\u003Cspan class=\"invisible\"\u003Eood-os-ui-chromeos-to-android-editorial/\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E\u003Cp\u003E\u003Ca href=\"https://example.com/tags/ChromeOS\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EChromeOS\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/Android\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EAndroid\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E",
+    "filtered": [],
+    "reblog": null,
+    "application": null,
+    "account": {
+      "id": "109294518695172790",
+      "username": "iammannyj",
+      "acct": "iammannyj",
+      "display_name": "Manny James",
+      "locked": false,
+      "bot": false,
+      "discoverable": true,
+      "indexable": false,
+      "group": false,
+      "created_at": "2022-11-06T00:00:00.000Z",
+      "note": "\u003Cp\u003EWeb &amp; I.T Mgr / Tech Analyst \u003C/p\u003E\u003Cp\u003E\u003Ca href=\"https://example.com/tags/RebootRecastRethink\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ERebootRecastRethink\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/Linux\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ELinux\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/Microsoft\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EMicrosoft\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/WordPress\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EWordPress\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/GIS\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EGIS\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/Dune\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EDune\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/Foundation\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EFoundation\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/Expanse\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EExpanse\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/Trek\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ETrek\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/RETROGAMER\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ERETROGAMER\u003C/span\u003E\u003C/a\u003E� Always curious, forever learning.\u003C/p\u003E",
+      "url": "https://example.com/@iammannyj",
+      "uri": "https://example.com/users/iammannyj",
+      "avatar": "https://cdn.example.com/accounts/avatars/109/294/518/695/172/790/original/e395f46b560cf8b6.jpeg",
+      "avatar_static": "https://cdn.example.com/accounts/avatars/109/294/518/695/172/790/original/e395f46b560cf8b6.jpeg",
+      "header": "https://cdn.example.com/accounts/headers/109/294/518/695/172/790/original/44aa567b6fe47c82.jpg",
+      "header_static": "https://cdn.example.com/accounts/headers/109/294/518/695/172/790/original/44aa567b6fe47c82.jpg",
+      "followers_count": 129,
+      "following_count": 412,
+      "statuses_count": 780,
+      "last_status_at": "2024-12-23",
+      "hide_collections": true,
+      "noindex": true,
+      "emojis": [],
+      "roles": [],
+      "fields": [
+        {
+          "name": "Joined",
+          "value": "Nov. 5, 2022",
+          "verified_at": null
+        },
+        {
+          "name": "Website",
+          "value": "\u003Ca href=\"https://iammannyj.ca\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"\"\u003Eiammannyj.ca\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": "2022-12-19T15:42:03.789+00:00"
+        },
+        {
+          "name": "Twitter",
+          "value": "\u003Ca href=\"https://twitter.com/iammannyj\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"\"\u003Etwitter.com/iammannyj\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": null
+        }
+      ]
+    },
+    "media_attachments": [],
+    "mentions": [],
+    "tags": [
+      {
+        "name": "chromeos",
+        "url": "https://example.com/tags/chromeos"
+      },
+      {
+        "name": "android",
+        "url": "https://example.com/tags/android"
+      }
+    ],
+    "emojis": [],
+    "card": {
+      "url": "https://www.androidpolice.com/google-not-good-os-ui-chromeos-to-android-editorial/",
+      "title": "Google has never been good with operating systems: Will the jump from ChromeOS to Android make a difference?",
+      "description": "Google's shaky history may not bode well for the ChromeOS to Android migration",
+      "language": "en",
+      "type": "link",
+      "author_name": "Zach Gray-Traverso",
+      "author_url": "https://www.androidpolice.com/author/zachary-traverso/",
+      "provider_name": "Android Police",
+      "provider_url": "",
+      "html": "",
+      "width": 640,
+      "height": 360,
+      "image": "https://cdn.example.com/cache/preview_cards/images/042/145/887/original/5990f1332140848a.jpg",
+      "image_description": "",
+      "embed_url": "",
+      "blurhash": "UfIGkl}=KHyN9wNsofSiKZgJ#sV#OYS#ac$k",
+      "published_at": "2024-12-21T09:40:10.000Z",
+      "authors": [
+        {
+          "name": "Zach Gray-Traverso",
+          "url": "https://www.androidpolice.com/author/zachary-traverso/",
+          "account": null
+        }
+      ]
+    },
+    "poll": null
+  },
+  {
+    "id": "113700232190391008",
+    "created_at": "2024-12-23T04:24:19.351Z",
+    "in_reply_to_id": null,
+    "in_reply_to_account_id": null,
+    "sensitive": false,
+    "spoiler_text": "",
+    "visibility": "public",
+    "language": "en",
+    "uri": "https://example.com/users/iammannyj/statuses/113700232190391008",
+    "url": "https://example.com/@iammannyj/113700232190391008",
+    "replies_count": 0,
+    "reblogs_count": 2,
+    "favourites_count": 1,
+    "edited_at": null,
+    "favourited": false,
+    "reblogged": false,
+    "muted": false,
+    "bookmarked": false,
+    "content": "\u003Cp\u003EYour Own Linux Desktop in the Cloud and in Your Pocket, for Free \u003Ca href=\"https://www.howtogeek.com/linux-desktop-in-the-cloud-and-in-pocket-raspberry-pi-connect/\" target=\"_blank\" rel=\"nofollow noopener noreferrer\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://www.\u003C/span\u003E\u003Cspan class=\"ellipsis\"\u003Ehowtogeek.com/linux-desktop-in\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E-the-cloud-and-in-pocket-raspberry-pi-connect/\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E\u003Cp\u003E\u003Ca href=\"https://example.com/tags/Linux\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ELinux\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/Cloud\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ECloud\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E",
+    "filtered": [],
+    "reblog": null,
+    "application": null,
+    "account": {
+      "id": "109294518695172790",
+      "username": "iammannyj",
+      "acct": "iammannyj",
+      "display_name": "Manny James",
+      "locked": false,
+      "bot": false,
+      "discoverable": true,
+      "indexable": false,
+      "group": false,
+      "created_at": "2022-11-06T00:00:00.000Z",
+      "note": "\u003Cp\u003EWeb &amp; I.T Mgr / Tech Analyst \u003C/p\u003E\u003Cp\u003E\u003Ca href=\"https://example.com/tags/RebootRecastRethink\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ERebootRecastRethink\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/Linux\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ELinux\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/Microsoft\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EMicrosoft\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/WordPress\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EWordPress\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/GIS\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EGIS\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/Dune\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EDune\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/Foundation\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EFoundation\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/Expanse\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EExpanse\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/Trek\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ETrek\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/RETROGAMER\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ERETROGAMER\u003C/span\u003E\u003C/a\u003E� Always curious, forever learning.\u003C/p\u003E",
+      "url": "https://example.com/@iammannyj",
+      "uri": "https://example.com/users/iammannyj",
+      "avatar": "https://cdn.example.com/accounts/avatars/109/294/518/695/172/790/original/e395f46b560cf8b6.jpeg",
+      "avatar_static": "https://cdn.example.com/accounts/avatars/109/294/518/695/172/790/original/e395f46b560cf8b6.jpeg",
+      "header": "https://cdn.example.com/accounts/headers/109/294/518/695/172/790/original/44aa567b6fe47c82.jpg",
+      "header_static": "https://cdn.example.com/accounts/headers/109/294/518/695/172/790/original/44aa567b6fe47c82.jpg",
+      "followers_count": 129,
+      "following_count": 412,
+      "statuses_count": 780,
+      "last_status_at": "2024-12-23",
+      "hide_collections": true,
+      "noindex": true,
+      "emojis": [],
+      "roles": [],
+      "fields": [
+        {
+          "name": "Joined",
+          "value": "Nov. 5, 2022",
+          "verified_at": null
+        },
+        {
+          "name": "Website",
+          "value": "\u003Ca href=\"https://iammannyj.ca\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"\"\u003Eiammannyj.ca\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": "2022-12-19T15:42:03.789+00:00"
+        },
+        {
+          "name": "Twitter",
+          "value": "\u003Ca href=\"https://twitter.com/iammannyj\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"\"\u003Etwitter.com/iammannyj\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": null
+        }
+      ]
+    },
+    "media_attachments": [],
+    "mentions": [],
+    "tags": [
+      {
+        "name": "linux",
+        "url": "https://example.com/tags/linux"
+      },
+      {
+        "name": "cloud",
+        "url": "https://example.com/tags/cloud"
+      }
+    ],
+    "emojis": [],
+    "card": {
+      "url": "https://www.howtogeek.com/linux-desktop-in-the-cloud-and-in-pocket-raspberry-pi-connect/",
+      "title": "Your Own Linux Desktop in the Cloud and in Your Pocket, for Free",
+      "description": "Turn your phone into a full pocket desktop PC with Raspberry Pi Connect.",
+      "language": "en",
+      "type": "link",
+      "author_name": "",
+      "author_url": "",
+      "provider_name": "How-To Geek",
+      "provider_url": "",
+      "html": "",
+      "width": 588,
+      "height": 392,
+      "image": "https://cdn.example.com/cache/preview_cards/images/042/202/949/original/720a48e5620c9474.jpg",
+      "image_description": "",
+      "embed_url": "",
+      "blurhash": "UQDvK6Mx0fogb{xZRjRj0fa}^jNHjZV?tRxa",
+      "published_at": "2024-12-22T12:00:15.000Z",
+      "authors": [
+        {
+          "name": "",
+          "url": "",
+          "account": null
+        }
+      ]
+    },
+    "poll": null
+  },
+  {
+    "id": "113700208487407657",
+    "created_at": "2024-12-23T04:18:17.671Z",
+    "in_reply_to_id": null,
+    "in_reply_to_account_id": null,
+    "sensitive": false,
+    "spoiler_text": "",
+    "visibility": "public",
+    "language": "en",
+    "uri": "https://example.com/users/nantucketebooks/statuses/113700208487407657",
+    "url": "https://example.com/@nantucketebooks/113700208487407657",
+    "replies_count": 0,
+    "reblogs_count": 0,
+    "favourites_count": 0,
+    "edited_at": null,
+    "favourited": false,
+    "reblogged": false,
+    "muted": false,
+    "bookmarked": false,
+    "content": "\u003Cp\u003EMy dad and I thought we would try the card game baccarat. As Lt. Cmdr. Data might say, &#39;This is highly irregular.&#39;\u003C/p\u003E\u003Cp\u003EI was banker, my dad was the player.\u003C/p\u003E\u003Cp\u003E The first two cards for both of us were a King and a Jack. Since my dad&#39;s score was 0, I drew him a third card: a nine. Since he had a nine and my score was 0, I drew a third card: a nine. A tie. \u003C/p\u003E\u003Cp\u003EThis was a well-shuffled deck.\u003C/p\u003E\u003Cp\u003EOur next two deals were ties as well.\u003C/p\u003E",
+    "filtered": [],
+    "reblog": null,
+    "application": null,
+    "account": {
+      "id": "107753885756145893",
+      "username": "nantucketebooks",
+      "acct": "nantucketebooks",
+      "display_name": "Nantucket E-Books",
+      "locked": false,
+      "bot": false,
+      "discoverable": true,
+      "indexable": false,
+      "group": false,
+      "created_at": "2022-02-07T00:00:00.000Z",
+      "note": "\u003Cp\u003EAccount for Nantucket E-Books, a free-software platform for the best e-books on the planet. \u003Ca href=\"https://nantucketebooks.com\" target=\"_blank\" rel=\"nofollow noopener noreferrer\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"\"\u003Enantucketebooks.com\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E\u003C/span\u003E\u003C/a\u003E\u003Cbr /\u003E\u003Ca href=\"https://example.com/tags/pivotfromvideo\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Epivotfromvideo\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E",
+      "url": "https://example.com/@nantucketebooks",
+      "uri": "https://example.com/users/nantucketebooks",
+      "avatar": "https://cdn.example.com/accounts/avatars/107/753/885/756/145/893/original/df1c12820d1f0738.jpg",
+      "avatar_static": "https://cdn.example.com/accounts/avatars/107/753/885/756/145/893/original/df1c12820d1f0738.jpg",
+      "header": "https://cdn.example.com/accounts/headers/107/753/885/756/145/893/original/aca7b524be021fa3.jpg",
+      "header_static": "https://cdn.example.com/accounts/headers/107/753/885/756/145/893/original/aca7b524be021fa3.jpg",
+      "followers_count": 455,
+      "following_count": 349,
+      "statuses_count": 2893,
+      "last_status_at": "2024-12-23",
+      "hide_collections": false,
+      "noindex": true,
+      "emojis": [],
+      "roles": [],
+      "fields": []
+    },
+    "media_attachments": [
+      {
+        "id": "113700191800982924",
+        "type": "image",
+        "url": "https://cdn.example.com/media_attachments/files/113/700/191/800/982/924/original/73404bacb8db7605.jpeg",
+        "preview_url": "https://cdn.example.com/media_attachments/files/113/700/191/800/982/924/small/73404bacb8db7605.jpeg",
+        "remote_url": null,
+        "preview_remote_url": null,
+        "text_url": null,
+        "meta": {
+          "original": {
+            "width": 3325,
+            "height": 2494,
+            "size": "3325x2494",
+            "aspect": 1.33319967923015
+          },
+          "small": {
+            "width": 554,
+            "height": 416,
+            "size": "554x416",
+            "aspect": 1.33173076923077
+          },
+          "focus": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        "description": "First hand in a game of baccarat. The cards for both banker and player were exactly the same: first two cards were a King and a Jack, and the third card was a nine. This resulted in a tie. ",
+        "blurhash": "UICG-:-owwsn=|sAenjF01NGNGjs4.W.Rkof"
+      }
+    ],
+    "mentions": [],
+    "tags": [],
+    "emojis": [],
+    "card": null,
+    "poll": null
+  },
+  {
+    "id": "113700173649432405",
+    "created_at": "2024-12-23T04:09:26.086Z",
+    "in_reply_to_id": null,
+    "in_reply_to_account_id": null,
+    "sensitive": false,
+    "spoiler_text": "",
+    "visibility": "public",
+    "language": "en",
+    "uri": "https://example.com/users/kernellogger/statuses/113700173649432405",
+    "url": "https://example.com/@kernellogger/113700173649432405",
+    "replies_count": 0,
+    "reblogs_count": 1,
+    "favourites_count": 0,
+    "edited_at": null,
+    "favourited": false,
+    "reblogged": false,
+    "muted": false,
+    "bookmarked": false,
+    "content": "\u003Cp\u003E\u003Ca href=\"https://example.com/tags/Linux\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ELinux\u003C/span\u003E\u003C/a\u003E 6.13-rc4 is out:\u003C/p\u003E\u003Cp\u003E\u003Ca href=\"https://lore.kernel.org/lkml/CAHk-=wh+aZScT9-7ON58kfvuZiMdcvGRAWqM=J9BWfYDEOA99w@mail.gmail.com/\" target=\"_blank\" rel=\"nofollow noopener noreferrer\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"ellipsis\"\u003Elore.kernel.org/lkml/CAHk-=wh+\u003C/span\u003E\u003Cspan class=\"invisible\"\u003EaZScT9-7ON58kfvuZiMdcvGRAWqM=J9BWfYDEOA99w@mail.gmail.com/\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E\u003Cp\u003E&#39;&quot;So this definitely is looking a bit smaller than most rc4s, and I expect (and hope) that rc5 will be absolutely tiny because you should all already be relaxing over the xmas holidays.\u003C/p\u003E\u003Cp\u003EBut hey, if somebody is out there keeping the lights on, please do keep testing. […]\u003C/p\u003E\u003Cp\u003EA very random collection of fixes all over.\u003C/p\u003E\u003Cp\u003E             Linus&quot;&#39;\u003C/p\u003E\u003Cp\u003E\u003Ca href=\"https://example.com/tags/kernel\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Ekernel\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/LinuxKernel\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ELinuxKernel\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E",
+    "filtered": [],
+    "reblog": null,
+    "application": null,
+    "account": {
+      "id": "109290492602864107",
+      "username": "kernellogger",
+      "acct": "kernellogger",
+      "display_name": "Thorsten Leemhuis (acct. 1/4)",
+      "locked": false,
+      "bot": false,
+      "discoverable": true,
+      "indexable": true,
+      "group": false,
+      "created_at": "2022-11-05T00:00:00.000Z",
+      "note": "\u003Cp\u003EMainly tooting about \u003Ca href=\"https://example.com/tags/Linux\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ELinux\u003C/span\u003E\u003C/a\u003E the \u003Ca href=\"https://example.com/tags/kernel\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Ekernel\u003C/span\u003E\u003C/a\u003E and things related to the \u003Ca href=\"https://example.com/tags/LinuxKernel\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ELinuxKernel\u003C/span\u003E\u003C/a\u003E – e.g. \u003Ca href=\"https://example.com/tags/bootloader\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Ebootloader\u003C/span\u003E\u003C/a\u003E, \u003Ca href=\"https://example.com/tags/compiler\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Ecompiler\u003C/span\u003E\u003C/a\u003E, \u003Ca href=\"https://example.com/tags/git\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Egit\u003C/span\u003E\u003C/a\u003E, \u003Ca href=\"https://example.com/tags/glibc\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Eglibc\u003C/span\u003E\u003C/a\u003E, \u003Ca href=\"https://example.com/tags/mesa\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Emesa\u003C/span\u003E\u003C/a\u003E, \u003Ca href=\"https://example.com/tags/qemu\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Eqemu\u003C/span\u003E\u003C/a\u003E, \u003Ca href=\"https://example.com/tags/xorg\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Exorg\u003C/span\u003E\u003C/a\u003E, \u003Ca href=\"https://example.com/tags/X11\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EX11\u003C/span\u003E\u003C/a\u003E, \u003Ca href=\"https://example.com/tags/wayland\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Ewayland\u003C/span\u003E\u003C/a\u003E, and other stuff in the &#39;plumbing&#39; layer.\u003C/p\u003E\u003Cp\u003EOpinions are my own. \u003C/p\u003E\u003Cp\u003ETopic account. Other accounts of mine:\u003C/p\u003E\u003Cp\u003E\u003Cspan class=\"h-card\" translate=\"no\"\u003E\u003Ca href=\"https://social.linux.pizza/@knurd42\" class=\"u-url mention\"\u003E@\u003Cspan\u003Eknurd42\u003C/span\u003E\u003C/a\u003E\u003C/span\u003E (EN): \u003Ca href=\"https://example.com/tags/FLOSS\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EFLOSS\u003C/span\u003E\u003C/a\u003E, \u003Ca href=\"https://example.com/tags/Fedora\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EFedora\u003C/span\u003E\u003C/a\u003E as well as Life, the Universe and Everything\u003Cbr /\u003E\u003Cspan class=\"h-card\" translate=\"no\"\u003E\u003Ca href=\"https://norden.social/@thleemhuis\" class=\"u-url mention\"\u003E@\u003Cspan\u003Ethleemhuis\u003C/span\u003E\u003C/a\u003E\u003C/span\u003E (DE): Das Leben, das Universum und der ganze Rest\u003Cbr /\u003E\u003Cspan class=\"h-card\" translate=\"no\"\u003E\u003Ca href=\"https://social.tchncs.de/@thleemhuisfoss\" class=\"u-url mention\"\u003E@\u003Cspan\u003Ethleemhuisfoss\u003C/span\u003E\u003C/a\u003E\u003C/span\u003E (DE): \u003Ca href=\"https://example.com/tags/FLOSS\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EFLOSS\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E\u003Cp\u003Esearchable\u003C/p\u003E",
+      "url": "https://example.com/@kernellogger",
+      "uri": "https://example.com/users/kernellogger",
+      "avatar": "https://cdn.example.com/accounts/avatars/109/290/492/602/864/107/original/21308e025b65b9b0.jpeg",
+      "avatar_static": "https://cdn.example.com/accounts/avatars/109/290/492/602/864/107/original/21308e025b65b9b0.jpeg",
+      "header": "https://cdn.example.com/accounts/headers/109/290/492/602/864/107/original/a4604529da903f2d.jpg",
+      "header_static": "https://cdn.example.com/accounts/headers/109/290/492/602/864/107/original/a4604529da903f2d.jpg",
+      "followers_count": 2909,
+      "following_count": 267,
+      "statuses_count": 4307,
+      "last_status_at": "2024-12-23",
+      "hide_collections": false,
+      "noindex": false,
+      "emojis": [],
+      "roles": [],
+      "fields": [
+        {
+          "name": "Website",
+          "value": "\u003Ca href=\"https://www.leemhuis.info/\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://www.\u003C/span\u003E\u003Cspan class=\"\"\u003Eleemhuis.info/\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": null
+        },
+        {
+          "name": "Twitter",
+          "value": "\u003Ca href=\"https://twitter.com/kernellogger\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"\"\u003Etwitter.com/kernellogger\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": null
+        }
+      ]
+    },
+    "media_attachments": [],
+    "mentions": [],
+    "tags": [
+      {
+        "name": "linux",
+        "url": "https://example.com/tags/linux"
+      },
+      {
+        "name": "kernel",
+        "url": "https://example.com/tags/kernel"
+      },
+      {
+        "name": "linuxkernel",
+        "url": "https://example.com/tags/linuxkernel"
+      }
+    ],
+    "emojis": [],
+    "card": {
+      "url": "https://lore.kernel.org/lkml/CAHk-=wh+aZScT9-7ON58kfvuZiMdcvGRAWqM=J9BWfYDEOA99w@mail.gmail.com/",
+      "title": "Linux 6.13-rc4 - Linus Torvalds",
+      "description": "",
+      "language": null,
+      "type": "link",
+      "author_name": "",
+      "author_url": "",
+      "provider_name": "",
+      "provider_url": "",
+      "html": "",
+      "width": 0,
+      "height": 0,
+      "image": null,
+      "image_description": "",
+      "embed_url": "",
+      "blurhash": null,
+      "published_at": null,
+      "authors": [
+        {
+          "name": "",
+          "url": "",
+          "account": null
+        }
+      ]
+    },
+    "poll": null
+  },
+  {
+    "id": "113700112275435274",
+    "created_at": "2024-12-23T03:53:49.594Z",
+    "in_reply_to_id": null,
+    "in_reply_to_account_id": null,
+    "sensitive": false,
+    "spoiler_text": "",
+    "visibility": "public",
+    "language": "en",
+    "uri": "https://example.com/users/coolbutuseless/statuses/113700112275435274",
+    "url": "https://example.com/@coolbutuseless/113700112275435274",
+    "replies_count": 0,
+    "reblogs_count": 1,
+    "favourites_count": 1,
+    "edited_at": null,
+    "favourited": false,
+    "reblogged": false,
+    "muted": false,
+    "bookmarked": false,
+    "content": "\u003Cp\u003E{nara} dev diary: I think I need to code a roto-zoomer for this pkg so it can do fast rotations.\u003C/p\u003E\u003Cp\u003EFeels like it&#39;ll be a pain in the arse to write one though :(\u003C/p\u003E\u003Cp\u003E\u003Ca href=\"https://example.com/tags/RStats\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ERStats\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E",
+    "filtered": [],
+    "reblog": null,
+    "account": {
+      "id": "109896632708737771",
+      "username": "coolbutuseless",
+      "acct": "coolbutuseless",
+      "display_name": "coolbutuseless",
+      "locked": false,
+      "bot": false,
+      "discoverable": true,
+      "indexable": true,
+      "group": false,
+      "created_at": "2023-02-20T00:00:00.000Z",
+      "note": "\u003Cp\u003ENerd. \u003Ca href=\"https://example.com/tags/RStats\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ERStats\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E",
+      "url": "https://example.com/@coolbutuseless",
+      "uri": "https://example.com/users/coolbutuseless",
+      "avatar": "https://cdn.example.com/accounts/avatars/109/896/632/708/737/771/original/6257265d528c25a8.jpeg",
+      "avatar_static": "https://cdn.example.com/accounts/avatars/109/896/632/708/737/771/original/6257265d528c25a8.jpeg",
+      "header": "https://cdn.example.com/accounts/headers/109/896/632/708/737/771/original/71a29dd79e2cbb6e.jpg",
+      "header_static": "https://cdn.example.com/accounts/headers/109/896/632/708/737/771/original/71a29dd79e2cbb6e.jpg",
+      "followers_count": 807,
+      "following_count": 497,
+      "statuses_count": 6796,
+      "last_status_at": "2024-12-23",
+      "hide_collections": false,
+      "noindex": false,
+      "emojis": [],
+      "roles": [],
+      "fields": [
+        {
+          "name": "github",
+          "value": "\u003Ca href=\"https://github.com/coolbutuseless/\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"\"\u003Egithub.com/coolbutuseless/\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": null
+        },
+        {
+          "name": "blog",
+          "value": "\u003Ca href=\"https://coolbutuseless.com\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"\"\u003Ecoolbutuseless.com\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": null
+        },
+        {
+          "name": "cool",
+          "value": "useless",
+          "verified_at": null
+        },
+        {
+          "name": "Pronouns",
+          "value": "He/Him",
+          "verified_at": null
+        }
+      ]
+    },
+    "media_attachments": [
+      {
+        "id": "113700110245831453",
+        "type": "image",
+        "url": "https://cdn.example.com/media_attachments/files/113/700/110/245/831/453/original/cf2b283f82f5e53e.jpg",
+        "preview_url": "https://cdn.example.com/media_attachments/files/113/700/110/245/831/453/small/cf2b283f82f5e53e.jpg",
+        "remote_url": null,
+        "preview_remote_url": null,
+        "text_url": null,
+        "meta": {
+          "original": {
+            "width": 599,
+            "height": 389,
+            "size": "599x389",
+            "aspect": 1.53984575835476
+          },
+          "small": {
+            "width": 596,
+            "height": 387,
+            "size": "596x387",
+            "aspect": 1.54005167958656
+          }
+        },
+        "description": null,
+        "blurhash": "UKF6wx.A4mRP~qMxIVRjVCV?tSt8t3WVRQoz"
+      }
+    ],
+    "mentions": [],
+    "tags": [
+      {
+        "name": "rstats",
+        "url": "https://example.com/tags/rstats"
+      }
+    ],
+    "emojis": [],
+    "card": null,
+    "poll": null
+  },
+  {
+    "id": "113700094258079772",
+    "created_at": "2024-12-23T03:49:14.669Z",
+    "in_reply_to_id": null,
+    "in_reply_to_account_id": null,
+    "sensitive": false,
+    "spoiler_text": "",
+    "visibility": "public",
+    "language": "en",
+    "uri": "https://example.com/users/nantucketebooks/statuses/113700094258079772",
+    "url": "https://example.com/@nantucketebooks/113700094258079772",
+    "replies_count": 0,
+    "reblogs_count": 0,
+    "favourites_count": 0,
+    "edited_at": null,
+    "favourited": false,
+    "reblogged": false,
+    "muted": false,
+    "bookmarked": false,
+    "content": "\u003Cp\u003EAvailable in the Public Domain is the sf novel This Crowded Earth by Robert Bloch. One of many stories about an overpopulated Earth, this one stands out by being rather insane. The solution to overcrowding is so bizarre and strange that it makes it all kind of worth it. \u003Ca href=\"https://gutenberg.org/cache/epub/25776/pg25776-images.html\" target=\"_blank\" rel=\"nofollow noopener noreferrer\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"ellipsis\"\u003Egutenberg.org/cache/epub/25776\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E/pg25776-images.html\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E",
+    "filtered": [],
+    "reblog": null,
+    "application": null,
+    "account": {
+      "id": "107753885756145893",
+      "username": "nantucketebooks",
+      "acct": "nantucketebooks",
+      "display_name": "Nantucket E-Books",
+      "locked": false,
+      "bot": false,
+      "discoverable": true,
+      "indexable": false,
+      "group": false,
+      "created_at": "2022-02-07T00:00:00.000Z",
+      "note": "\u003Cp\u003EAccount for Nantucket E-Books, a free-software platform for the best e-books on the planet. \u003Ca href=\"https://nantucketebooks.com\" target=\"_blank\" rel=\"nofollow noopener noreferrer\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"\"\u003Enantucketebooks.com\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E\u003C/span\u003E\u003C/a\u003E\u003Cbr /\u003E\u003Ca href=\"https://example.com/tags/pivotfromvideo\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Epivotfromvideo\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E",
+      "url": "https://example.com/@nantucketebooks",
+      "uri": "https://example.com/users/nantucketebooks",
+      "avatar": "https://cdn.example.com/accounts/avatars/107/753/885/756/145/893/original/df1c12820d1f0738.jpg",
+      "avatar_static": "https://cdn.example.com/accounts/avatars/107/753/885/756/145/893/original/df1c12820d1f0738.jpg",
+      "header": "https://cdn.example.com/accounts/headers/107/753/885/756/145/893/original/aca7b524be021fa3.jpg",
+      "header_static": "https://cdn.example.com/accounts/headers/107/753/885/756/145/893/original/aca7b524be021fa3.jpg",
+      "followers_count": 455,
+      "following_count": 349,
+      "statuses_count": 2893,
+      "last_status_at": "2024-12-23",
+      "hide_collections": false,
+      "noindex": true,
+      "emojis": [],
+      "roles": [],
+      "fields": []
+    },
+    "media_attachments": [],
+    "mentions": [],
+    "tags": [],
+    "emojis": [],
+    "card": {
+      "url": "https://gutenberg.org/cache/epub/25776/pg25776-images.html",
+      "title": "This Crowded Earth",
+      "description": "",
+      "language": "en",
+      "type": "link",
+      "author_name": "",
+      "author_url": "",
+      "provider_name": "",
+      "provider_url": "",
+      "html": "",
+      "width": 200,
+      "height": 300,
+      "image": "https://cdn.example.com/cache/preview_cards/images/042/202/390/original/2a6484ad9ebc5347.jpg",
+      "image_description": "",
+      "embed_url": "",
+      "blurhash": "U_H2{sV|azoe~maxf#jc--a_jJk9V{fzj[jb",
+      "published_at": null,
+      "authors": [
+        {
+          "name": "",
+          "url": "",
+          "account": null
+        }
+      ]
+    },
+    "poll": null
+  },
+  {
+    "id": "113700088151954328",
+    "created_at": "2024-12-23T03:47:41.498Z",
+    "in_reply_to_id": null,
+    "in_reply_to_account_id": null,
+    "sensitive": false,
+    "spoiler_text": "",
+    "visibility": "public",
+    "language": "en",
+    "uri": "https://example.com/users/cmccullough/statuses/113700088151954328",
+    "url": "https://example.com/@cmccullough/113700088151954328",
+    "replies_count": 0,
+    "reblogs_count": 0,
+    "favourites_count": 2,
+    "edited_at": null,
+    "favourited": false,
+    "reblogged": false,
+    "muted": false,
+    "bookmarked": false,
+    "content": "\u003Cp\u003EIf you want to use HTML and CSS to build a website, then use HTML and CSS to build a website. I&#39;m having a blast rebuilding my personal site with both.\u003C/p\u003E",
+    "filtered": [],
+    "reblog": null,
+    "application": null,
+    "account": {
+      "id": "206199",
+      "username": "cmccullough",
+      "acct": "cmccullough",
+      "display_name": "Chad McCullough",
+      "locked": false,
+      "bot": false,
+      "discoverable": false,
+      "indexable": false,
+      "group": false,
+      "created_at": "2020-01-28T00:00:00.000Z",
+      "note": "\u003Cp\u003ESocialist. Safe Streets Advocate, Bike Commuter. Linux, Privacy, Security Advocate. Vegan for the animals. Abolish the Death Penalty. Ban Cars in our cities. I dream of car-free cities. signal: cm1967.94\u003C/p\u003E\u003Cp\u003E\u003Ca href=\"https://example.com/tags/socialism\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Esocialism\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/carfree\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Ecarfree\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/vegan\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Evegan\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/bikes\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Ebikes\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/bicycles\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Ebicycles\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/transit\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Etransit\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/publictransit\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Epublictransit\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/carfreecities\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Ecarfreecities\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/linux\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Elinux\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/opensource\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Eopensource\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/privacy\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Eprivacy\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/security\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Esecurity\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/debianlinux\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Edebianlinux\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/fedoralinux\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Efedoralinux\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E",
+      "url": "https://example.com/@cmccullough",
+      "uri": "https://example.com/users/cmccullough",
+      "avatar": "https://cdn.example.com/accounts/avatars/000/206/199/original/c437ada135e51f1c.jpeg",
+      "avatar_static": "https://cdn.example.com/accounts/avatars/000/206/199/original/c437ada135e51f1c.jpeg",
+      "header": "https://cdn.example.com/accounts/headers/000/206/199/original/719825a5e7fae29a.jpeg",
+      "header_static": "https://cdn.example.com/accounts/headers/000/206/199/original/719825a5e7fae29a.jpeg",
+      "followers_count": 523,
+      "following_count": 2630,
+      "statuses_count": 2307,
+      "last_status_at": "2024-12-23",
+      "hide_collections": null,
+      "noindex": true,
+      "emojis": [],
+      "roles": [
+        {
+          "id": "8",
+          "name": "Supporter �♥️",
+          "color": "#4f7a28"
+        }
+      ],
+      "fields": [
+        {
+          "name": "Signal:",
+          "value": "cm1967.94",
+          "verified_at": null
+        },
+        {
+          "name": "Personal Website:",
+          "value": "\u003Ca href=\"https://chadmccullough.net\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"\"\u003Echadmccullough.net\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": null
+        },
+        {
+          "name": "Work Website:",
+          "value": "\u003Ca href=\"https://mcculloughweb.net\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"\"\u003Emcculloughweb.net\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": null
+        }
+      ]
+    },
+    "media_attachments": [],
+    "mentions": [],
+    "tags": [],
+    "emojis": [],
+    "card": null,
+    "poll": null
+  },
+  {
+    "id": "113700079536726883",
+    "created_at": "2024-12-23T03:45:30.040Z",
+    "in_reply_to_id": null,
+    "in_reply_to_account_id": null,
+    "sensitive": false,
+    "spoiler_text": "",
+    "visibility": "public",
+    "language": "en",
+    "uri": "https://example.com/users/kaybee335/statuses/113700079536726883",
+    "url": "https://example.com/@kaybee335/113700079536726883",
+    "replies_count": 0,
+    "reblogs_count": 0,
+    "favourites_count": 0,
+    "edited_at": null,
+    "favourited": false,
+    "reblogged": false,
+    "muted": false,
+    "bookmarked": false,
+    "content": "\u003Cp\u003E\u003Ca href=\"https://example.com/tags/ToolOfTheDay\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EToolOfTheDay\u003C/span\u003E\u003C/a\u003E is actually a source of free tools. \u003C/p\u003E\u003Cp\u003EAsk your dentist what they do with their worn out dental pick/probes. Usually they are reconditioned/sharpened some number of times and then deemed not suitable for use. \u003C/p\u003E\u003Cp\u003EIf you can get your dentist to collect the ones due to be tossed for your next visit, you will have a fine collection of very handy surgical quality items. \u003C/p\u003E\u003Cp\u003EI have a pair of forceps that I got this way 50 years ago (worn grip teeth). I still use them regularly.\u003C/p\u003E",
+    "filtered": [],
+    "reblog": null,
+    "application": {
+      "name": "Pachli Current",
+      "website": "https://pachli.app"
+    },
+    "account": {
+      "id": "109292238706643105",
+      "username": "kaybee335",
+      "acct": "kaybee335",
+      "display_name": "kaybeeque",
+      "locked": false,
+      "bot": false,
+      "discoverable": true,
+      "indexable": false,
+      "group": false,
+      "created_at": "2022-11-05T00:00:00.000Z",
+      "note": "\u003Cp\u003E\u003Ca href=\"https://example.com/tags/Retired\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ERetired\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/Geek\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EGeek\u003C/span\u003E\u003C/a\u003E and \u003Ca href=\"https://example.com/tags/Smoker\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ESmoker\u003C/span\u003E\u003C/a\u003E nut. \u003Ca href=\"https://example.com/tags/Tinkerer\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ETinkerer\u003C/span\u003E\u003C/a\u003E. \u003Ca href=\"https://example.com/tags/Packrat\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EPackrat\u003C/span\u003E\u003C/a\u003E.\u003C/p\u003E\u003Cp\u003EIntrovert Hermit Boundary Explorer\u003C/p\u003E\u003Cp\u003EDry, sarcastic humour a common assessment\u003C/p\u003E\u003Cp\u003EInterested in open source SW and HW particularly related to \u003Ca href=\"https://example.com/tags/HomeAutomation\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EHomeAutomation\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/HomeAssistant\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EHomeAssistant\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/ESPHome\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EESPHome\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/WLED\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EWLED\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E\u003Cp\u003EPost occasional \u003Ca href=\"https://example.com/tags/BBQ\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EBBQ\u003C/span\u003E\u003C/a\u003E threads covering cook from beginning to end. These have Content Warnings. And filter \u003Ca href=\"https://example.com/tags/hashtags\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Ehashtags\u003C/span\u003E\u003C/a\u003E. \u003Ca href=\"https://example.com/tags/CrazyCanuckBBQ\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ECrazyCanuckBBQ\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E\u003Cp\u003EMusic: \u003Ca href=\"https://example.com/tags/NowPlaying\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ENowPlaying\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/RandomMusic\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003ERandomMusic\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/ResurrectedRecordPlayer\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EResurrectedRecordPlayer\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E\u003Cp\u003E⚡���⚡\u003C/p\u003E",
+      "url": "https://example.com/@kaybee335",
+      "uri": "https://example.com/users/kaybee335",
+      "avatar": "https://cdn.example.com/accounts/avatars/109/292/238/706/643/105/original/4ffc951899e8ea2f.png",
+      "avatar_static": "https://cdn.example.com/accounts/avatars/109/292/238/706/643/105/original/4ffc951899e8ea2f.png",
+      "header": "https://cdn.example.com/accounts/headers/109/292/238/706/643/105/original/29595bf79acf9966.png",
+      "header_static": "https://cdn.example.com/accounts/headers/109/292/238/706/643/105/original/29595bf79acf9966.png",
+      "followers_count": 428,
+      "following_count": 529,
+      "statuses_count": 11263,
+      "last_status_at": "2024-12-23",
+      "hide_collections": false,
+      "noindex": true,
+      "emojis": [],
+      "roles": [
+        {
+          "id": "8",
+          "name": "Supporter �♥️",
+          "color": "#4f7a28"
+        }
+      ],
+      "fields": []
+    },
+    "media_attachments": [],
+    "mentions": [],
+    "tags": [
+      {
+        "name": "tooloftheday",
+        "url": "https://example.com/tags/tooloftheday"
+      }
+    ],
+    "emojis": [],
+    "card": null,
+    "poll": null
+  },
+  {
+    "id": "113700074943453617",
+    "created_at": "2024-12-23T03:44:19.953Z",
+    "in_reply_to_id": null,
+    "in_reply_to_account_id": null,
+    "sensitive": false,
+    "spoiler_text": "",
+    "visibility": "public",
+    "language": "en",
+    "uri": "https://example.com/users/pocketvj/statuses/113700074943453617",
+    "url": "https://example.com/@pocketvj/113700074943453617",
+    "replies_count": 0,
+    "reblogs_count": 0,
+    "favourites_count": 1,
+    "edited_at": null,
+    "favourited": false,
+    "reblogged": false,
+    "muted": false,
+    "bookmarked": false,
+    "content": "\u003Cp\u003Ethis one nearly drove me crazy... \u003C/p\u003E\u003Cp\u003Esince years we have a very ugly, non mobile friendly, filepicker in \u003Ca href=\"https://example.com/tags/sxmo\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Esxmo\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/linuxmobile\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Elinuxmobile\u003C/span\u003E\u003C/a\u003E (image1).\u003C/p\u003E\u003Cp\u003Eafter countless hours and asking so many people for help (thx \u003Cspan class=\"h-card\" translate=\"no\"\u003E\u003Ca href=\"https://example.com/@phosh\" class=\"u-url mention\"\u003E@\u003Cspan\u003Ephosh\u003C/span\u003E\u003C/a\u003E\u003C/span\u003E ) finally a writeup on how to configure yazi (image2) as your default filepicker.\u003C/p\u003E\u003Cp\u003E\u003Ca href=\"https://wiki.postmarketos.org/wiki/User:Magdesign#Filepicker\" target=\"_blank\" rel=\"nofollow noopener noreferrer\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"ellipsis\"\u003Ewiki.postmarketos.org/wiki/Use\u003C/span\u003E\u003Cspan class=\"invisible\"\u003Er:Magdesign#Filepicker\u003C/span\u003E\u003C/a\u003E\u003C/p\u003E",
+    "filtered": [],
+    "reblog": null,
+    "application": null,
+    "account": {
+      "id": "290425",
+      "username": "pocketvj",
+      "acct": "pocketvj",
+      "display_name": "PocketVJ",
+      "locked": false,
+      "bot": false,
+      "discoverable": true,
+      "indexable": false,
+      "group": false,
+      "created_at": "2020-12-27T00:00:00.000Z",
+      "note": "\u003Cp\u003Ecycling the world right now... \u003Cbr /\u003E��\u003Cbr /\u003E...in search of dignified freedom and a sustainable future without authorities.\u003C/p\u003E",
+      "url": "https://example.com/@pocketvj",
+      "uri": "https://example.com/users/pocketvj",
+      "avatar": "https://cdn.example.com/accounts/avatars/000/290/425/original/da227f3848d7112b.png",
+      "avatar_static": "https://cdn.example.com/accounts/avatars/000/290/425/original/da227f3848d7112b.png",
+      "header": "https://example.com/headers/original/missing.png",
+      "header_static": "https://example.com/headers/original/missing.png",
+      "followers_count": 264,
+      "following_count": 53,
+      "statuses_count": 36,
+      "last_status_at": "2024-12-23",
+      "hide_collections": false,
+      "noindex": true,
+      "emojis": [
+        {
+          "shortcode": "opensource",
+          "url": "https://cdn.example.com/custom_emojis/images/000/010/375/original/7c79f359ca0a6518.png",
+          "static_url": "https://cdn.example.com/custom_emojis/images/000/010/375/static/7c79f359ca0a6518.png",
+          "visible_in_picker": true
+        },
+        {
+          "shortcode": "postmarketos",
+          "url": "https://cdn.example.com/custom_emojis/images/000/083/927/original/a705073fce1692db.png",
+          "static_url": "https://cdn.example.com/custom_emojis/images/000/083/927/static/a705073fce1692db.png",
+          "visible_in_picker": true
+        }
+      ],
+      "roles": [],
+      "fields": [
+        {
+          "name": "website",
+          "value": "\u003Ca href=\"https://pocketvj.com\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"\"\u003Epocketvj.com\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": "2021-01-31T10:28:55.625+00:00"
+        },
+        {
+          "name": "repo",
+          "value": "\u003Ca href=\"https://codeberg.org/magdesign\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"\"\u003Ecodeberg.org/magdesign\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": null
+        },
+        {
+          "name": "pmos wiki",
+          "value": "\u003Ca href=\"https://wiki.postmarketos.org/wiki/User:Magdesign\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"ellipsis\"\u003Ewiki.postmarketos.org/wiki/Use\u003C/span\u003E\u003Cspan class=\"invisible\"\u003Er:Magdesign\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": null
+        },
+        {
+          "name": "driven by:",
+          "value": ":opensource: :postmarketos: ♥️�",
+          "verified_at": null
+        }
+      ]
+    },
+    "media_attachments": [
+      {
+        "id": "113700062787276976",
+        "type": "image",
+        "url": "https://cdn.example.com/media_attachments/files/113/700/062/787/276/976/original/964282e31c2ffb26.png",
+        "preview_url": "https://cdn.example.com/media_attachments/files/113/700/062/787/276/976/small/964282e31c2ffb26.png",
+        "remote_url": null,
+        "preview_remote_url": null,
+        "text_url": null,
+        "meta": {
+          "original": {
+            "width": 1080,
+            "height": 2244,
+            "size": "1080x2244",
+            "aspect": 0.481283422459893
+          },
+          "small": {
+            "width": 333,
+            "height": 692,
+            "size": "333x692",
+            "aspect": 0.48121387283237
+          }
+        },
+        "description": null,
+        "blurhash": "U87Tz?t8SioM}qWANZbG[Ys9Shjc#5W=SxWU"
+      },
+      {
+        "id": "113700064672567316",
+        "type": "image",
+        "url": "https://cdn.example.com/media_attachments/files/113/700/064/672/567/316/original/4bf2007725923214.png",
+        "preview_url": "https://cdn.example.com/media_attachments/files/113/700/064/672/567/316/small/4bf2007725923214.png",
+        "remote_url": null,
+        "preview_remote_url": null,
+        "text_url": null,
+        "meta": {
+          "original": {
+            "width": 1080,
+            "height": 2244,
+            "size": "1080x2244",
+            "aspect": 0.481283422459893
+          },
+          "small": {
+            "width": 333,
+            "height": 692,
+            "size": "333x692",
+            "aspect": 0.48121387283237
+          }
+        },
+        "description": null,
+        "blurhash": "U99tJnD+p0%N~nD*kWt7adM{j=V@NN%Kf,Rk"
+      }
+    ],
+    "mentions": [
+      {
+        "id": "111794404751445859",
+        "username": "phosh",
+        "url": "https://example.com/@phosh",
+        "acct": "phosh"
+      }
+    ],
+    "tags": [
+      {
+        "name": "sxmo",
+        "url": "https://example.com/tags/sxmo"
+      },
+      {
+        "name": "linuxmobile",
+        "url": "https://example.com/tags/linuxmobile"
+      }
+    ],
+    "emojis": [],
+    "card": {
+      "url": "https://wiki.postmarketos.org/wiki/User:Magdesign#Filepicker",
+      "title": "User:Magdesign - postmarketOS Wiki",
+      "description": "",
+      "language": "en",
+      "type": "link",
+      "author_name": "",
+      "author_url": "",
+      "provider_name": "",
+      "provider_url": "",
+      "html": "",
+      "width": 0,
+      "height": 0,
+      "image": null,
+      "image_description": "",
+      "embed_url": "",
+      "blurhash": null,
+      "published_at": null,
+      "authors": [
+        {
+          "name": "",
+          "url": "",
+          "account": null
+        }
+      ]
+    },
+    "poll": null
+  },
+  {
+    "id": "113700073035908540",
+    "created_at": "2024-12-23T03:43:50.845Z",
+    "in_reply_to_id": null,
+    "in_reply_to_account_id": null,
+    "sensitive": false,
+    "spoiler_text": "",
+    "visibility": "public",
+    "language": "en",
+    "uri": "https://example.com/users/s31bz/statuses/113700073035908540",
+    "url": "https://example.com/@s31bz/113700073035908540",
+    "replies_count": 0,
+    "reblogs_count": 0,
+    "favourites_count": 0,
+    "edited_at": null,
+    "favourited": false,
+    "reblogged": false,
+    "muted": false,
+    "bookmarked": false,
+    "content": "\u003Cp\u003EI secretly wished our plane caught fire on the way to family. The children jfc\u003C/p\u003E",
+    "filtered": [],
+    "reblog": null,
+    "application": {
+      "name": "Fedilab",
+      "website": "https://fedilab.app"
+    },
+    "account": {
+      "id": "111812577203736984",
+      "username": "s31bz",
+      "acct": "s31bz",
+      "display_name": "S31bz",
+      "locked": false,
+      "bot": false,
+      "discoverable": true,
+      "indexable": true,
+      "group": false,
+      "created_at": "2024-01-24T00:00:00.000Z",
+      "note": "\u003Cp\u003EPronounced Seibz (&quot;see-bzz&quot;)\u003Cbr /\u003EUsed to work at Tesla and System76 as well as doodle about with homelabs. Struggling to find worth in late-stage capitalism. \u003Ca href=\"https://example.com/tags/autistic\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Eautistic\u003C/span\u003E\u003C/a\u003E \u003Ca href=\"https://example.com/tags/pan\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003Epan\u003C/span\u003E\u003C/a\u003E-demi \u003Ca href=\"https://example.com/tags/ADHD\" class=\"mention hashtag\" rel=\"tag\"\u003E#\u003Cspan\u003EADHD\u003C/span\u003E\u003C/a\u003E\u003Cbr /\u003EDaily driving tux since 2018, project use since 2004.\u003Cbr /\u003EMessage me here if you add me on Steam, as I usually need context for friend requests.\u003C/p\u003E",
+      "url": "https://example.com/@s31bz",
+      "uri": "https://example.com/users/s31bz",
+      "avatar": "https://cdn.example.com/accounts/avatars/111/812/577/203/736/984/original/4dce8e078bdd6171.jpg",
+      "avatar_static": "https://cdn.example.com/accounts/avatars/111/812/577/203/736/984/original/4dce8e078bdd6171.jpg",
+      "header": "https://cdn.example.com/accounts/headers/111/812/577/203/736/984/original/7b89117184408e02.jpg",
+      "header_static": "https://cdn.example.com/accounts/headers/111/812/577/203/736/984/original/7b89117184408e02.jpg",
+      "followers_count": 379,
+      "following_count": 294,
+      "statuses_count": 3222,
+      "last_status_at": "2024-12-23",
+      "hide_collections": false,
+      "noindex": true,
+      "emojis": [],
+      "roles": [
+        {
+          "id": "8",
+          "name": "Supporter �♥️",
+          "color": "#4f7a28"
+        }
+      ],
+      "fields": [
+        {
+          "name": "Website/Blog",
+          "value": "\u003Ca href=\"https://www.s31bz.com/\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://www.\u003C/span\u003E\u003Cspan class=\"\"\u003Es31bz.com/\u003C/span\u003E\u003Cspan class=\"invisible\"\u003E\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": "2024-03-30T22:03:46.963+00:00"
+        },
+        {
+          "name": "Steam",
+          "value": "\u003Ca href=\"https://steamcommunity.com/id/Al12gamer\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"ellipsis\"\u003Esteamcommunity.com/id/Al12game\u003C/span\u003E\u003Cspan class=\"invisible\"\u003Er\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": null
+        },
+        {
+          "name": "Signal",
+          "value": "@s31bz.20",
+          "verified_at": null
+        },
+        {
+          "name": "Framework Forums",
+          "value": "\u003Ca href=\"https://community.frame.work/u/alex_s/summary\" target=\"_blank\" rel=\"nofollow noopener noreferrer me\" translate=\"no\"\u003E\u003Cspan class=\"invisible\"\u003Ehttps://\u003C/span\u003E\u003Cspan class=\"ellipsis\"\u003Ecommunity.frame.work/u/alex_s/\u003C/span\u003E\u003Cspan class=\"invisible\"\u003Esummary\u003C/span\u003E\u003C/a\u003E",
+          "verified_at": null
+        }
+      ]
+    },
+    "media_attachments": [],
+    "mentions": [],
+    "tags": [],
+    "emojis": [],
+    "card": null,
+    "poll": null
+  }
+]
