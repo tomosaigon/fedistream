@@ -18,6 +18,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   
   const serverSlug = router.query.server as string || servers[0].slug;
   const currentServer = servers.find(s => s.slug === serverSlug);
@@ -61,16 +62,9 @@ export default function Home() {
       await fetch(`/api/refresh?server=${serverSlug}&older=true`, { 
         method: 'POST' 
       });
-      const res = await fetch(`/api/timeline?server=${serverSlug}`);
+      const res = await fetch(`/api/timeline?server=${serverSlug}&onlyCounts=true`);
       const data = await res.json();
-      setCounts({
-        nonEnglish: data.buckets.nonEnglish.length,
-        withImages: data.buckets.withImages.length,
-        asReplies: data.buckets.asReplies.length,
-        networkMentions: data.buckets.networkMentions.length,
-        withLinks: data.buckets.withLinks.length,
-        remaining: data.buckets.remaining.length,
-      });
+      setCounts(data.counts);
     } catch (error) {
       console.error(error);
     } finally {
@@ -78,8 +72,30 @@ export default function Home() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete all posts?')) {
+      return;
+    }
+    
+    setDeleting(true);
+    try {
+      await fetch(`/api/refresh?server=${serverSlug}&delete=true`, {
+        method: 'POST'
+      });
+      
+      // Refresh counts after deletion 
+      const res = await fetch(`/api/timeline?server=${serverSlug}&onlyCounts=true`);
+      const data = await res.json();
+      setCounts(data.counts);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Mastodon Timeline Categories</h1>
         <div className="flex items-center space-x-4">
@@ -94,26 +110,29 @@ export default function Home() {
               </option>
             ))}
           </select>
-          <div className="space-x-4">
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing || loadingOlder}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-            >
-              {refreshing ? 'Refreshing...' : 'Refresh'}
-            </button>
-            <button
-              onClick={handleLoadOlder}
-              disabled={loadingOlder}
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
-            >
-              {loadingOlder ? 'Loading...' : 'Load Older'}
-            </button>
-          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      {/* Server selection and refresh buttons */}
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
+        >
+          {refreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
+        <button
+          onClick={handleLoadOlder}
+          disabled={loadingOlder}
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
+        >
+          {loadingOlder ? 'Loading...' : 'Load Older'}
+        </button>
+      </div>
+
+      {/* Main grid content */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <Link href={`/${serverSlug}/non-english`} className="p-4 border rounded-lg hover:bg-gray-50">
           <h2 className="text-xl font-semibold">Non-English Posts</h2>
           <p className="text-gray-600">Posts in languages other than English</p>
@@ -168,6 +187,21 @@ export default function Home() {
             <p className="mt-2 text-sm text-gray-500">{counts?.remaining || 0} posts</p>
           )}
         </Link>
+      </div>
+
+      {/* Delete section at bottom */}
+      <div className="border-t border-gray-200 mt-8 pt-8">
+        <h3 className="text-red-600 font-semibold mb-2">Danger Zone</h3>
+        <p className="text-gray-600 text-sm mb-4">
+          This action cannot be undone. All posts will be permanently deleted.
+        </p>
+        <button
+          onClick={handleDelete}
+          disabled={deleting}
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:bg-gray-400"
+        >
+          {deleting ? 'Deleting...' : 'Delete All Posts'}
+        </button>
       </div>
     </div>
   );

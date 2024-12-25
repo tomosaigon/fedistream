@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { server, older } = req.query;
+  const { server, older, delete: deleteFlag } = req.query;
   if (!server) {
     return res.status(400).json({ error: 'Server slug is required' });
   }
@@ -37,6 +37,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    // Handle delete operation
+    if (deleteFlag === 'true') {
+      dbManager.resetDatabase(server as string);
+      return res.status(200).json({ 
+        message: `Database reset for server: ${serverConfig.slug}` 
+      });
+    }
+
+    // Existing refresh logic
     console.log('Refreshing posts for server:', serverConfig.slug);
     let newPosts = [];
     
@@ -86,9 +95,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     });
 
+    const firstPost = newPosts[0];
+    const lastPost = newPosts[newPosts.length - 1];
+
     res.status(200).json({ 
       message: `Stored ${newPosts.length} new posts`,
-      newPosts: newPosts.length
+      newPosts: newPosts.length,
+      firstPost: {
+        id: firstPost?.id,
+        created_at: firstPost?.created_at
+      },
+      lastPost: {
+        id: lastPost?.id,
+        created_at: lastPost?.created_at
+      }
     });
   } catch (error) {
     console.error('Error refreshing posts:', error);
