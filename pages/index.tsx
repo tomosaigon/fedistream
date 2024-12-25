@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { servers } from '../config/servers';
 
-interface Buckets {
+interface Counts {
   nonEnglish: number;
   withImages: number;
   asReplies: number;
@@ -14,7 +14,7 @@ interface Buckets {
 
 export default function Home() {
   const router = useRouter();
-  const [counts, setCounts] = useState<Buckets | null>(null);
+  const [counts, setCounts] = useState<Counts | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
@@ -25,17 +25,10 @@ export default function Home() {
   useEffect(() => {
     if (!serverSlug) return;
     
-    fetch(`/api/timeline?server=${serverSlug}`)
+    fetch(`/api/timeline?server=${serverSlug}&onlyCounts=true`)
       .then(res => res.json())
       .then(data => {
-        setCounts({
-          nonEnglish: data.buckets.nonEnglish.length,
-          withImages: data.buckets.withImages.length,
-          asReplies: data.buckets.asReplies.length,
-          networkMentions: data.buckets.networkMentions.length,
-          withLinks: data.buckets.withLinks.length,
-          remaining: data.buckets.remaining.length,
-        });
+        setCounts(data.counts);
         setLoading(false);
       })
       .catch(err => {
@@ -52,6 +45,22 @@ export default function Home() {
     setRefreshing(true);
     try {
       await fetch(`/api/refresh?server=${serverSlug}`, { method: 'POST' });
+      const res = await fetch(`/api/timeline?server=${serverSlug}&onlyCounts=true`);
+      const data = await res.json();
+      setCounts(data.counts);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const handleLoadOlder = async () => {
+    setLoadingOlder(true);
+    try {
+      await fetch(`/api/refresh?server=${serverSlug}&older=true`, { 
+        method: 'POST' 
+      });
       const res = await fetch(`/api/timeline?server=${serverSlug}`);
       const data = await res.json();
       setCounts({
@@ -62,10 +71,10 @@ export default function Home() {
         withLinks: data.buckets.withLinks.length,
         remaining: data.buckets.remaining.length,
       });
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
     } finally {
-      setRefreshing(false);
+      setLoadingOlder(false);
     }
   };
 
@@ -92,6 +101,13 @@ export default function Home() {
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
             >
               {refreshing ? 'Refreshing...' : 'Refresh'}
+            </button>
+            <button
+              onClick={handleLoadOlder}
+              disabled={loadingOlder}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
+            >
+              {loadingOlder ? 'Loading...' : 'Load Older'}
             </button>
           </div>
         </div>
@@ -155,4 +171,4 @@ export default function Home() {
       </div>
     </div>
   );
-} 
+}
