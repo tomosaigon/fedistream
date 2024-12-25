@@ -27,14 +27,20 @@ describe('Post Database Operations', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockAxios.reset();
-    // dbManager.resetDatabase();
     
     (getServerBySlug as jest.Mock).mockReturnValue({
       slug: 'test-server',
       baseUrl: 'https://example.com'
     });
 
-    mockAxios.onGet(/.*\/api\/v1\/timelines\/public.*/).reply(200, mockApiResponse);
+    // Configure mock to return different responses based on URL
+    mockAxios.onGet(/.*\/api\/v1\/timelines\/public.*/).reply((config) => {
+      const hasMinId = config.url?.includes('min_id=');
+      const response = hasMinId 
+        ? mockApiResponse.slice(-5)  // Last 5 elements
+        : mockApiResponse.slice(0, 5); // First 5 elements
+      return [200, response];
+    });
   });
 
   it('should store first post correctly in database', async () => {
@@ -124,14 +130,50 @@ describe('Post Database Operations', () => {
     await handler(req, res);
 
     const oldestPost = dbManager.getOldestPost('test-server');
+    const mockOldPost = mockApiResponse[4];
     expect(oldestPost).toBeDefined();
     expect(oldestPost).toMatchObject({
-      id: mockApiResponse[9].id,
-      created_at: mockApiResponse[9].created_at,
-      content: mockApiResponse[9].content,
-      account_username: mockApiResponse[9].account.username,
-      account_display_name: mockApiResponse[9].account.display_name,
+      id: mockOldPost.id,
+      created_at: mockOldPost.created_at,
+      content: mockOldPost.content,
+      account_username: mockOldPost.account.username,
+      account_display_name: mockOldPost.account.display_name,
       server_slug: 'test-server'
     });
+  });
+
+  it('should fetch and store older posts after initial refresh', async () => {
+    // Initial refresh
+    const req1 = {
+      method: 'POST',
+      query: { server: 'test-server' }
+    } as unknown as NextApiRequest;
+    
+    const res1 = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    } as unknown as NextApiResponse;
+
+    await handler(req1, res1);
+    const firstBatchLatest = dbManager.getLatestPost('test-server');
+    expect(firstBatchLatest?.id).toBe(mockApiResponse[0].id);
+
+    // Fetch older posts
+    const req2 = {
+      method: 'POST',
+      query: { 
+        server: 'test-server',
+        older: 'true'
+      }
+    } as unknown as NextApiRequest;
+    
+    const res2 = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    } as unknown as NextApiResponse;
+
+    await handler(req2, res2);
+    const secondBatchOldest = dbManager.getOldestPost('test-server');
+    expect(secondBatchOldest?.id).toBe(mockApiResponse[9].id);
   });
 });

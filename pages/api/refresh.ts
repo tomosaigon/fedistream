@@ -4,11 +4,12 @@ import { getServerBySlug } from '../../config/servers';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { dbManager } from '../../db';
 
-async function fetchTimelinePage(baseUrl: string, maxId?: string) {
+async function fetchTimelinePage(baseUrl: string, options?: { maxId?: string; minId?: string }) {
   const params = {
     local: true,
     limit: 40,
-    ...(maxId && { max_id: maxId })
+    ...(options?.maxId && { max_id: options.maxId }),
+    ...(options?.minId && { min_id: options.minId })
   };
 
   const queryString = new URLSearchParams(params as unknown as Record<string, string>).toString();
@@ -25,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { server } = req.query;
+  const { server, older } = req.query;
   if (!server) {
     return res.status(400).json({ error: 'Server slug is required' });
   }
@@ -37,21 +38,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     console.log('Refreshing posts for server:', serverConfig.slug);
-    const latestPost = dbManager.getLatestPost(server as string);
-    console.log('Latest post:', latestPost);
     let newPosts = [];
     
-    if (latestPost) {
-      const posts = await fetchTimelinePage(serverConfig.baseUrl, latestPost.id);
-      newPosts = posts;
+    if (older === 'true') {
+      const oldestPost = dbManager.getOldestPost(server as string);
+      console.log('Oldest post:', oldestPost);
+      
+      if (oldestPost) {
+        const posts = await fetchTimelinePage(serverConfig.baseUrl, { minId: oldestPost.id });
+        newPosts = posts;
+      } else {
+        const posts = await fetchTimelinePage(serverConfig.baseUrl);
+        newPosts = posts;
+      }
     } else {
-      const posts = await fetchTimelinePage(serverConfig.baseUrl);
-      newPosts = posts;
+      const latestPost = dbManager.getLatestPost(server as string);
+      console.log('Latest post:', latestPost);
+      
+      if (latestPost) {
+        const posts = await fetchTimelinePage(serverConfig.baseUrl, { maxId: latestPost.id });
+        newPosts = posts;
+      } else {
+        const posts = await fetchTimelinePage(serverConfig.baseUrl);
+        newPosts = posts;
+      }
     }
 
-    // console.log('New posts:', newPosts);
     // Store new posts in database
-    newPosts.forEach((post: { id: any; created_at: any; content: any; language: any; in_reply_to_id: any; url: any; account: { username: any; display_name: any; url: any; avatar: any; }; media_attachments: any; visibility: any; favourites_count: any; reblogs_count: any; replies_count: any; }) => {
+    newPosts.forEach((post: any) => {
       dbManager.insertPost({
         id: post.id,
         created_at: post.created_at,
@@ -68,17 +82,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         favourites_count: post.favourites_count,
         reblogs_count: post.reblogs_count,
         replies_count: post.replies_count,
-        server_slug: serverConfig.slug
+        server_slug: server as string,
       });
     });
 
     res.status(200).json({ 
       message: `Stored ${newPosts.length} new posts`,
-      newPosts: newPosts.length 
+      newPosts: newPosts.length
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to refresh posts" });
+    console.error('Error refreshing posts:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 }
 
