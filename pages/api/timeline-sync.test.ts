@@ -6,13 +6,13 @@ import { getServerBySlug } from '../../config/servers';
 // Set up in-memory database
 process.env.DATABASE_FILE = ':memory:';
 import { dbManager } from '../../db';
-import handler from './refresh';
+import handler from './timeline-sync';
 
 // const dbManager = new DatabaseManager();
 // let dbManager: DatabaseManager;
 
 // Load mock API response
-const mockApiResponse = require('./refresh.test.example.json');
+const mockApiResponse = require('./timeline-sync.test.example.json');
 const firstPost = mockApiResponse[0];
 
 // Mock dependencies
