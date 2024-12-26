@@ -14,4 +14,4 @@ export const servers: MastodonServer[] = [
 
 export function getServerBySlug(slug: string): MastodonServer | undefined {
   return servers.find(server => server.slug === slug);
-} 
+}
