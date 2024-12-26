@@ -9,7 +9,7 @@ interface TimelineResponse {
   counts: Record<string, number>;
 }
 
-const POSTS_PER_PAGE = 2069;
+const POSTS_PER_PAGE = 10;
 
 export default function CategoryPage() {
   const router = useRouter();
@@ -34,7 +34,7 @@ export default function CategoryPage() {
         const categoryPosts = data.buckets[getCategoryKey(category as string)] || [];
         setPosts(categoryPosts);
         setTotalCount(data.counts[getCategoryKey(category as string)] || 0);
-        setHasMore(categoryPosts.length === POSTS_PER_PAGE);
+        setHasMore(categoryPosts.length >= POSTS_PER_PAGE && categoryPosts.length < data.counts[getCategoryKey(category as string)]);
         setLoading(false);
       })
       .catch(err => {
@@ -55,7 +55,7 @@ export default function CategoryPage() {
       const newPosts = data.buckets[getCategoryKey(category as string)] || [];
       
       setPosts(prev => [...prev, ...newPosts]);
-      setHasMore(newPosts.length === POSTS_PER_PAGE);
+      setHasMore(newPosts.length >= POSTS_PER_PAGE && posts.length + newPosts.length < totalCount);
     } catch (err) {
       console.error(err);
     } finally {

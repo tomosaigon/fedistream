@@ -7,7 +7,6 @@ export class DatabaseManager {
   private db: Database.Database;
 
   constructor() {
-    // const dbPath = join(process.cwd(), process.env.DATABASE_FILE || 'mastodon.db');
     const dbPath = process.env.DATABASE_FILE || 'mastodon.db';
     console.log('Database path:', dbPath);
     this.db = new Database(dbPath);
@@ -33,6 +32,7 @@ export class DatabaseManager {
         reblogs_count INTEGER DEFAULT 0,
         replies_count INTEGER DEFAULT 0,
         server_slug TEXT NOT NULL,
+        bucket TEXT NOT NULL,
         UNIQUE(id, server_slug)
       );
 
@@ -40,6 +40,28 @@ export class DatabaseManager {
       CREATE INDEX IF NOT EXISTS idx_posts_account_username ON posts(account_username);
       CREATE INDEX IF NOT EXISTS idx_posts_server_slug ON posts(server_slug);
     `);
+  }
+
+  private determineBucket(post: Post): string {
+    let mediaAttachments = [];
+    
+    try {
+      if (typeof post.media_attachments === 'string') {
+        mediaAttachments = JSON.parse(post.media_attachments);
+      } else if (Array.isArray(post.media_attachments)) {
+        mediaAttachments = post.media_attachments;
+      }
+    } catch (error) {
+      console.warn('Failed to parse media_attachments:', error);
+      mediaAttachments = [];
+    }
+    
+    if (post.language !== 'en') return 'nonEnglish';
+    if (mediaAttachments?.length > 0) return 'withImages';
+    if (post.in_reply_to_id) return 'asReplies';
+    if (isOnlyMentionsOrTags(post.content)) return 'networkMentions';
+    if (post.content.includes('<a href="')) return 'withLinks';
+    return 'remaining';
   }
 
   public resetDatabase(serverSlug?: string) {
@@ -66,6 +88,7 @@ export class DatabaseManager {
           reblogs_count INTEGER DEFAULT 0,
           replies_count INTEGER DEFAULT 0,
           server_slug TEXT NOT NULL,
+          bucket TEXT NOT NULL,
           UNIQUE(id, server_slug)
         );
       `);
@@ -78,7 +101,7 @@ export class DatabaseManager {
         id, created_at, content, language, in_reply_to_id, url,
         account_username, account_display_name, account_url, account_avatar,
         media_attachments, visibility, favourites_count, reblogs_count, replies_count,
-        server_slug
+        server_slug, bucket
       ) VALUES (
         @id, @created_at, @content, @language, @in_reply_to_id, @url,
         @account_username, @account_display_name, @account_url, @account_avatar,
@@ -86,7 +109,7 @@ export class DatabaseManager {
         COALESCE(@favourites_count, 0),
         COALESCE(@reblogs_count, 0),
         COALESCE(@replies_count, 0),
-        @server_slug
+        @server_slug, @bucket
       )
     `);
 
@@ -95,9 +118,10 @@ export class DatabaseManager {
       media_attachments: Array.isArray(post.media_attachments) 
         ? JSON.stringify(post.media_attachments)
         : post.media_attachments || '[]',
-      favourites_count: post.favourites_count || 0,
-      reblogs_count: post.reblogs_count || 0,
-      replies_count: post.replies_count || 0
+      // favourites_count: post.favourites_count || 0,
+      // reblogs_count: post.reblogs_count || 0,
+      // replies_count: post.replies_count || 0,
+      bucket: this.determineBucket(post)
     };
 
     return stmt.run(postData);
@@ -126,48 +150,18 @@ export class DatabaseManager {
     };
 
     try {
-      const posts = this.db.prepare(
-        'SELECT * FROM posts WHERE server_slug = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'
-      ).all(serverSlug, limit, offset) as Post[];
+      (Object.keys(emptyBuckets) as (keyof BucketedPosts)[]).forEach(bucket => {
+        const posts = this.db.prepare(
+          'SELECT * FROM posts WHERE server_slug = ? AND bucket = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'
+        ).all(serverSlug, bucket, limit, offset) as Post[];
 
-      const buckets: BucketedPosts = {
-        nonEnglish: [],
-        withImages: [],
-        asReplies: [],
-        networkMentions: [],
-        withLinks: [],
-        remaining: []
-      };
-
-      posts.forEach(post => {
-        const mediaAttachments = JSON.parse(post.media_attachments as string);
-        const postWithParsedMedia = {
+        emptyBuckets[bucket] = posts.map(post => ({
           ...post,
-          media_attachments: mediaAttachments
-        };
-
-        if (post.language !== 'en') {
-          buckets.nonEnglish.push(postWithParsedMedia);
-        }
-        else if (mediaAttachments && mediaAttachments.length > 0 && 
-                 mediaAttachments.some((media: { type: string }) => media.type === 'image')) {
-          buckets.withImages.push(postWithParsedMedia);
-        }
-        else if (post.in_reply_to_id) {
-          buckets.asReplies.push(postWithParsedMedia);
-        }
-        else if (isOnlyMentionsOrTags(post.content)) {
-          buckets.networkMentions.push(postWithParsedMedia);
-        }
-        else if (post.content.includes('<a href="')) {
-          buckets.withLinks.push(postWithParsedMedia);
-        }
-        else {
-          buckets.remaining.push(postWithParsedMedia);
-        }
+          media_attachments: JSON.parse(post.media_attachments as string)
+        }));
       });
 
-      return buckets;
+      return emptyBuckets;
     } catch (error) {
       console.error('Error in getBucketedPosts:', error);
       return emptyBuckets;

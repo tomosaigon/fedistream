@@ -42,6 +42,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { server, older, delete: deleteFlag } = req.query;
+
+  // Handle database reset first
+  // For non-delete operations, require server parameter
+  if (deleteFlag === 'true') {
+    if (server) {
+      const serverConfig = getServerBySlug(server as string);
+      if (!serverConfig) {
+        return res.status(404).json({ error: 'Server not found' });
+      }
+      dbManager.resetDatabase(server as string);
+      return res.status(200).json({ 
+        message: `Database reset for server: ${serverConfig.slug}` 
+      });
+    } else {
+      dbManager.resetDatabase();
+      return res.status(200).json({ 
+        message: 'Database reset completely' 
+      });
+    }
+  }
+
   if (!server) {
     return res.status(400).json({ error: 'Server slug is required' });
   }
@@ -52,13 +73,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    if (deleteFlag === 'true') {
-      dbManager.resetDatabase(server as string);
-      return res.status(200).json({ 
-        message: `Database reset for server: ${serverConfig.slug}` 
-      });
-    }
-
     console.log('Refreshing posts for server:', serverConfig.slug);
     let newPosts = [];
     

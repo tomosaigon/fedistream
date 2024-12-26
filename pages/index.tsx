@@ -19,6 +19,7 @@ export default function Home() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [destroying, setDestroying] = useState(false);
   
   const serverSlug = router.query.server as string || servers[0].slug;
   const currentServer = servers.find(s => s.slug === serverSlug);
@@ -45,7 +46,7 @@ export default function Home() {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await fetch(`/api/refresh?server=${serverSlug}`, { method: 'POST' });
+      await fetch(`/api/timeline-sync?server=${serverSlug}`, { method: 'POST' });
       const res = await fetch(`/api/timeline?server=${serverSlug}&onlyCounts=true`);
       const data = await res.json();
       setCounts(data.counts);
@@ -59,7 +60,7 @@ export default function Home() {
   const handleLoadOlder = async () => {
     setLoadingOlder(true);
     try {
-      await fetch(`/api/refresh?server=${serverSlug}&older=true`, { 
+      await fetch(`/api/timeline-sync?server=${serverSlug}&older=true`, { 
         method: 'POST' 
       });
       const res = await fetch(`/api/timeline?server=${serverSlug}&onlyCounts=true`);
@@ -79,18 +80,66 @@ export default function Home() {
     
     setDeleting(true);
     try {
-      await fetch(`/api/refresh?server=${serverSlug}&delete=true`, {
+      const deleteRes = await fetch(`/api/timeline-sync?server=${serverSlug}&delete=true`, {
         method: 'POST'
       });
       
-      // Refresh counts after deletion 
+      if (!deleteRes.ok) {
+        throw new Error(`Delete failed: ${deleteRes.statusText}`);
+      }
+      
+      // Only refresh counts after successful deletion
       const res = await fetch(`/api/timeline?server=${serverSlug}&onlyCounts=true`);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch counts: ${res.statusText}`);
+      }
+      
       const data = await res.json();
       setCounts(data.counts);
     } catch (error) {
       console.error(error);
+      if (error instanceof Error) {
+        alert('Failed to delete posts: ' + error.message);
+      } else {
+        alert('Failed to delete posts: An unknown error occurred.');
+      }
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleDestroy = async () => {
+    if (!confirm('Are you sure you want to destroy the database? This will delete ALL posts from ALL servers.')) {
+      return;
+    }
+    
+    setDestroying(true);
+    try {
+      const destroyRes = await fetch(`/api/timeline-sync?delete=true`, {
+        method: 'POST'
+      });
+
+      if (!destroyRes.ok) {
+        throw new Error(`Destroy failed: ${destroyRes.statusText}`);
+      }
+      
+      // Only refresh counts after successful destruction
+      const res = await fetch(`/api/timeline?server=${serverSlug}&onlyCounts=true`);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch counts: ${res.statusText}`);
+      }
+      
+      const data = await res.json();
+      setCounts(data.counts);
+    } catch (error) {
+      console.error(error);
+      if (error instanceof Error) {
+        alert('Failed to destroy database: ' + error.message);
+      } else {
+        alert('Failed to destroy database: An unknown error occurred.');
+      }
+    } finally {
+      setDestroying(false);
     }
   };
 
@@ -193,15 +242,24 @@ export default function Home() {
       <div className="border-t border-gray-200 mt-8 pt-8">
         <h3 className="text-red-600 font-semibold mb-2">Danger Zone</h3>
         <p className="text-gray-600 text-sm mb-4">
-          This action cannot be undone. All posts will be permanently deleted.
+          These actions cannot be undone.
         </p>
-        <button
-          onClick={handleDelete}
-          disabled={deleting}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:bg-gray-400"
-        >
-          {deleting ? 'Deleting...' : 'Delete All Posts'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:bg-gray-400"
+          >
+            {deleting ? 'Deleting...' : 'Delete All Posts'}
+          </button>
+          <button
+            onClick={handleDestroy}
+            disabled={destroying}
+            className="px-4 py-2 bg-red-700 text-white rounded hover:bg-red-800 disabled:bg-gray-400"
+          >
+            {destroying ? 'Destroying...' : 'Destroy Database'}
+          </button>
+        </div>
       </div>
     </div>
   );
