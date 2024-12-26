@@ -1,8 +1,23 @@
 import axios from 'axios';
-// import { DatabaseManager } from '../../db/database';
 import { getServerBySlug } from '../../config/servers';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { dbManager } from '../../db';
+
+// https://docs.joinmastodon.org/methods/timelines/
+// local
+// Boolean. Show only local statuses? Defaults to false.
+// remote
+// Boolean. Show only remote statuses? Defaults to false.
+// only_media
+// Boolean. Show only statuses with media attached? Defaults to false.
+// max_id
+// String. All results returned will be lesser than this ID. In effect, sets an upper bound on results.
+// since_id
+// String. All results returned will be greater than this ID. In effect, sets a lower bound on results.
+// min_id
+// String. Returns results immediately newer than this ID. In effect, sets a cursor at this ID and paginates forward.
+// limit
+// Integer. Maximum number of results to return. Defaults to 20 statuses. Max 40 statuses.
 
 async function fetchTimelinePage(baseUrl: string, options?: { maxId?: string; minId?: string }) {
   const params = {
@@ -37,7 +52,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Handle delete operation
     if (deleteFlag === 'true') {
       dbManager.resetDatabase(server as string);
       return res.status(200).json({ 
@@ -45,7 +59,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Existing refresh logic
     console.log('Refreshing posts for server:', serverConfig.slug);
     let newPosts = [];
     
@@ -54,7 +67,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('Oldest post:', oldestPost);
       
       if (oldestPost) {
-        const posts = await fetchTimelinePage(serverConfig.baseUrl, { minId: oldestPost.id });
+        // All results returned will be lesser than this ID. In effect, sets an upper bound on results.
+        const posts = await fetchTimelinePage(serverConfig.baseUrl, { maxId: oldestPost.id });
         newPosts = posts;
       } else {
         const posts = await fetchTimelinePage(serverConfig.baseUrl);
@@ -65,7 +79,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('Latest post:', latestPost);
       
       if (latestPost) {
-        const posts = await fetchTimelinePage(serverConfig.baseUrl, { maxId: latestPost.id });
+        // Returns results immediately newer than this ID. In effect, sets a cursor at this ID and paginates forward.
+        const posts = await fetchTimelinePage(serverConfig.baseUrl, { minId: latestPost.id });
         newPosts = posts;
       } else {
         const posts = await fetchTimelinePage(serverConfig.baseUrl);
