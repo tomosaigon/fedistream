@@ -120,6 +120,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         favourites_count: post.favourites_count,
         reblogs_count: post.reblogs_count,
         replies_count: post.replies_count,
+        card: post.card,
         server_slug: server as string,
       });
     });

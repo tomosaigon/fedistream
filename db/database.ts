@@ -33,6 +33,7 @@ export class DatabaseManager {
         replies_count INTEGER DEFAULT 0,
         server_slug TEXT NOT NULL,
         bucket TEXT NOT NULL,
+        card TEXT,
         UNIQUE(id, server_slug)
       );
 
@@ -89,6 +90,7 @@ export class DatabaseManager {
           replies_count INTEGER DEFAULT 0,
           server_slug TEXT NOT NULL,
           bucket TEXT NOT NULL,
+          card TEXT,
           UNIQUE(id, server_slug)
         );
       `);
@@ -101,7 +103,7 @@ export class DatabaseManager {
         id, created_at, content, language, in_reply_to_id, url,
         account_username, account_display_name, account_url, account_avatar,
         media_attachments, visibility, favourites_count, reblogs_count, replies_count,
-        server_slug, bucket
+        server_slug, bucket, card
       ) VALUES (
         @id, @created_at, @content, @language, @in_reply_to_id, @url,
         @account_username, @account_display_name, @account_url, @account_avatar,
@@ -109,7 +111,7 @@ export class DatabaseManager {
         COALESCE(@favourites_count, 0),
         COALESCE(@reblogs_count, 0),
         COALESCE(@replies_count, 0),
-        @server_slug, @bucket
+        @server_slug, @bucket, @card
       )
     `);
 
@@ -118,9 +120,7 @@ export class DatabaseManager {
       media_attachments: Array.isArray(post.media_attachments) 
         ? JSON.stringify(post.media_attachments)
         : post.media_attachments || '[]',
-      // favourites_count: post.favourites_count || 0,
-      // reblogs_count: post.reblogs_count || 0,
-      // replies_count: post.replies_count || 0,
+      card: post.card ? JSON.stringify(post.card) : null, // Stringify card object
       bucket: this.determineBucket(post)
     };
 
@@ -150,15 +150,28 @@ export class DatabaseManager {
     };
 
     try {
-      (Object.keys(emptyBuckets) as (keyof BucketedPosts)[]).forEach(bucket => {
+      // Query posts for each bucket
+      Object.keys(emptyBuckets).forEach(bucket => {
         const posts = this.db.prepare(
           'SELECT * FROM posts WHERE server_slug = ? AND bucket = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'
         ).all(serverSlug, bucket, limit, offset) as Post[];
 
-        emptyBuckets[bucket] = posts.map(post => ({
-          ...post,
-          media_attachments: JSON.parse(post.media_attachments as string)
-        }));
+        emptyBuckets[bucket as keyof BucketedPosts] = posts.map(post => {
+          try {
+            return {
+              ...post,
+              media_attachments: JSON.parse(post.media_attachments as string),
+              card: post.card ? JSON.parse(post.card as unknown as string) : null
+            };
+          } catch (error) {
+            console.warn('Failed to parse post data:', error);
+            return {
+              ...post,
+              media_attachments: [],
+              card: null
+            };
+          }
+        });
       });
 
       return emptyBuckets;
@@ -245,6 +258,13 @@ export interface Post {
   reblogs_count: number;
   replies_count: number;
   server_slug: string;
+  card?: {
+    url: string;
+    title: string;
+    description: string;
+    image?: string;
+    author_name?: string;
+  } | null;
 }
 
 interface BucketedPosts {
