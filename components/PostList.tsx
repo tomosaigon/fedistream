@@ -85,16 +85,24 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
                       rel="noopener noreferrer"
                       className="text-sm text-gray-500 hover:underline"
                     >
-                      {new Date(post.created_at).toLocaleDateString(undefined, {
+                      {new Date(post.created_at).toLocaleString(undefined, {
+                        year: 'numeric',
                         month: 'short',
-                        day: 'numeric'
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
                       })}
                     </a>
                   ) : (
                     <div className="text-sm text-gray-500">
-                      {new Date(post.created_at).toLocaleDateString(undefined, {
+                      {new Date(post.created_at).toLocaleString(undefined, {
+                        year: 'numeric',
                         month: 'short',
-                        day: 'numeric'
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
                       })}
                     </div>
                   )}
@@ -170,4 +178,4 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
   );
 };
 
-export default PostList; 
+export default PostList;
