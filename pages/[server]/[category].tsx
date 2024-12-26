@@ -9,7 +9,7 @@ interface TimelineResponse {
   counts: Record<string, number>;
 }
 
-const POSTS_PER_PAGE = 10;
+const POSTS_PER_PAGE = 25;
 
 export default function CategoryPage() {
   const router = useRouter();
