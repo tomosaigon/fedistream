@@ -71,8 +71,13 @@ export default function CategoryPage() {
       const data: TimelineResponse = await res.json();
       const newPosts = data.buckets[getCategoryKey(category as string)] || [];
       
+      // Get updated counts
+      const countsRes = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
+      const countsData = await countsRes.json();
+      
       setPosts(prev => [...prev, ...newPosts]);
       setHasMore(newPosts.length >= POSTS_PER_PAGE && posts.length + newPosts.length < totalCount);
+      setCounts(countsData.counts);
     } catch (err) {
       console.error(err);
     } finally {
@@ -127,24 +132,30 @@ export default function CategoryPage() {
     }
   };
 
-  const refreshPosts = () => {
+  const refreshPosts = async () => {
     setLoading(true);
     setPosts([]); // Reset posts
     
-    fetch(`/api/timeline?server=${server}&offset=0&limit=${POSTS_PER_PAGE}`)
-      .then(res => res.json())
-      .then((data: TimelineResponse) => {
-        const categoryPosts = data.buckets[getCategoryKey(category as string)] || [];
-        setPosts(categoryPosts);
-        setTotalCount(data.counts[getCategoryKey(category as string)] || 0);
-        setHasMore(categoryPosts.length >= POSTS_PER_PAGE && 
-          categoryPosts.length < data.counts[getCategoryKey(category as string)]);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+    try {
+      // Get posts
+      const postsRes = await fetch(`/api/timeline?server=${server}&offset=0&limit=${POSTS_PER_PAGE}`);
+      const postsData: TimelineResponse = await postsRes.json();
+      const categoryPosts = postsData.buckets[getCategoryKey(category as string)] || [];
+      
+      // Get updated counts
+      const countsRes = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
+      const countsData = await countsRes.json();
+      
+      setPosts(categoryPosts);
+      setTotalCount(postsData.counts[getCategoryKey(category as string)] || 0);
+      setHasMore(categoryPosts.length >= POSTS_PER_PAGE && 
+        categoryPosts.length < postsData.counts[getCategoryKey(category as string)]);
+      setCounts(countsData.counts);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!serverConfig) {
