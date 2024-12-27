@@ -10,18 +10,29 @@ export class DatabaseManager {
     const dbPath = process.env.DATABASE_FILE || 'mastodon.db';
     console.log('Database path:', dbPath);
     this.db = new Database(dbPath);
-    this.initializeSchema();
+    
+    if (!this.tableExists('posts')) {
+      this.initializeSchema();
+    }
+  }
+
+  private tableExists(tableName: string): boolean {
+    const result = this.db.prepare(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
+    ).get(tableName);
+    return !!result;
   }
 
   private initializeSchema() {
     this.db.exec(`
-      CREATE TABLE IF NOT EXISTS posts (
+      CREATE TABLE posts (
         id TEXT PRIMARY KEY,
         created_at TEXT NOT NULL,
         content TEXT NOT NULL,
         language TEXT,
         in_reply_to_id TEXT,
         url TEXT,
+        account_id TEXT,
         account_username TEXT NOT NULL,
         account_display_name TEXT NOT NULL,
         account_url TEXT,
@@ -40,6 +51,7 @@ export class DatabaseManager {
       CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at);
       CREATE INDEX IF NOT EXISTS idx_posts_account_username ON posts(account_username);
       CREATE INDEX IF NOT EXISTS idx_posts_server_slug ON posts(server_slug);
+      CREATE INDEX IF NOT EXISTS idx_posts_account_id ON posts(account_id);
     `);
   }
 
@@ -69,31 +81,8 @@ export class DatabaseManager {
     if (serverSlug) {
       this.db.prepare('DELETE FROM posts WHERE server_slug = ?').run(serverSlug);
     } else {
-      this.db.exec(`
-        DROP TABLE IF EXISTS posts;
-
-        CREATE TABLE posts (
-          id TEXT PRIMARY KEY,
-          created_at TEXT NOT NULL,
-          content TEXT NOT NULL,
-          language TEXT,
-          in_reply_to_id TEXT,
-          url TEXT,
-          account_username TEXT NOT NULL,
-          account_display_name TEXT NOT NULL,
-          account_url TEXT,
-          account_avatar TEXT,
-          media_attachments TEXT NOT NULL DEFAULT '[]',
-          visibility TEXT,
-          favourites_count INTEGER DEFAULT 0,
-          reblogs_count INTEGER DEFAULT 0,
-          replies_count INTEGER DEFAULT 0,
-          server_slug TEXT NOT NULL,
-          bucket TEXT NOT NULL,
-          card TEXT,
-          UNIQUE(id, server_slug)
-        );
-      `);
+      this.db.exec('DROP TABLE IF EXISTS posts;');
+      this.initializeSchema();
     }
   }
 
@@ -101,12 +90,12 @@ export class DatabaseManager {
     const stmt = this.db.prepare(`
       INSERT OR REPLACE INTO posts (
         id, created_at, content, language, in_reply_to_id, url,
-        account_username, account_display_name, account_url, account_avatar,
+        account_id, account_username, account_display_name, account_url, account_avatar,
         media_attachments, visibility, favourites_count, reblogs_count, replies_count,
         server_slug, bucket, card
       ) VALUES (
         @id, @created_at, @content, @language, @in_reply_to_id, @url,
-        @account_username, @account_display_name, @account_url, @account_avatar,
+        @account_id, @account_username, @account_display_name, @account_url, @account_avatar,
         @media_attachments, @visibility, 
         COALESCE(@favourites_count, 0),
         COALESCE(@reblogs_count, 0),
@@ -248,6 +237,7 @@ export interface Post {
   language: string;
   in_reply_to_id: string | null;
   url: string;
+  account_id: string;         /* Add account_id field */
   account_username: string;
   account_display_name: string;
   account_url: string;

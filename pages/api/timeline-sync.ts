@@ -111,6 +111,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         language: post.language,
         in_reply_to_id: post.in_reply_to_id,
         url: post.url,
+        account_id: post.account.id,
         account_username: post.account.username,
         account_display_name: post.account.display_name,
         account_url: post.account.url,
