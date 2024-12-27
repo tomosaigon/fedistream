@@ -52,6 +52,17 @@ export class DatabaseManager {
       CREATE INDEX IF NOT EXISTS idx_posts_account_username ON posts(account_username);
       CREATE INDEX IF NOT EXISTS idx_posts_server_slug ON posts(server_slug);
       CREATE INDEX IF NOT EXISTS idx_posts_account_id ON posts(account_id);
+
+      CREATE TABLE account_tags (
+        user_id TEXT NOT NULL,
+        username TEXT NOT NULL,
+        tag TEXT NOT NULL,
+        count INTEGER NOT NULL DEFAULT 1,
+        UNIQUE(user_id, tag)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_account_tags_user_id ON account_tags(user_id);
+      CREATE INDEX IF NOT EXISTS idx_account_tags_tag ON account_tags(tag);
     `);
   }
 
@@ -81,7 +92,10 @@ export class DatabaseManager {
     if (serverSlug) {
       this.db.prepare('DELETE FROM posts WHERE server_slug = ?').run(serverSlug);
     } else {
-      this.db.exec('DROP TABLE IF EXISTS posts;');
+      const tables = ['account_tags', 'posts'];
+      tables.forEach(table => {
+        this.db.exec(`DROP TABLE IF EXISTS ${table}`);
+      });
       this.initializeSchema();
     }
   }
@@ -139,31 +153,54 @@ export class DatabaseManager {
     };
 
     try {
-      // Query posts for each bucket
-      Object.keys(emptyBuckets).forEach(bucket => {
-        const posts = this.db.prepare(
-          'SELECT * FROM posts WHERE server_slug = ? AND bucket = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'
-        ).all(serverSlug, bucket, limit, offset) as Post[];
+      const posts = this.db.prepare(`
+        SELECT p.*, GROUP_CONCAT(at.tag) as account_tags
+        FROM posts p
+        LEFT JOIN account_tags at ON p.account_id = at.user_id
+        WHERE p.server_slug = ?
+        GROUP BY p.id
+        ORDER BY p.created_at DESC 
+        LIMIT ? OFFSET ?
+      `).all(serverSlug, limit, offset) as (Post & { account_tags: string | null })[];
 
-        emptyBuckets[bucket as keyof BucketedPosts] = posts.map(post => {
-          try {
-            return {
-              ...post,
-              media_attachments: JSON.parse(post.media_attachments as string),
-              card: post.card ? JSON.parse(post.card as unknown as string) : null
-            };
-          } catch (error) {
-            console.warn('Failed to parse post data:', error);
-            return {
-              ...post,
-              media_attachments: [],
-              card: null
-            };
-          }
-        });
+      const buckets: BucketedPosts = {
+        nonEnglish: [],
+        withImages: [],
+        asReplies: [],
+        networkMentions: [],
+        withLinks: [],
+        remaining: []
+      };
+
+      posts.forEach(post => {
+        const mediaAttachments = JSON.parse(post.media_attachments as string);
+        const postWithTags = {
+          ...post,
+          media_attachments: mediaAttachments,
+          account_tags: post.account_tags ? post.account_tags.split(',') : []
+        };
+
+        if (post.language !== 'en') {
+          buckets.nonEnglish.push(postWithTags);
+        }
+        else if (mediaAttachments?.length > 0) {
+          buckets.withImages.push(postWithTags);
+        }
+        else if (post.in_reply_to_id) {
+          buckets.asReplies.push(postWithTags);
+        }
+        else if (isOnlyMentionsOrTags(post.content)) {
+          buckets.networkMentions.push(postWithTags);
+        }
+        else if (post.content.includes('<a href="')) {
+          buckets.withLinks.push(postWithTags);
+        }
+        else {
+          buckets.remaining.push(postWithTags);
+        }
       });
 
-      return emptyBuckets;
+      return buckets;
     } catch (error) {
       console.error('Error in getBucketedPosts:', error);
       return emptyBuckets;
@@ -201,6 +238,33 @@ export class DatabaseManager {
     });
 
     return counts;
+  }
+
+  public tagAccount(userId: string, username: string, tag: string): void {
+    const stmt = this.db.prepare(`
+      INSERT INTO account_tags (user_id, username, tag)
+      VALUES (@userId, @username, @tag)
+      ON CONFLICT(user_id, tag) DO UPDATE SET
+      count = count + 1
+    `);
+
+    stmt.run({ userId, username, tag });
+  }
+
+  public getAccountTags(userId: string): AccountTag[] {
+    const stmt = this.db.prepare(`
+      SELECT tag, count
+      FROM account_tags 
+      WHERE user_id = ?
+      ORDER BY count DESC
+    `);
+
+    const rows = stmt.all(userId) as Pick<AccountTag, 'tag' | 'count'>[];
+
+    return rows.map(row => ({
+      tag: row.tag,
+      count: row.count
+    }));
   }
 }
 
@@ -264,5 +328,10 @@ interface BucketedPosts {
   networkMentions: Post[];
   withLinks: Post[];
   remaining: Post[];
+}
+
+interface AccountTag {
+  tag: string;
+  count: number;
 }
 

@@ -1,6 +1,4 @@
 import { DatabaseManager } from './database';
-// import { join } from 'path';
-// import fs from 'fs';
 
 // Set the environment variable for the database file to use an in-memory SQLite database
 process.env.DATABASE_FILE = ':memory:';
@@ -194,5 +192,48 @@ describe('DatabaseManager Tests', () => {
     dbManager.resetDatabase();
     const latestPost = dbManager.getLatestPost('test-server');
     expect(latestPost).toBeUndefined();
+  });
+});
+
+describe('Account Tags', () => {
+  beforeEach(() => {
+    dbManager = new DatabaseManager();
+  });
+
+  it('should tag account and retrieve tags', () => {
+    const userId = '1001';
+    const username = 'testuser';
+    
+    // Add tags
+    dbManager.tagAccount(userId, username, 'spam');
+    dbManager.tagAccount(userId, username, 'bitter');
+    dbManager.tagAccount(userId, username, 'spam'); // Increment spam count
+    
+    // Get tags
+    const tags = dbManager.getAccountTags(userId);
+    
+    expect(tags).toEqual([
+      { tag: 'spam', count: 2 },
+      { tag: 'bitter', count: 1 }
+    ]);
+  });
+
+  it('should return empty array for user with no tags', () => {
+    const tags = dbManager.getAccountTags('nonexistent');
+    expect(tags).toEqual([]);
+  });
+
+  it('should increment count for duplicate tags', () => {
+    const userId = '1001';
+    const username = 'testuser';
+
+    dbManager.tagAccount(userId, username, 'spam');
+    dbManager.tagAccount(userId, username, 'spam');
+    dbManager.tagAccount(userId, username, 'spam');
+
+    const tags = dbManager.getAccountTags(userId);
+    expect(tags).toEqual([
+      { tag: 'spam', count: 3 }
+    ]);
   });
 });

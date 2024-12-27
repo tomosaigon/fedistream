@@ -14,7 +14,7 @@ interface Post {
   url?: string;
   account_url: string;
   account_avatar: string;
-  account_id?: string;
+  account_id: string;
   account_username: string;
   account_display_name: string;
   media_attachments: MediaAttachment[];
@@ -36,8 +36,31 @@ interface PostListProps {
 }
 
 const PostList: React.FC<PostListProps> = ({ posts }) => {
-  const handleAdminAction = (action: string, username: string) => {
-    toast.success(`Marked @${username} as ${action}`);
+  const handleAdminAction = async (action: string, userId: string, username: string) => {
+    try {
+      const res = await fetch('/api/tag-account', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          username,
+          tag: action
+        })
+      });
+
+      const data = await res.json();
+      
+      if (res.ok) {
+        toast.success(data.message);
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('Error tagging account:', error);
+      toast.error('Failed to tag account');
+    }
   };
 
   return (
@@ -234,19 +257,19 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
                   <div>User: @{post.account_username}</div>
                 </div>
                 <button
-                  onClick={() => handleAdminAction('spam', post.account_username)}
+                  onClick={() => handleAdminAction('spam', post.account_id, post.account_username)}
                   className="w-full px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                 >
                   Spam
                 </button>
                 <button
-                  onClick={() => handleAdminAction('bitter', post.account_username)}
+                  onClick={() => handleAdminAction('bitter', post.account_id, post.account_username)}
                   className="w-full px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
                 >
                   Bitter
                 </button>
                 <button
-                  onClick={() => handleAdminAction('cookie', post.account_username)}
+                  onClick={() => handleAdminAction('cookie', post.account_id, post.account_username)}
                   className="w-full px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
                 >
                   Cookie
