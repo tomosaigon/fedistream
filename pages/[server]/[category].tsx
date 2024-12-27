@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { BucketedPosts } from '../../db/database';
 import PostList from '../../components/PostList';
 import { getServerBySlug, servers } from '../../config/servers';
 import Link from 'next/link';
@@ -35,7 +36,7 @@ export default function CategoryPage() {
     setLoading(true);
     setPosts([]); // Reset posts when category changes
     
-    fetch(`/api/timeline?server=${server}&offset=0&limit=${POSTS_PER_PAGE}`)
+    fetch(`/api/timeline?server=${server}&category=${String(getCategoryKey(category as string))}&offset=0&limit=${POSTS_PER_PAGE}`)
       .then(res => res.json())
       .then((data: TimelineResponse) => {
         const categoryPosts = data.buckets[getCategoryKey(category as string)] || [];
@@ -220,15 +221,17 @@ export default function CategoryPage() {
 }
 
 function getCategoryKey(category: string): string {
-  switch (category) {
-    case 'non-english': return 'nonEnglish';
-    case 'with-images': return 'withImages';
-    case 'replies': return 'asReplies';
-    case 'network-mentions': return 'networkMentions';
-    case 'with-links': return 'withLinks';
-    case 'regular': return 'remaining';
-    default: return 'remaining';
-  }
+  // Convert URL kebab-case to camelCase bucket keys
+  const categoryMap: Record<string, keyof BucketedPosts> = {
+    'non-english': 'nonEnglish',
+    'with-images': 'withImages',
+    'replies': 'asReplies',
+    'network-mentions': 'networkMentions',
+    'with-links': 'withLinks',
+    'regular': 'remaining'
+  };
+  
+  return categoryMap[category] as string || 'remaining';
 }
 
 function getCategoryTitle(category: string): string {

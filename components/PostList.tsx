@@ -1,35 +1,6 @@
 import React from 'react';
 import toast from 'react-hot-toast';
-
-interface MediaAttachment {
-  type: string;
-  url?: string;
-  preview_url?: string;
-}
-
-interface Post {
-  id: string;
-  content: string;
-  created_at: string;
-  url?: string;
-  account_url: string;
-  account_avatar: string;
-  account_id: string;
-  account_username: string;
-  account_display_name: string;
-  media_attachments: MediaAttachment[];
-  visibility?: string;
-  favourites_count?: number;
-  reblogs_count?: number;
-  replies_count?: number;
-  card?: {
-    url: string;
-    title: string;
-    description: string;
-    image?: string;
-    author_name?: string;
-  } | null;
-}
+import { Post, MediaAttachment } from '../db/database';
 
 interface PostListProps {
   posts: Post[];
@@ -70,6 +41,9 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
           // Debug logging
           console.log('Post ID:', post.id);
           console.log('Card data:', post.card);
+          const mediaAttachments = (Array.isArray(post.media_attachments) 
+  ? post.media_attachments 
+  : JSON.parse(post.media_attachments as string)) as MediaAttachment[];
 
           return (
             <div key={post.id} className="flex bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
@@ -198,11 +172,12 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
 
                 {/* Media Attachments */}
                 {post.media_attachments.length > 0 && (
-                  <div className={`grid gap-2 p-4 ${post.media_attachments.length === 1 ? 'grid-cols-1' :
-                      post.media_attachments.length === 2 ? 'grid-cols-2' :
-                        'grid-cols-2'
-                    }`}>
-                    {post.media_attachments.map((media, index) => (
+                  <div className={`grid gap-2 p-4 ${
+                    mediaAttachments.length === 1 ? 'grid-cols-1' :
+                    mediaAttachments.length === 2 ? 'grid-cols-2' :
+                    'grid-cols-2'
+                  }`}>
+                    {mediaAttachments.map((media, index) => (
                       media.type === 'image' && media.url && media.preview_url && (
                         <a
                           key={index}
@@ -255,6 +230,11 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
                 <div className="text-xs text-gray-500 mb-2">
                   <div>ID: {post.account_id}</div>
                   <div>User: @{post.account_username}</div>
+                  {post.account_tags && post.account_tags.length > 0 && (
+                    <div className="mt-1">
+                      Tags: {post.account_tags.join(', ')}
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={() => handleAdminAction('spam', post.account_id, post.account_username)}

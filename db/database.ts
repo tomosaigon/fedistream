@@ -207,6 +207,34 @@ export class DatabaseManager {
     }
   }
 
+  public getBucketedPostsByCategory(
+    serverSlug: string, 
+    bucket: keyof BucketedPosts,
+    limit: number = 20, 
+    offset: number = 0
+  ): Post[] {
+    try {
+      const posts = this.db.prepare(`
+        SELECT p.*, GROUP_CONCAT(at.tag) as account_tags
+        FROM posts p
+        LEFT JOIN account_tags at ON p.account_id = at.user_id
+        WHERE p.server_slug = ? AND p.bucket = ?
+        GROUP BY p.id
+        ORDER BY p.created_at DESC 
+        LIMIT ? OFFSET ?
+      `).all(serverSlug, bucket, limit, offset) as (Post & { account_tags: string | null })[];
+
+      return posts.map(post => ({
+        ...post,
+        media_attachments: JSON.parse(post.media_attachments as string),
+        account_tags: post.account_tags ? post.account_tags.split(',') : []
+      }));
+    } catch (error) {
+      console.error('Error in getBucketedPostsByCategory:', error);
+      return [];
+    }
+  }
+
   public getPostCounts(serverSlug: string): Record<string, number> {
     const result = this.db.prepare('SELECT COUNT(*) as count FROM posts WHERE server_slug = ?').get(serverSlug) as { count: number };
     return {
@@ -294,6 +322,12 @@ function isOnlyMentionsOrTags(content: string): boolean {
   });
 }
 
+export interface MediaAttachment {
+  type: string;
+  url?: string;
+  preview_url?: string;
+}
+
 export interface Post {
   id: string;
   created_at: string;
@@ -301,12 +335,12 @@ export interface Post {
   language: string;
   in_reply_to_id: string | null;
   url: string;
-  account_id: string;         /* Add account_id field */
+  account_id: string;
   account_username: string;
   account_display_name: string;
   account_url: string;
   account_avatar: string;
-  media_attachments: string | any[];
+  media_attachments: string | MediaAttachment[];
   visibility: string;
   favourites_count: number;
   reblogs_count: number;
@@ -319,9 +353,10 @@ export interface Post {
     image?: string;
     author_name?: string;
   } | null;
+  account_tags?: string[];
 }
 
-interface BucketedPosts {
+export interface BucketedPosts {
   nonEnglish: Post[];
   withImages: Post[];
   asReplies: Post[];
