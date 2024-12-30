@@ -2,6 +2,7 @@ import axios from 'axios';
 import { getServerBySlug } from '../../config/servers';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { dbManager } from '../../db';
+import { Post } from '../../db/database';
 
 // https://docs.joinmastodon.org/methods/timelines/
 // local
@@ -34,6 +35,45 @@ async function fetchTimelinePage(baseUrl: string, options?: { maxId?: string; mi
   );
 
   return response.data;
+}
+
+// Add interfaces
+interface MastodonAccount {
+  id: string;
+  username: string;
+  display_name: string;
+  url: string;
+  avatar: string;
+}
+
+interface MastodonPost {
+  id: string;
+  created_at: string;
+  content: string;
+  language: string;
+  in_reply_to_id: string | null;
+  url: string;
+  account: MastodonAccount;
+  media_attachments: any[];
+  visibility: string;
+  favourites_count: number;
+  reblogs_count: number;
+  replies_count: number;
+  card: any | null;
+}
+
+function mastodonPostToPost(mastodonPost: MastodonPost, serverSlug: string): Post {
+  return {
+    ...mastodonPost,
+    account_id: mastodonPost.account.id,
+    account_username: mastodonPost.account.username,
+    account_display_name: mastodonPost.account.display_name,
+    account_url: mastodonPost.account.url,
+    account_avatar: mastodonPost.account.avatar,
+    server_slug: serverSlug,
+    bucket: '',
+    account_tags: []
+  };
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -77,24 +117,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let newPosts = [];
     
     if (older === 'true') {
-      const oldestPost = dbManager.getOldestPost(server as string);
-      console.log('Oldest post:', oldestPost);
+      const oldestPostId = dbManager.getOldestPostId(server as string);
+      console.log('Oldest post ID:', oldestPostId);
       
-      if (oldestPost) {
+      if (oldestPostId) {
         // All results returned will be lesser than this ID. In effect, sets an upper bound on results.
-        const posts = await fetchTimelinePage(serverConfig.baseUrl, { maxId: oldestPost.id });
+        const posts = await fetchTimelinePage(serverConfig.baseUrl, { maxId: oldestPostId });
         newPosts = posts;
       } else {
         const posts = await fetchTimelinePage(serverConfig.baseUrl);
         newPosts = posts;
       }
     } else {
-      const latestPost = dbManager.getLatestPost(server as string);
-      console.log('Latest post:', latestPost);
+      const latestPostId = dbManager.getLatestPostId(server as string);
+      console.log('Latest post ID:', latestPostId);
       
-      if (latestPost) {
+      if (latestPostId) {
         // Returns results immediately newer than this ID. In effect, sets a cursor at this ID and paginates forward.
-        const posts = await fetchTimelinePage(serverConfig.baseUrl, { minId: latestPost.id });
+        const posts = await fetchTimelinePage(serverConfig.baseUrl, { minId: latestPostId });
         newPosts = posts;
       } else {
         const posts = await fetchTimelinePage(serverConfig.baseUrl);
@@ -103,27 +143,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Store new posts in database
-    newPosts.forEach((post: any) => {
-      dbManager.insertPost({
-        id: post.id,
-        created_at: post.created_at,
-        content: post.content,
-        language: post.language,
-        in_reply_to_id: post.in_reply_to_id,
-        url: post.url,
-        account_id: post.account.id,
-        account_username: post.account.username,
-        account_display_name: post.account.display_name,
-        account_url: post.account.url,
-        account_avatar: post.account.avatar,
-        media_attachments: post.media_attachments,
-        visibility: post.visibility,
-        favourites_count: post.favourites_count,
-        reblogs_count: post.reblogs_count,
-        replies_count: post.replies_count,
-        card: post.card,
-        server_slug: server as string,
-      });
+    newPosts.forEach((post: MastodonPost) => {
+      dbManager.insertPost(mastodonPostToPost(post, server as string));
     });
 
     const firstPost = newPosts[0];

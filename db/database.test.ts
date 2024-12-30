@@ -1,4 +1,4 @@
-import { DatabaseManager } from './database';
+import { DatabaseManager, Post } from './database';
 
 // Set the environment variable for the database file to use an in-memory SQLite database
 process.env.DATABASE_FILE = ':memory:';
@@ -6,7 +6,7 @@ process.env.DATABASE_FILE = ':memory:';
 let dbManager: DatabaseManager;
 
 // Mocked Post data
-const testPost1 = {
+const testPost1: Post = {
   id: '123',
   created_at: new Date('2023-01-01T00:00:00Z').toISOString(),
   content: 'Hello World!',
@@ -18,15 +18,18 @@ const testPost1 = {
   account_display_name: 'User 123',
   account_url: 'https://example.com/user123',
   account_avatar: 'https://example.com/avatar.png',
-  media_attachments: JSON.stringify([]),
+  media_attachments: [], // Empty array instead of JSON string
   visibility: 'public',
   favourites_count: 10,
   reblogs_count: 5,
   replies_count: 3,
   server_slug: 'test-server',
+  bucket: 'remaining',
+  card: null,
+  account_tags: [] // Empty array instead of null
 };
 
-const testPost2 = {
+const testPost2: Post = {
   id: '124',
   created_at: new Date('2023-01-02T00:00:00Z').toISOString(),
   content: 'Hello Again!',
@@ -38,15 +41,21 @@ const testPost2 = {
   account_display_name: 'User 124',
   account_url: 'https://example.com/user124',
   account_avatar: 'https://example.com/avatar2.png',
-  media_attachments: JSON.stringify([{ type: 'image', url: 'https://example.com/image.png' }]),
+  media_attachments: [{ // Array of MediaAttachment objects
+    type: 'image',
+    url: 'https://example.com/image.png'
+  }],
   visibility: 'public',
   favourites_count: 20,
   reblogs_count: 10,
   replies_count: 5,
   server_slug: 'test-server',
+  bucket: 'withImages',
+  card: null,
+  account_tags: [] // Empty array instead of null
 };
 
-const testPost3 = {
+const testPost3: Post = {
   id: '125',
   created_at: new Date('2023-01-03T00:00:00Z').toISOString(),
   content: 'Replying to post',
@@ -58,12 +67,15 @@ const testPost3 = {
   account_display_name: 'User 125',
   account_url: 'https://example.com/user125',
   account_avatar: 'https://example.com/avatar3.png',
-  media_attachments: JSON.stringify([]),
+  media_attachments: [], // Empty array instead of JSON string
   visibility: 'public',
   favourites_count: 30,
   reblogs_count: 15,
   replies_count: 7,
   server_slug: 'test-server',
+  bucket: 'asReplies', // Changed to match reply status
+  card: null,
+  account_tags: [] // Empty array instead of null
 };
 
 // const testPost4 = {
@@ -85,7 +97,7 @@ const testPost3 = {
 //   server_slug: 'test-server',
 // };
 
-const testPost5 = {
+const testPost5: Post = {
   id: '127',
   created_at: new Date('2023-01-05T00:00:00Z').toISOString(),
   content: 'Check this out <a href="https://blog.example.com/protocol/" target="_blank" rel="nofollow noopener noreferrer"><span class="invisible">https://</span><span class="ellipsis">blog.example.com/</span><span class="invisible">ext-protocol/</span></a>',
@@ -97,15 +109,18 @@ const testPost5 = {
   account_display_name: 'User 127',
   account_url: 'https://example.com/user127',
   account_avatar: 'https://example.com/avatar5.png',
-  media_attachments: JSON.stringify([]),
+  media_attachments: [], // Empty array instead of JSON string
   visibility: 'public',
   favourites_count: 50,
   reblogs_count: 25,
   replies_count: 12,
   server_slug: 'test-server',
+  bucket: 'withLinks',
+  card: null,
+  account_tags: [] // Empty array instead of null
 };
 
-const testPost6 = {
+const testPost6: Post = {
   id: '128',
   created_at: new Date('2023-01-06T00:00:00Z').toISOString(),
   content: 'Hola Mundo!',
@@ -117,15 +132,18 @@ const testPost6 = {
   account_display_name: 'User 128',
   account_url: 'https://example.com/user128',
   account_avatar: 'https://example.com/avatar6.png',
-  media_attachments: JSON.stringify([]),
+  media_attachments: [], // Empty array instead of JSON string
   visibility: 'public',
   favourites_count: 60,
   reblogs_count: 30,
   replies_count: 15,
   server_slug: 'test-server',
+  bucket: 'nonEnglish',
+  card: null,
+  account_tags: [] // Empty array instead of null
 };
 
-const testPost7 = {
+const testPost7: Post = {
   id: '129',
   created_at: new Date('2023-01-07T00:00:00Z').toISOString(),
   content: '<a href="https://fosstodon.org/tags/example" class="mention hashtag" rel="tag">#<span>example</span></a>',
@@ -137,12 +155,15 @@ const testPost7 = {
   account_display_name: 'User 129',
   account_url: 'https://example.com/user129',
   account_avatar: 'https://example.com/avatar7.png',
-  media_attachments: JSON.stringify([]),
+  media_attachments: [], // Empty array instead of JSON string
   visibility: 'public',
   favourites_count: 70,
   reblogs_count: 35,
   replies_count: 17,
   server_slug: 'test-server',
+  bucket: 'networkMentions',
+  card: null,
+  account_tags: [] // Empty array instead of null
 };
 
 describe('DatabaseManager Tests', () => {
@@ -155,18 +176,14 @@ describe('DatabaseManager Tests', () => {
   });
 
   test('Database initializes with schema', () => {
-    expect(dbManager.getLatestPost('test-server')).toBeUndefined();
+    expect(dbManager.getLatestPostId('test-server')).toBeUndefined();
   });
 
-  test('Insert a post into the database and get the latest post', () => {
+  test('Insert posts and verify latest post ID', () => {
     dbManager.insertPost(testPost1);
     dbManager.insertPost(testPost2);
-    const latestPost = dbManager.getLatestPost('test-server');
-    expect(latestPost).toMatchObject({
-      id: '124',
-      content: 'Hello Again!',
-      account_username: 'user124',
-    });
+    const latestId = dbManager.getLatestPostId('test-server');
+    expect(latestId).toBe('124');
   });
 
   test('Get category counts', () => {
@@ -177,6 +194,7 @@ describe('DatabaseManager Tests', () => {
     dbManager.insertPost(testPost5);
     dbManager.insertPost(testPost6);
     dbManager.insertPost(testPost7);
+
     const categoryCounts = dbManager.getCategoryCounts('test-server');
     expect(categoryCounts).toEqual({
       nonEnglish: 1,
@@ -188,9 +206,9 @@ describe('DatabaseManager Tests', () => {
     });
   });
 
-  test('Reset the database and verify getLatestPost fails', () => {
+  test('Reset the database and verify getLatestPostId fails', () => {
     dbManager.resetDatabase();
-    const latestPost = dbManager.getLatestPost('test-server');
+    const latestPost = dbManager.getLatestPostId('test-server');
     expect(latestPost).toBeUndefined();
   });
 });

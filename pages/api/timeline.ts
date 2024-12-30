@@ -22,14 +22,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(404).json({ error: 'Server not found' });
   }
 
-  try {
+
+  // try {
     const counts = dbManager.getCategoryCounts(server as string);
 
     if (onlyCounts === 'true') {
       return res.status(200).json({ counts });
     }
 
-    if (category) {
+    if (!category) {
+      return res.status(400).json({ error: 'Category is required' });
+    }
+  
       // Get posts for specific category
       const posts = dbManager.getBucketedPostsByCategory(
         server as string,
@@ -44,47 +48,47 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       };
       
       return res.status(200).json({ buckets, counts });
-    }
+    // }
 
     // Get all buckets
-    const buckets = dbManager.getBucketedPosts(
-      server as string,
-      parseInt(limit as string),
-      parseInt(offset as string)
-    );
+    // const buckets = dbManager.getBucketedPosts(
+    //   server as string,
+    //   parseInt(limit as string),
+    //   parseInt(offset as string)
+    // );
     
-    res.status(200).json({ buckets, counts });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ 
-      error: "Failed to fetch posts from database",
-      ...(onlyCounts === 'true' ? {
-        counts: {
-          nonEnglish: 0,
-          withImages: 0,
-          asReplies: 0,
-          networkMentions: 0,
-          withLinks: 0,
-          remaining: 0
-        }
-      } : {
-        buckets: {
-          nonEnglish: [],
-          withImages: [],
-          asReplies: [],
-          networkMentions: [],
-          withLinks: [],
-          remaining: []
-        },
-        counts: {
-          nonEnglish: 0,
-          withImages: 0,
-          asReplies: 0,
-          networkMentions: 0,
-          withLinks: 0,
-          remaining: 0
-        }
-      })
-    });
-  }
+    // res.status(200).json({ buckets, counts });
+  // } catch (error) {
+  //   console.error(error);
+  //   res.status(500).json({ 
+  //     error: "Failed to fetch posts from database",
+  //     ...(onlyCounts === 'true' ? {
+  //       counts: {
+  //         nonEnglish: 0,
+  //         withImages: 0,
+  //         asReplies: 0,
+  //         networkMentions: 0,
+  //         withLinks: 0,
+  //         remaining: 0
+  //       }
+  //     } : {
+  //       buckets: {
+  //         nonEnglish: [],
+  //         withImages: [],
+  //         asReplies: [],
+  //         networkMentions: [],
+  //         withLinks: [],
+  //         remaining: []
+  //       },
+  //       counts: {
+  //         nonEnglish: 0,
+  //         withImages: 0,
+  //         asReplies: 0,
+  //         networkMentions: 0,
+  //         withLinks: 0,
+  //         remaining: 0
+  //       }
+  //     })
+  //   });
+  // }
 }

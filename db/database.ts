@@ -66,7 +66,7 @@ export class DatabaseManager {
     `);
   }
 
-  private determineBucket(post: Post): string {
+  public determineBucket(post: Post): string {
     let mediaAttachments = [];
     
     try {
@@ -130,82 +130,69 @@ export class DatabaseManager {
     return stmt.run(postData);
   }
 
-  public getLatestPost(serverSlug: string): Post | undefined {
-    return this.db.prepare(
-      'SELECT * FROM posts WHERE server_slug = ? ORDER BY id DESC LIMIT 1'
-    ).get(serverSlug) as Post | undefined;
+  public getLatestPostId(serverSlug: string): string | undefined {
+    const result = this.db.prepare(`
+      SELECT id 
+      FROM posts 
+      WHERE server_slug = ? 
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `).get(serverSlug) as { id: string } | undefined;
+    
+    return result?.id;
   }
 
-  public getOldestPost(serverSlug: string): Post | undefined {
-    return this.db.prepare(
-      'SELECT * FROM posts WHERE server_slug = ? ORDER BY id ASC LIMIT 1'
-    ).get(serverSlug) as Post | undefined;
+  public getOldestPostId(serverSlug: string): string | undefined {
+    const result = this.db.prepare(`
+      SELECT id 
+      FROM posts 
+      WHERE server_slug = ? 
+      ORDER BY created_at ASC 
+      LIMIT 1
+    `).get(serverSlug) as { id: string } | undefined;
+    
+    return result?.id;
   }
 
-  public getBucketedPosts(serverSlug: string, limit: number = 20, offset: number = 0): BucketedPosts {
-    const emptyBuckets: BucketedPosts = {
-      nonEnglish: [],
-      withImages: [],
-      asReplies: [],
-      networkMentions: [],
-      withLinks: [],
-      remaining: []
-    };
+  // public getBucketedPosts(serverSlug: string, limit: number = 20, offset: number = 0): BucketedPosts {
+  //   try {
+  //     const posts = this.db.prepare(`
+  //       SELECT p.*, GROUP_CONCAT(at.tag) as account_tags
+  //       FROM posts p
+  //       LEFT JOIN account_tags at ON p.account_id = at.user_id
+  //       WHERE p.server_slug = ?
+  //       GROUP BY p.id
+  //       ORDER BY p.created_at DESC 
+  //       LIMIT ? OFFSET ?
+  //     `).all(serverSlug, limit, offset) as SQLitePost[];
 
-    try {
-      const posts = this.db.prepare(`
-        SELECT p.*, GROUP_CONCAT(at.tag) as account_tags
-        FROM posts p
-        LEFT JOIN account_tags at ON p.account_id = at.user_id
-        WHERE p.server_slug = ?
-        GROUP BY p.id
-        ORDER BY p.created_at DESC 
-        LIMIT ? OFFSET ?
-      `).all(serverSlug, limit, offset) as (Post & { account_tags: string | null })[];
+  //     const bucketedPosts: BucketedPosts = {
+  //       nonEnglish: [],
+  //       withImages: [],
+  //       asReplies: [],
+  //       networkMentions: [],
+  //       withLinks: [],
+  //       remaining: []
+  //     };
 
-      const buckets: BucketedPosts = {
-        nonEnglish: [],
-        withImages: [],
-        asReplies: [],
-        networkMentions: [],
-        withLinks: [],
-        remaining: []
-      };
+  //     posts.forEach(post => {
+  //       const transformedPost = this.transformSQLitePost(post);
+  //       bucketedPosts[transformedPost.bucket as keyof BucketedPosts].push(transformedPost);
+  //     });
 
-      posts.forEach(post => {
-        const mediaAttachments = JSON.parse(post.media_attachments as string);
-        const postWithTags = {
-          ...post,
-          media_attachments: mediaAttachments,
-          account_tags: post.account_tags ? post.account_tags.split(',') : []
-        };
-
-        if (post.language !== 'en') {
-          buckets.nonEnglish.push(postWithTags);
-        }
-        else if (mediaAttachments?.length > 0) {
-          buckets.withImages.push(postWithTags);
-        }
-        else if (post.in_reply_to_id) {
-          buckets.asReplies.push(postWithTags);
-        }
-        else if (isOnlyMentionsOrTags(post.content)) {
-          buckets.networkMentions.push(postWithTags);
-        }
-        else if (post.content.includes('<a href="')) {
-          buckets.withLinks.push(postWithTags);
-        }
-        else {
-          buckets.remaining.push(postWithTags);
-        }
-      });
-
-      return buckets;
-    } catch (error) {
-      console.error('Error in getBucketedPosts:', error);
-      return emptyBuckets;
-    }
-  }
+  //     return bucketedPosts;
+  //   } catch (error) {
+  //     console.error('Error in getBucketedPosts:', error);
+  //     return {
+  //       nonEnglish: [],
+  //       withImages: [],
+  //       asReplies: [],
+  //       networkMentions: [],
+  //       withLinks: [],
+  //       remaining: []
+  //     };
+  //   }
+  // }
 
   public getBucketedPostsByCategory(
     serverSlug: string, 
@@ -222,13 +209,9 @@ export class DatabaseManager {
         GROUP BY p.id
         ORDER BY p.created_at DESC 
         LIMIT ? OFFSET ?
-      `).all(serverSlug, bucket, limit, offset) as (Post & { account_tags: string | null })[];
+      `).all(serverSlug, bucket, limit, offset) as SQLitePost[];
 
-      return posts.map(post => ({
-        ...post,
-        media_attachments: JSON.parse(post.media_attachments as string),
-        account_tags: post.account_tags ? post.account_tags.split(',') : []
-      }));
+      return posts.map(this.transformSQLitePost);
     } catch (error) {
       console.error('Error in getBucketedPostsByCategory:', error);
       return [];
@@ -243,29 +226,39 @@ export class DatabaseManager {
   }
 
   public getCategoryCounts(serverSlug: string): Record<string, number> {
-    const posts = this.db.prepare('SELECT * FROM posts WHERE server_slug = ?').all(serverSlug) as Post[];
-    
-    const counts = {
-      nonEnglish: 0,
-      withImages: 0,
-      asReplies: 0,
-      networkMentions: 0,
-      withLinks: 0,
-      remaining: 0
-    };
+    try {
+      const posts = this.db.prepare(`
+        SELECT bucket, COUNT(*) as count
+        FROM posts 
+        WHERE server_slug = ?
+        GROUP BY bucket
+      `).all(serverSlug) as { bucket: keyof BucketedPosts, count: number }[];
 
-    posts.forEach(post => {
-      const mediaAttachments = JSON.parse(post.media_attachments as string);
-      
-      if (post.language !== 'en') counts.nonEnglish++;
-      else if (mediaAttachments?.length > 0) counts.withImages++;
-      else if (post.in_reply_to_id) counts.asReplies++;
-      else if (isOnlyMentionsOrTags(post.content)) counts.networkMentions++;
-      else if (post.content.includes('<a href="')) counts.withLinks++;
-      else counts.remaining++;
-    });
+      const counts = {
+        nonEnglish: 0,
+        withImages: 0,
+        asReplies: 0,
+        networkMentions: 0,
+        withLinks: 0,
+        remaining: 0
+      };
 
-    return counts;
+      posts.forEach(row => {
+        counts[row.bucket] = row.count;
+      });
+
+      return counts;
+    } catch (error) {
+      console.error('Error in getCategoryCounts:', error);
+      return {
+        nonEnglish: 0,
+        withImages: 0,
+        asReplies: 0,
+        networkMentions: 0,
+        withLinks: 0,
+        remaining: 0
+      };
+    }
   }
 
   public tagAccount(userId: string, username: string, tag: string): void {
@@ -294,6 +287,23 @@ export class DatabaseManager {
       count: row.count
     }));
   }
+
+  private transformSQLitePost(sqlitePost: SQLitePost): Post {
+    return {
+      ...sqlitePost,
+      media_attachments: JSON.parse(sqlitePost.media_attachments),
+      card: sqlitePost.card ? JSON.parse(sqlitePost.card) : null,
+      account_tags: [] // Empty array as default, populated from JOIN
+    };
+  }
+
+  // private transformPostToSQLite(post: Post): SQLitePost {
+  //   return {
+  //     ...post,
+  //     media_attachments: JSON.stringify(post.media_attachments),
+  //     card: post.card ? JSON.stringify(post.card) : null
+  //   };
+  // }
 }
 
 function isOnlyMentionsOrTags(content: string): boolean {
@@ -322,13 +332,8 @@ function isOnlyMentionsOrTags(content: string): boolean {
   });
 }
 
-export interface MediaAttachment {
-  type: string;
-  url?: string;
-  preview_url?: string;
-}
-
-export interface Post {
+// Raw database type without account_tags field
+interface SQLitePost {
   id: string;
   created_at: string;
   content: string;
@@ -340,20 +345,36 @@ export interface Post {
   account_display_name: string;
   account_url: string;
   account_avatar: string;
-  media_attachments: string | MediaAttachment[];
+  media_attachments: string;
   visibility: string;
   favourites_count: number;
   reblogs_count: number;
   replies_count: number;
   server_slug: string;
-  card?: {
-    url: string;
-    title: string;
-    description: string;
-    image?: string;
-    author_name?: string;
-  } | null;
-  account_tags?: string[];
+  bucket: string;
+  card: string | null;
+}
+
+// Account tags come from JOIN with account_tags table
+export interface Post extends Omit<SQLitePost, 'media_attachments' | 'card'> {
+  media_attachments: MediaAttachment[];
+  card: PostCard | null;
+  account_tags: string[] | null; // From JOIN with account_tags table
+}
+
+// Transformed types
+export interface PostCard {
+  url: string;
+  title: string;
+  description: string;
+  image?: string;
+  author_name?: string;
+}
+
+export interface MediaAttachment {
+  type: string;
+  url?: string;
+  preview_url?: string;
 }
 
 export interface BucketedPosts {
