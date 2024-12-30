@@ -211,7 +211,7 @@ export class DatabaseManager {
         LIMIT ? OFFSET ?
       `).all(serverSlug, bucket, limit, offset) as SQLitePost[];
 
-      return posts.map(this.transformSQLitePost);
+      return posts.map((post) => this.transformSQLitePost(post));
     } catch (error) {
       console.error('Error in getBucketedPostsByCategory:', error);
       return [];
@@ -293,7 +293,7 @@ export class DatabaseManager {
       ...sqlitePost,
       media_attachments: JSON.parse(sqlitePost.media_attachments),
       card: sqlitePost.card ? JSON.parse(sqlitePost.card) : null,
-      account_tags: [] // Empty array as default, populated from JOIN
+      account_tags: this.getAccountTags(sqlitePost.account_id)
     };
   }
 
@@ -359,7 +359,7 @@ interface SQLitePost {
 export interface Post extends Omit<SQLitePost, 'media_attachments' | 'card'> {
   media_attachments: MediaAttachment[];
   card: PostCard | null;
-  account_tags: string[] | null; // From JOIN with account_tags table
+  account_tags: AccountTag[];
 }
 
 // Transformed types
