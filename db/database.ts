@@ -1,8 +1,5 @@
 import Database from 'better-sqlite3';
 
-// auto
-// dotenv.config({ path: join(process.cwd(), '.env.local') });
-
 export class DatabaseManager {
   private db: Database.Database;
 
@@ -80,6 +77,7 @@ export class DatabaseManager {
       mediaAttachments = [];
     }
     
+    if (post.account_bot) return 'fromBots';
     if (post.language !== 'en') return 'nonEnglish';
     if (mediaAttachments?.length > 0) return 'withImages';
     if (post.in_reply_to_id) return 'asReplies';
@@ -154,46 +152,6 @@ export class DatabaseManager {
     return result?.id;
   }
 
-  // public getBucketedPosts(serverSlug: string, limit: number = 20, offset: number = 0): BucketedPosts {
-  //   try {
-  //     const posts = this.db.prepare(`
-  //       SELECT p.*, GROUP_CONCAT(at.tag) as account_tags
-  //       FROM posts p
-  //       LEFT JOIN account_tags at ON p.account_id = at.user_id
-  //       WHERE p.server_slug = ?
-  //       GROUP BY p.id
-  //       ORDER BY p.created_at DESC 
-  //       LIMIT ? OFFSET ?
-  //     `).all(serverSlug, limit, offset) as SQLitePost[];
-
-  //     const bucketedPosts: BucketedPosts = {
-  //       nonEnglish: [],
-  //       withImages: [],
-  //       asReplies: [],
-  //       networkMentions: [],
-  //       withLinks: [],
-  //       remaining: []
-  //     };
-
-  //     posts.forEach(post => {
-  //       const transformedPost = this.transformSQLitePost(post);
-  //       bucketedPosts[transformedPost.bucket as keyof BucketedPosts].push(transformedPost);
-  //     });
-
-  //     return bucketedPosts;
-  //   } catch (error) {
-  //     console.error('Error in getBucketedPosts:', error);
-  //     return {
-  //       nonEnglish: [],
-  //       withImages: [],
-  //       asReplies: [],
-  //       networkMentions: [],
-  //       withLinks: [],
-  //       remaining: []
-  //     };
-  //   }
-  // }
-
   public getBucketedPostsByCategory(
     serverSlug: string, 
     bucket: keyof BucketedPosts,
@@ -240,6 +198,7 @@ export class DatabaseManager {
         asReplies: 0,
         networkMentions: 0,
         withLinks: 0,
+        fromBots: 0,
         remaining: 0
       };
 
@@ -256,6 +215,7 @@ export class DatabaseManager {
         asReplies: 0,
         networkMentions: 0,
         withLinks: 0,
+        fromBots: 0,
         remaining: 0
       };
     }
@@ -305,13 +265,6 @@ export class DatabaseManager {
     };
   }
 
-  // private transformPostToSQLite(post: Post): SQLitePost {
-  //   return {
-  //     ...post,
-  //     media_attachments: JSON.stringify(post.media_attachments),
-  //     card: post.card ? JSON.stringify(post.card) : null
-  //   };
-  // }
 }
 
 function isOnlyMentionsOrTags(content: string): boolean {
@@ -353,6 +306,7 @@ interface SQLitePost {
   account_display_name: string;
   account_url: string;
   account_avatar: string;
+  account_bot: boolean;
   media_attachments: string;
   visibility: string;
   favourites_count: number;
@@ -391,6 +345,7 @@ export interface BucketedPosts {
   asReplies: Post[];
   networkMentions: Post[];
   withLinks: Post[];
+  fromBots: Post[]; 
   remaining: Post[];
 }
 

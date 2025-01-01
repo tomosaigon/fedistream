@@ -11,6 +11,7 @@ interface SidebarProps {
     asReplies: number;
     networkMentions: number;
     withLinks: number;
+    fromBots: number;  // Add bots count
     remaining: number;
   } | null;
   loadingNewer: boolean;
@@ -69,10 +70,10 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Category Links */}
       <nav className="space-y-2">
         <Link
-          href={`/${serverSlug}/non-english`}
+          href={`/${serverSlug}/regular`}
           className="block p-2 hover:bg-gray-100 rounded"
         >
-          Non-English ({counts?.nonEnglish || 0})
+          Regular Posts ({counts?.remaining || 0})
         </Link>
         <Link
           href={`/${serverSlug}/with-images`}
@@ -99,10 +100,16 @@ const Sidebar: React.FC<SidebarProps> = ({
           With Links ({counts?.withLinks || 0})
         </Link>
         <Link
-          href={`/${serverSlug}/regular`}
+          href={`/${serverSlug}/from-bots`}
           className="block p-2 hover:bg-gray-100 rounded"
         >
-          Regular Posts ({counts?.remaining || 0})
+          Bots ({counts?.fromBots || 0})
+        </Link>
+        <Link
+          href={`/${serverSlug}/non-english`}
+          className="block p-2 hover:bg-gray-100 rounded"
+        >
+          Non-English ({counts?.nonEnglish || 0})
         </Link>
       </nav>
     </div>

@@ -37,13 +37,13 @@ async function fetchTimelinePage(baseUrl: string, options?: { maxId?: string; mi
   return response.data;
 }
 
-// Add interfaces
 interface MastodonAccount {
   id: string;
   username: string;
   display_name: string;
   url: string;
   avatar: string;
+  bot: boolean;
 }
 
 interface MastodonPost {
@@ -70,6 +70,7 @@ function mastodonPostToPost(mastodonPost: MastodonPost, serverSlug: string): Pos
     account_display_name: mastodonPost.account.display_name,
     account_url: mastodonPost.account.url,
     account_avatar: mastodonPost.account.avatar,
+    account_bot: mastodonPost.account.bot,
     server_slug: serverSlug,
     bucket: '',
     account_tags: []

@@ -21,6 +21,7 @@ const ORDERED_CATEGORIES = [
   { key: 'replies', label: 'Replies' },
   { key: 'network-mentions', label: 'Mentions' },
   { key: 'with-links', label: 'Links' },
+  { key: 'from-bots', label: 'Bots' },
   { key: 'non-english', label: 'Non-English' },
 ] as const;
 
@@ -261,6 +262,7 @@ function getCategoryKey(category: string): keyof BucketedPosts {
     'replies': 'asReplies',
     'network-mentions': 'networkMentions',
     'with-links': 'withLinks',
+    'from-bots': 'fromBots',
     'non-english': 'nonEnglish'
   };
   return categoryMap[category] || 'remaining';

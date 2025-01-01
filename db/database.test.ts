@@ -18,7 +18,7 @@ const testPost1: Post = {
   account_display_name: 'User 123',
   account_url: 'https://example.com/user123',
   account_avatar: 'https://example.com/avatar.png',
-  media_attachments: [], // Empty array instead of JSON string
+  media_attachments: [],
   visibility: 'public',
   favourites_count: 10,
   reblogs_count: 5,
@@ -26,7 +26,8 @@ const testPost1: Post = {
   server_slug: 'test-server',
   bucket: 'remaining',
   card: null,
-  account_tags: [] // Empty array instead of null
+  account_tags: [],
+  account_bot: false
 };
 
 const testPost2: Post = {
@@ -41,7 +42,7 @@ const testPost2: Post = {
   account_display_name: 'User 124',
   account_url: 'https://example.com/user124',
   account_avatar: 'https://example.com/avatar2.png',
-  media_attachments: [{ // Array of MediaAttachment objects
+  media_attachments: [{
     type: 'image',
     url: 'https://example.com/image.png'
   }],
@@ -52,7 +53,8 @@ const testPost2: Post = {
   server_slug: 'test-server',
   bucket: 'withImages',
   card: null,
-  account_tags: [] // Empty array instead of null
+  account_tags: [],
+  account_bot: false
 };
 
 const testPost3: Post = {
@@ -67,15 +69,16 @@ const testPost3: Post = {
   account_display_name: 'User 125',
   account_url: 'https://example.com/user125',
   account_avatar: 'https://example.com/avatar3.png',
-  media_attachments: [], // Empty array instead of JSON string
+  media_attachments: [],
   visibility: 'public',
   favourites_count: 30,
   reblogs_count: 15,
   replies_count: 7,
   server_slug: 'test-server',
-  bucket: 'asReplies', // Changed to match reply status
+  bucket: 'asReplies',
   card: null,
-  account_tags: [] // Empty array instead of null
+  account_tags: [],
+  account_bot: false
 };
 
 // const testPost4 = {
@@ -109,7 +112,7 @@ const testPost5: Post = {
   account_display_name: 'User 127',
   account_url: 'https://example.com/user127',
   account_avatar: 'https://example.com/avatar5.png',
-  media_attachments: [], // Empty array instead of JSON string
+  media_attachments: [],
   visibility: 'public',
   favourites_count: 50,
   reblogs_count: 25,
@@ -117,7 +120,8 @@ const testPost5: Post = {
   server_slug: 'test-server',
   bucket: 'withLinks',
   card: null,
-  account_tags: [] // Empty array instead of null
+  account_tags: [],
+  account_bot: false
 };
 
 const testPost6: Post = {
@@ -132,7 +136,7 @@ const testPost6: Post = {
   account_display_name: 'User 128',
   account_url: 'https://example.com/user128',
   account_avatar: 'https://example.com/avatar6.png',
-  media_attachments: [], // Empty array instead of JSON string
+  media_attachments: [],
   visibility: 'public',
   favourites_count: 60,
   reblogs_count: 30,
@@ -140,7 +144,8 @@ const testPost6: Post = {
   server_slug: 'test-server',
   bucket: 'nonEnglish',
   card: null,
-  account_tags: [] // Empty array instead of null
+  account_tags: [],
+  account_bot: false
 };
 
 const testPost7: Post = {
@@ -155,7 +160,7 @@ const testPost7: Post = {
   account_display_name: 'User 129',
   account_url: 'https://example.com/user129',
   account_avatar: 'https://example.com/avatar7.png',
-  media_attachments: [], // Empty array instead of JSON string
+  media_attachments: [],
   visibility: 'public',
   favourites_count: 70,
   reblogs_count: 35,
@@ -163,7 +168,8 @@ const testPost7: Post = {
   server_slug: 'test-server',
   bucket: 'networkMentions',
   card: null,
-  account_tags: [] // Empty array instead of null
+  account_tags: [],
+  account_bot: false
 };
 
 describe('DatabaseManager Tests', () => {
@@ -202,6 +208,7 @@ describe('DatabaseManager Tests', () => {
       asReplies: 1,
       networkMentions: 1,
       withLinks: 1,
+      fromBots: 0,
       remaining: 1,
     });
   });
