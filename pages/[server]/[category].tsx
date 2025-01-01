@@ -67,18 +67,13 @@ export default function CategoryPage() {
     setLoadingMore(true);
     try {
       const res = await fetch(
-        `/api/timeline?server=${server}&offset=${offset}&limit=${POSTS_PER_PAGE}`
+        `/api/timeline?server=${server}&category=${getCategoryKey(category as string)}&offset=${offset}&limit=${POSTS_PER_PAGE}`
       );
       const data: TimelineResponse = await res.json();
       const newPosts = data.buckets[getCategoryKey(category as string)] || [];
       
-      // Get updated counts
-      const countsRes = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
-      const countsData = await countsRes.json();
-      
       setPosts(prev => [...prev, ...newPosts]);
       setHasMore(newPosts.length >= POSTS_PER_PAGE && posts.length + newPosts.length < totalCount);
-      setCounts(countsData.counts);
     } catch (err) {
       console.error(err);
     } finally {
@@ -138,8 +133,8 @@ export default function CategoryPage() {
     setPosts([]); // Reset posts
     
     try {
-      // Get posts
-      const postsRes = await fetch(`/api/timeline?server=${server}&offset=0&limit=${POSTS_PER_PAGE}`);
+      // Get posts with category
+      const postsRes = await fetch(`/api/timeline?server=${server}&category=${getCategoryKey(category as string)}&offset=0&limit=${POSTS_PER_PAGE}`);
       const postsData: TimelineResponse = await postsRes.json();
       const categoryPosts = postsData.buckets[getCategoryKey(category as string)] || [];
       
@@ -148,9 +143,9 @@ export default function CategoryPage() {
       const countsData = await countsRes.json();
       
       setPosts(categoryPosts);
-      setTotalCount(postsData.counts[getCategoryKey(category as string)] || 0);
+      setTotalCount(countsData.counts[getCategoryKey(category as string)] || 0);
       setHasMore(categoryPosts.length >= POSTS_PER_PAGE && 
-        categoryPosts.length < postsData.counts[getCategoryKey(category as string)]);
+        categoryPosts.length < countsData.counts[getCategoryKey(category as string)]);
       setCounts(countsData.counts);
     } catch (err) {
       console.error(err);
