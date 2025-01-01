@@ -17,7 +17,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
     setPosts(initialPosts);
   }, [initialPosts]);
 
-  const handleAdminAction = async (action: string, userId: string, username: string, postIndex: number) => {
+  const handleAdminAction = async (action: string, userId: string, username: string) => {
     try {
       const res = await fetch('/api/tag-account', {
         method: 'POST',
@@ -56,7 +56,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
     return post.account_tags?.find(t => t.tag === tag)?.count || 0;
   };
 
-  const handleClearTag = async (userId: string, username: string, tag: string, postIndex: number) => {
+  const handleClearTag = async (userId: string, username: string, tag: string) => {
     try {
       const res = await fetch('/api/tag-account', {
         method: 'DELETE',
@@ -127,7 +127,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div className="space-y-4">
-        {posts.map((post, index) => {
+        {posts.map((post) => {
           // Debug logging
           console.log('Post ID:', post.id);
           console.log('Card data:', post.card);
@@ -333,13 +333,13 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
                   return hasTag ? (
                     <div key={tag} className="flex gap-1">
                       <button
-                        onClick={() => handleAdminAction(tag, post.account_id, post.account_username, index)}
+                        onClick={() => handleAdminAction(tag, post.account_id, post.account_username)}
                         className={`flex-1 px-2 py-1 bg-${colors[tag]}-500 text-white rounded-l hover:bg-${colors[tag]}-600`}
                       >
                         {tag} ({count})
                       </button>
                       <button
-                        onClick={() => handleClearTag(post.account_id, post.account_username, tag, index)}
+                        onClick={() => handleClearTag(post.account_id, post.account_username, tag)}
                         className={`px-2 py-1 bg-${colors[tag]}-500 text-white rounded-r hover:bg-${colors[tag]}-600`}
                       >
                         ×
@@ -348,7 +348,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
                   ) : (
                     <button
                       key={tag}
-                      onClick={() => handleAdminAction(tag, post.account_id, post.account_username, index)}
+                      onClick={() => handleAdminAction(tag, post.account_id, post.account_username)}
                       className={`w-full px-3 py-1 bg-${colors[tag]}-500 text-white rounded hover:bg-${colors[tag]}-600`}
                     >
                       {tag}
