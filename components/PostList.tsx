@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Post, MediaAttachment } from '../db/database';
+import { ImageModal } from './ImageModal';
 
 interface PostListProps {
   posts: Post[];
@@ -9,6 +10,8 @@ interface PostListProps {
 
 const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate }) => {
   const [posts, setPosts] = useState(initialPosts);
+  const [activeImage, setActiveImage] = useState<MediaAttachment | null>(null);
+  const [activePost, setActivePost] = useState<Post | null>(null);
 
   useEffect(() => {
     setPosts(initialPosts);
@@ -81,6 +84,45 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
       toast.error('Failed to clear tag');
     }
   };
+
+  const renderMediaAttachments = (post: Post, mediaAttachments: MediaAttachment[]) => (
+    <div className={`grid gap-2 p-4 ${
+      mediaAttachments.length === 1 ? 'grid-cols-1' :
+      mediaAttachments.length === 2 ? 'grid-cols-2' :
+      'grid-cols-2'
+    }`}>
+      {mediaAttachments.map((media, index) => (
+        media.type === 'video' ? (
+          <div key={index} className="relative pt-[56.25%]">
+            <video 
+              className="absolute inset-0 w-full h-full rounded-lg"
+              controls
+              preload="metadata"
+              poster={media.preview_url}
+            >
+              <source src={media.url} type="video/mp4" />
+              Your browser does not support video playback.
+            </video>
+          </div>
+        ) : media.type === 'image' && media.url && media.preview_url && (
+          <div 
+            key={index}
+            onClick={() => {
+              setActiveImage(media);
+              setActivePost(post);
+            }}
+            className="cursor-zoom-in"
+          >
+            <img
+              src={media.preview_url}
+              alt=""
+              className="w-full h-48 object-cover rounded-lg hover:opacity-90 transition-opacity"
+            />
+          </div>
+        )
+      ))}
+    </div>
+  );
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -237,43 +279,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
                 </div>
 
                 {/* Media Attachments */}
-                {post.media_attachments.length > 0 && (
-                  <div className={`grid gap-2 p-4 ${
-                    mediaAttachments.length === 1 ? 'grid-cols-1' :
-                    mediaAttachments.length === 2 ? 'grid-cols-2' :
-                    'grid-cols-2'
-                  }`}>
-                    {mediaAttachments.map((media, index) => (
-                      media.type === 'video' ? (
-                        <div key={index} className="relative pt-[56.25%]">
-                          <video 
-                            className="absolute inset-0 w-full h-full rounded-lg"
-                            controls
-                            preload="metadata"
-                            poster={media.preview_url}
-                          >
-                            <source src={media.url} type="video/mp4" />
-                            Your browser does not support video playback.
-                          </video>
-                        </div>
-                      ) : media.type === 'image' && media.url && media.preview_url && (
-                        <a
-                          key={index}
-                          href={media.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="relative pt-[100%] block hover:opacity-95 transition-opacity"
-                        >
-                          <img
-                            src={media.preview_url}
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-cover rounded-lg"
-                          />
-                        </a>
-                      )
-                    ))}
-                  </div>
-                )}
+                {post.media_attachments.length > 0 && renderMediaAttachments(post, post.media_attachments)}
 
                 {/* Post Footer */}
                 <div className="px-4 py-3 border-t border-gray-100 flex items-center space-x-6 text-gray-500">
@@ -354,6 +360,17 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
           );
         })}
       </div>
+
+      {activeImage && activePost && (
+        <ImageModal
+          media={activeImage}
+          post={activePost}
+          onClose={() => {
+            setActiveImage(null);
+            setActivePost(null);
+          }}
+        />
+      )}
     </div>
   );
 };
