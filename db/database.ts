@@ -272,6 +272,14 @@ export class DatabaseManager {
     stmt.run({ userId, username, tag });
   }
 
+  public clearAccountTag(userId: string, tag: string): void {
+    const stmt = this.db.prepare(`
+      DELETE FROM account_tags 
+      WHERE user_id = ? AND tag = ?
+    `);
+    stmt.run(userId, tag);
+  }
+
   public getAccountTags(userId: string): AccountTag[] {
     const stmt = this.db.prepare(`
       SELECT tag, count

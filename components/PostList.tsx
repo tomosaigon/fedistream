@@ -34,6 +34,30 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
     }
   };
 
+  const getAccountTagCount = (post: Post, tag: string) => {
+    return post.account_tags?.find(t => t.tag === tag)?.count || 0;
+  };
+
+  const handleClearTag = async (userId: string, username: string, tag: string) => {
+    try {
+      const res = await fetch('/api/tag-account', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, username, tag })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message);
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('Error clearing tag:', error);
+      toast.error('Failed to clear tag');
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div className="space-y-4">
@@ -266,24 +290,41 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
                     </div>
                   )}
                 </div>
-                <button
-                  onClick={() => handleAdminAction('spam', post.account_id, post.account_username)}
-                  className="w-full px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                >
-                  Spam
-                </button>
-                <button
-                  onClick={() => handleAdminAction('bitter', post.account_id, post.account_username)}
-                  className="w-full px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                >
-                  Bitter
-                </button>
-                <button
-                  onClick={() => handleAdminAction('cookie', post.account_id, post.account_username)}
-                  className="w-full px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-                >
-                  Cookie
-                </button>
+                {(['spam', 'bitter', 'cookie'] as ('spam' | 'bitter' | 'cookie')[]).map((tag) => {
+                  const hasTag = post.account_tags?.some(t => t.tag === tag);
+                  const count = getAccountTagCount(post, tag);
+                  
+                  const colors = {
+                    spam: 'red',
+                    bitter: 'yellow',
+                    cookie: 'green'
+                  };
+
+                  return hasTag ? (
+                    <div key={tag} className="flex gap-1">
+                      <button
+                        onClick={() => handleAdminAction(tag, post.account_id, post.account_username)}
+                        className={`flex-1 px-2 py-1 bg-${colors[tag]}-500 text-white rounded-l hover:bg-${colors[tag]}-600`}
+                      >
+                        {tag} ({count})
+                      </button>
+                      <button
+                        onClick={() => handleClearTag(post.account_id, post.account_username, tag)}
+                        className={`px-2 py-1 bg-${colors[tag]}-500 text-white rounded-r hover:bg-${colors[tag]}-600`}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      key={tag}
+                      onClick={() => handleAdminAction(tag, post.account_id, post.account_username)}
+                      className={`w-full px-3 py-1 bg-${colors[tag]}-500 text-white rounded hover:bg-${colors[tag]}-600`}
+                    >
+                      {tag}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           );
