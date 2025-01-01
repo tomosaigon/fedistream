@@ -42,15 +42,33 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
           console.log('Post ID:', post.id);
           console.log('Card data:', post.card);
           const mediaAttachments = (Array.isArray(post.media_attachments) 
-  ? post.media_attachments 
-  : JSON.parse(post.media_attachments as string)) as MediaAttachment[];
+            ? post.media_attachments 
+            : JSON.parse(post.media_attachments as string)) as MediaAttachment[];
 
           return (
-            <div key={post.id} className="flex bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <div key={post.id} className="flex bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden max-w-full">
 
-              <article className="flex-grow">
+              <article 
+                className={`flex-grow min-w-0 ${  // Add min-w-0 to prevent flex child from expanding
+                  post.account_tags?.some(t => t.tag === 'cookie')
+                    ? 'bg-green-50 border-l-4 border-green-400 hover:bg-green-100' 
+                  : post.account_tags?.some(t => t.tag === 'spam')
+                    ? 'bg-red-50/5 opacity-10 hover:opacity-25 transition-opacity'  // Extremely light
+                  : post.account_tags?.some(t => t.tag === 'bitter')
+                    ? `bg-yellow-50 opacity-${Math.max(20, 30 - (post.account_tags.find(t => t.tag === 'bitter')?.count || 0) * 5)} hover:opacity-90`
+                  : 'bg-white'
+                }`}
+              >
                 {/* Post Header */}
-                <div className="p-4 flex items-start space-x-3">
+                <div className={`p-4 flex items-start space-x-3 ${
+                  post.account_tags?.some(t => t.tag === 'cookie')
+                    ? `border-b border-green-${Math.min(400, 200 + (post.account_tags.find(t => t.tag === 'cookie')?.count || 0) * 50)}`
+                  : post.account_tags?.some(t => t.tag === 'spam')
+                    ? `border-b border-red-${Math.min(400, 200 + (post.account_tags.find(t => t.tag === 'spam')?.count || 0) * 50)}`
+                  : post.account_tags?.some(t => t.tag === 'bitter')
+                    ? `border-b border-yellow-${Math.min(400, 200 + (post.account_tags.find(t => t.tag === 'bitter')?.count || 0) * 50)}`
+                  : 'border-b border-gray-200'
+                }`}>
                   {post.account_url && (
                     <a
                       href={post.account_url}
@@ -232,7 +250,7 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
                   <div>User: @{post.account_username}</div>
                   {post.account_tags && post.account_tags.length > 0 && (
                     <div className="mt-1">
-                      Tags: {post.account_tags.join(', ')}
+                      Tags: {post.account_tags.map(tag => tag.tag).join(', ')}
                     </div>
                   )}
                 </div>
