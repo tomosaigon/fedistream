@@ -1,13 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Post, MediaAttachment } from '../db/database';
 
 interface PostListProps {
   posts: Post[];
+  onTagUpdate?: () => void;
 }
 
-const PostList: React.FC<PostListProps> = ({ posts }) => {
-  const handleAdminAction = async (action: string, userId: string, username: string) => {
+const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate }) => {
+  const [posts, setPosts] = useState(initialPosts);
+
+  useEffect(() => {
+    setPosts(initialPosts);
+  }, [initialPosts]);
+
+  const handleAdminAction = async (action: string, userId: string, username: string, postIndex: number) => {
     try {
       const res = await fetch('/api/tag-account', {
         method: 'POST',
@@ -25,6 +32,14 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
       
       if (res.ok) {
         toast.success(data.message);
+        setPosts(currentPosts => 
+          currentPosts.map(post => 
+            post.account_id === userId 
+              ? { ...post, account_tags: data.tags }
+              : post
+          )
+        );
+        onTagUpdate?.(); // Optional full refresh
       } else {
         throw new Error(data.error);
       }
@@ -38,7 +53,7 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
     return post.account_tags?.find(t => t.tag === tag)?.count || 0;
   };
 
-  const handleClearTag = async (userId: string, username: string, tag: string) => {
+  const handleClearTag = async (userId: string, username: string, tag: string, postIndex: number) => {
     try {
       const res = await fetch('/api/tag-account', {
         method: 'DELETE',
@@ -49,6 +64,15 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
       const data = await res.json();
       if (res.ok) {
         toast.success(data.message);
+        // Update local post tags
+        setPosts(currentPosts => 
+          currentPosts.map(post => 
+            post.account_id === userId 
+              ? { ...post, account_tags: data.tags }
+              : post
+          )
+        );
+        onTagUpdate?.(); // Optional full refresh
       } else {
         throw new Error(data.error);
       }
@@ -61,7 +85,7 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div className="space-y-4">
-        {posts.map((post) => {
+        {posts.map((post, index) => {
           // Debug logging
           console.log('Post ID:', post.id);
           console.log('Card data:', post.card);
@@ -303,13 +327,13 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
                   return hasTag ? (
                     <div key={tag} className="flex gap-1">
                       <button
-                        onClick={() => handleAdminAction(tag, post.account_id, post.account_username)}
+                        onClick={() => handleAdminAction(tag, post.account_id, post.account_username, index)}
                         className={`flex-1 px-2 py-1 bg-${colors[tag]}-500 text-white rounded-l hover:bg-${colors[tag]}-600`}
                       >
                         {tag} ({count})
                       </button>
                       <button
-                        onClick={() => handleClearTag(post.account_id, post.account_username, tag)}
+                        onClick={() => handleClearTag(post.account_id, post.account_username, tag, index)}
                         className={`px-2 py-1 bg-${colors[tag]}-500 text-white rounded-r hover:bg-${colors[tag]}-600`}
                       >
                         ×
@@ -318,7 +342,7 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
                   ) : (
                     <button
                       key={tag}
-                      onClick={() => handleAdminAction(tag, post.account_id, post.account_username)}
+                      onClick={() => handleAdminAction(tag, post.account_id, post.account_username, index)}
                       className={`w-full px-3 py-1 bg-${colors[tag]}-500 text-white rounded hover:bg-${colors[tag]}-600`}
                     >
                       {tag}
