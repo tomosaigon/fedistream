@@ -116,7 +116,9 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
             <img
               src={media.preview_url}
               alt=""
-              className="w-full h-48 object-cover rounded-lg hover:opacity-90 transition-opacity"
+              className={`w-full rounded-lg hover:opacity-90 transition-opacity ${
+                mediaAttachments.length === 1 ? 'h-96' : 'h-48'
+              } object-cover`}
             />
           </div>
         )
