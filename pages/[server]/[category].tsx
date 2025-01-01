@@ -4,7 +4,6 @@ import { BucketedPosts } from '../../db/database';
 import PostList from '../../components/PostList';
 import { getServerBySlug, servers } from '../../config/servers';
 import Link from 'next/link';
-import Sidebar from '../../components/Sidebar';
 import { Toaster, toast } from 'react-hot-toast';
 
 interface TimelineResponse {
@@ -171,13 +170,7 @@ export default function CategoryPage() {
 
   return (
     <div className="flex">
-      <Sidebar
-        serverSlug={typeof server === 'string' ? server : ''}
-        servers={servers}
-        counts={counts}
-        onServerChange={handleServerChange}
-      />
-      <main className="ml-64 flex-1">
+      <main className="flex-1">
         {/* Fixed navigation bar */}
         <nav className="sticky top-0 z-10 bg-white border-b shadow-sm">
           <div className="max-w-7xl mx-auto px-4">
@@ -208,11 +201,9 @@ export default function CategoryPage() {
                       }`}
                   >
                     {label}
-                    {(counts?.[key] ?? 0) > 0 && (
-                      <span className="ml-2 text-xs text-gray-500">
-                        ({counts?.[key] ?? 0})
-                      </span>
-                    )}
+                    <span className="ml-2 text-xs text-gray-500">
+                      ({counts?.[getCategoryKey(key)] ?? 0})
+                    </span>
                   </Link>
                 ))}
               </div>
