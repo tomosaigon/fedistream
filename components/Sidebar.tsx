@@ -14,23 +14,14 @@ interface SidebarProps {
     fromBots: number;  // Add bots count
     remaining: number;
   } | null;
-  loadingNewer: boolean;
-  loadingOlder: boolean;
   onServerChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
-  onLoadNewer: () => void;
-  onLoadOlder: () => void;
-  onPostsLoaded?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
   serverSlug,
   servers,
   counts,
-  loadingNewer,
-  loadingOlder,
   onServerChange,
-  onLoadNewer,
-  onLoadOlder
 }) => {
   return (
     <div className="fixed left-0 top-0 h-screen w-64 bg-white border-r p-4 overflow-y-auto">
@@ -48,24 +39,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           </option>
         ))}
       </select>
-
-      {/* Load Buttons */}
-      <div className="flex flex-col gap-2 mb-6">
-        <button
-          onClick={onLoadNewer}
-          disabled={loadingNewer}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
-        >
-          {loadingNewer ? 'Loading...' : 'Load Newer'}
-        </button>
-        <button
-          onClick={onLoadOlder}
-          disabled={loadingOlder}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
-        >
-          {loadingOlder ? 'Loading...' : 'Load Older'}
-        </button>
-      </div>
 
       {/* Category Links */}
       <nav className="space-y-2">

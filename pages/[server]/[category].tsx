@@ -175,18 +175,14 @@ export default function CategoryPage() {
         serverSlug={typeof server === 'string' ? server : ''}
         servers={servers}
         counts={counts}
-        loadingNewer={loadingNewer}
-        loadingOlder={loadingOlder}
         onServerChange={handleServerChange}
-        onLoadNewer={handleLoadNewer}
-        onLoadOlder={handleLoadOlder}
       />
       <main className="ml-64 flex-1">
         {/* Fixed navigation bar */}
         <nav className="sticky top-0 z-10 bg-white border-b shadow-sm">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between py-2">
-              {/* Server Selector */}
+              {/* Left side - Server Selector */}
               <select 
                 value={server}
                 onChange={handleServerChange}
@@ -199,7 +195,7 @@ export default function CategoryPage() {
                 ))}
               </select>
 
-              {/* Category Tabs */}
+              {/* Center - Category Tabs */}
               <div className="flex space-x-1">
                 {ORDERED_CATEGORIES.map(({ key, label }) => (
                   <Link
@@ -219,6 +215,24 @@ export default function CategoryPage() {
                     )}
                   </Link>
                 ))}
+              </div>
+
+              {/* Right side - Load Buttons */}
+              <div className="flex gap-2">
+                <button
+                  onClick={handleLoadNewer}
+                  disabled={loadingNewer}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
+                >
+                  {loadingNewer ? 'Loading...' : 'Load Newer'}
+                </button>
+                <button
+                  onClick={handleLoadOlder}
+                  disabled={loadingOlder}
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
+                >
+                  {loadingOlder ? 'Loading...' : 'Load Older'}
+                </button>
               </div>
             </div>
           </div>
