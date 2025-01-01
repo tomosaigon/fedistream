@@ -14,6 +14,16 @@ interface TimelineResponse {
 
 const POSTS_PER_PAGE = 25;
 
+// Add constant for ordered categories
+const ORDERED_CATEGORIES = [
+  { key: 'regular', label: 'Regular Posts' },
+  { key: 'with-images', label: 'Images' },
+  { key: 'replies', label: 'Replies' },
+  { key: 'network-mentions', label: 'Mentions' },
+  { key: 'with-links', label: 'Links' },
+  { key: 'non-english', label: 'Non-English' },
+] as const;
+
 export default function CategoryPage() {
   const router = useRouter();
   const { server, category } = router.query;
@@ -170,63 +180,90 @@ export default function CategoryPage() {
         onLoadNewer={handleLoadNewer}
         onLoadOlder={handleLoadOlder}
       />
-      <main className="ml-64 flex-1 p-8">
-        <div className="p-4 flex items-center justify-between">
-          <div>
-            <Link 
-              href={`/?server=${server}`}
-              className="text-blue-500 hover:underline"
-            >
-              ← Back to Categories
-            </Link>
-            <h1 className="text-2xl font-bold mt-2">
-              {getCategoryTitle(category as string)} 
-              <span className="text-gray-500 text-lg ml-2">
-                ({totalCount} total)
-              </span>
-            </h1>
-            <p className="text-gray-600">
-              From {serverConfig.name}
-            </p>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="p-4">Loading...</div>
-        ) : (
-          <>
-            <PostList posts={posts} />
-            {hasMore && (
-              <div className="text-center py-4">
-                <button
-                  onClick={loadMore}
-                  disabled={loadingMore}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+      <main className="ml-64 flex-1">
+        {/* Fixed navigation bar */}
+        <nav className="sticky top-0 z-10 bg-white border-b shadow-sm">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex space-x-1">
+              {ORDERED_CATEGORIES.map(({ key, label }) => (
+                <Link
+                  key={key}
+                  href={`/${server}/${key}`}
+                  className={`px-4 py-3 text-sm font-medium transition-colors
+                    ${category === key 
+                      ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
                 >
-                  {loadingMore ? 'Loading...' : `Load More (${totalCount - posts.length} remaining)`}
-                </button>
-              </div>
-            )}
-          </>
-        )}
+                  {label}
+                  {(counts?.[key] ?? 0) > 0 && (
+                    <span className="ml-2 text-xs text-gray-500">
+                      ({counts?.[key] ?? 0})
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </nav>
+
+        <div className="p-8">
+          <div className="p-4 flex items-center justify-between">
+            <div>
+              <Link 
+                href={`/?server=${server}`}
+                className="text-blue-500 hover:underline"
+              >
+                ← Back to Categories
+              </Link>
+              <h1 className="text-2xl font-bold mt-2">
+                {getCategoryTitle(category as string)} 
+                <span className="text-gray-500 text-lg ml-2">
+                  ({totalCount} total)
+                </span>
+              </h1>
+              <p className="text-gray-600">
+                From {serverConfig.name}
+              </p>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="p-4">Loading...</div>
+          ) : (
+            <>
+              <PostList posts={posts} />
+              {hasMore && (
+                <div className="text-center py-4">
+                  <button
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                  >
+                    {loadingMore ? 'Loading...' : `Load More (${totalCount - posts.length} remaining)`}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </main>
       <Toaster position="top-right" />
     </div>
   );
 }
 
-function getCategoryKey(category: string): string {
-  // Convert URL kebab-case to camelCase bucket keys
+// Update category map for API
+function getCategoryKey(category: string): keyof BucketedPosts {
   const categoryMap: Record<string, keyof BucketedPosts> = {
-    'non-english': 'nonEnglish',
+    'regular': 'remaining',
     'with-images': 'withImages',
     'replies': 'asReplies',
     'network-mentions': 'networkMentions',
     'with-links': 'withLinks',
-    'regular': 'remaining'
+    'non-english': 'nonEnglish'
   };
-  
-  return categoryMap[category] as string || 'remaining';
+  return categoryMap[category] || 'remaining';
 }
 
 function getCategoryTitle(category: string): string {
