@@ -196,7 +196,19 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
                     'grid-cols-2'
                   }`}>
                     {mediaAttachments.map((media, index) => (
-                      media.type === 'image' && media.url && media.preview_url && (
+                      media.type === 'video' ? (
+                        <div key={index} className="relative pt-[56.25%]">
+                          <video 
+                            className="absolute inset-0 w-full h-full rounded-lg"
+                            controls
+                            preload="metadata"
+                            poster={media.preview_url}
+                          >
+                            <source src={media.url} type="video/mp4" />
+                            Your browser does not support video playback.
+                          </video>
+                        </div>
+                      ) : media.type === 'image' && media.url && media.preview_url && (
                         <a
                           key={index}
                           href={media.url}
