@@ -4,7 +4,19 @@ import { BucketedPosts, Post, AccountTag } from '../../db/database';
 import PostList from '../../components/PostList';
 import { getServerBySlug, servers } from '../../config/servers';
 import Link from 'next/link';
-import { Toaster, toast } from 'react-hot-toast';
+import { Toaster, toast, ToastPosition } from 'react-hot-toast';
+
+const toastOptions = {
+  duration: 1000,
+  // position: 'top-right' as ToastPosition,
+  // style: {
+  //   cursor: 'pointer'
+  // },
+  onClick: () => {
+    console.log('TODO XXX Toast clicked!'); // Debug log
+    toast.dismiss(); // broken
+  }
+};
 
 interface TimelineResponse {
   buckets: Record<string, any[]>;
@@ -116,14 +128,14 @@ export default function CategoryPage() {
       const syncData = await syncRes.json();
       
       if (syncData.newPosts > 0) {
-        toast.success(`Loaded ${syncData.newPosts} newer posts`);
+        toast.success(`Loaded ${syncData.newPosts} newer posts`, toastOptions);
         refreshPosts(); // Reload posts if new content
       } else {
-        toast('No new posts found');
+        toast('No new posts found', toastOptions);
       }
     } catch (error) {
       console.error(error);
-      toast.error('Failed to load newer posts');
+      toast.error('Failed to load newer posts', toastOptions);
     } finally {
       setLoadingNewer(false);
     }
@@ -136,14 +148,14 @@ export default function CategoryPage() {
       const syncData = await syncRes.json();
       
       if (syncData.newPosts > 0) {
-        toast.success(`Loaded ${syncData.newPosts} older posts`);
+        toast.success(`Loaded ${syncData.newPosts} older posts`, toastOptions);
         refreshPosts(); // Reload posts if new content
       } else {
-        toast('No older posts found');
+        toast('No older posts found', toastOptions);
       }
     } catch (error) {
       console.error(error);
-      toast.error('Failed to load older posts');
+      toast.error('Failed to load older posts', toastOptions);
     } finally {
       setLoadingOlder(false);
     }
