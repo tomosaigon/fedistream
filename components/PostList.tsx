@@ -139,9 +139,9 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts }) => {
                 post.account_tags?.some(t => t.tag === 'cookie')
                   ? 'bg-green-50 border-l-4 border-green-400 hover:bg-green-100' 
                 : post.account_tags?.some(t => t.tag === 'spam')
-                  ? 'bg-red-50/5 opacity-10 hover:opacity-25 transition-opacity'
+                  ? 'bg-red-50/5 opacity-10 hover:opacity-25 transition-all text-xs sm:text-[0.625rem]'
                 : post.account_tags?.some(t => t.tag === 'bitter')
-                  ? 'bg-yellow-50 opacity-20 hover:opacity-75 transition-opacity'
+                  ? 'bg-yellow-50 opacity-20 hover:opacity-75 transition-all text-xs sm:text-[0.625rem]'
                 : 'bg-white'
               }`}>
                 {/* Post Header */}
@@ -231,9 +231,13 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts }) => {
                 </div>
 
                 {/* Post Content */}
-                <div className="px-3 sm:px-4 pb-3">
+                <div className={`px-3 sm:px-4 pb-3 ${
+                  post.account_tags?.some(t => t.tag === 'spam' || t.tag === 'bitter')
+                    ? 'text-xs sm:text-[0.625rem]'
+                    : 'text-base sm:text-sm'
+                }`}>
                   <div 
-                    className="prose max-w-none text-lg sm:text-base break-words"
+                    className="prose max-w-none break-words"
                     dangerouslySetInnerHTML={{ __html: post.content }}
                   />
 
