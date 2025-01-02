@@ -39,7 +39,6 @@ const ORDERED_CATEGORIES = [
 export default function CategoryPage() {
   const router = useRouter();
   const { server, category } = router.query;
-  // Let useState infer types from initial values
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -204,23 +203,44 @@ export default function CategoryPage() {
                   </button>
                 </div>
 
-                {/* Mobile menu button */}
+                {/* Mobile menu button labeled as Categories */}
                 <button
-                  className="sm:hidden px-2 py-1 text-gray-500 hover:text-gray-700"
+                  className="px-2 py-1 text-gray-500 hover:text-gray-700"
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-6 h-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     {mobileMenuOpen ? (
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     ) : (
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                     )}
                   </svg>
+                  <span className="ml-2">Categories</span>
                 </button>
               </div>
+            </div>
+
+            {/* Mobile dropdown menu for categories and filters */}
+            <div className={`${mobileMenuOpen ? 'block' : 'hidden'} w-full mt-2`}>
+              {ORDERED_CATEGORIES.map(({ key, label }) => (
+                <Link
+                  key={key}
+                  href={`/${server}/${key}`}
+                  className={`block px-4 py-3 text-base font-medium transition-colors
+                    ${category === key 
+                      ? 'text-blue-600 bg-blue-50'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                >
+                  {label}
+                  <span className="ml-2 text-sm text-gray-500">
+                    ({counts?.[getCategoryKey(key)] ?? 0})
+                  </span>
+                </Link>
+              ))}
 
               {/* Checkboxes for spam and bitter */}
-              <div className="flex gap-2 mt-2 sm:mt-0">
+              <div className="px-4 py-3">
                 <label className="flex items-center space-x-2">
                   <input 
                     type="checkbox" 
@@ -228,57 +248,17 @@ export default function CategoryPage() {
                     onChange={() => setShowSpam(!showSpam)} 
                     className="form-checkbox"
                   />
-                  <span>Spam</span>
+                  <span>Show Spam</span>
                 </label>
-                <label className="flex items-center space-x-2">
+                <label className="flex items-center space-x-2 mt-2">
                   <input 
                     type="checkbox" 
                     checked={showBitter} 
                     onChange={() => setShowBitter(!showBitter)} 
                     className="form-checkbox"
                   />
-                  <span>Bitter</span>
+                  <span>Show Bitter</span>
                 </label>
-              </div>
-
-              {/* Desktop tabs */}
-              <div className="hidden sm:flex space-x-1">
-                {ORDERED_CATEGORIES.map(({ key, label }) => (
-                  <Link
-                    key={key}
-                    href={`/${server}/${key}`}
-                    className={`px-4 py-3 text-sm font-medium transition-colors
-                      ${category === key 
-                        ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                      }`}
-                  >
-                    {label}
-                    <span className="ml-2 text-xs text-gray-500">
-                      ({counts?.[getCategoryKey(key)] ?? 0})
-                    </span>
-                  </Link>
-                ))}
-              </div>
-
-              {/* Mobile dropdown menu */}
-              <div className={`${mobileMenuOpen ? 'block' : 'hidden'} sm:hidden w-full mt-2`}>
-                {ORDERED_CATEGORIES.map(({ key, label }) => (
-                  <Link
-                    key={key}
-                    href={`/${server}/${key}`}
-                    className={`block px-4 py-3 text-base font-medium transition-colors
-                      ${category === key 
-                        ? 'text-blue-600 bg-blue-50'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                      }`}
-                  >
-                    {label}
-                    <span className="ml-2 text-sm text-gray-500">
-                      ({counts?.[getCategoryKey(key)] ?? 0})
-                    </span>
-                  </Link>
-                ))}
               </div>
             </div>
           </div>
@@ -301,7 +281,7 @@ export default function CategoryPage() {
                   ({totalCount} total)
                 </span>
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-600 text-base">
                 From {serverConfig.name}
               </p>
             </div>
