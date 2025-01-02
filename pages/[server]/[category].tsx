@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { BucketedPosts } from '../../db/database';
+import { BucketedPosts, Post, AccountTag } from '../../db/database';
 import PostList from '../../components/PostList';
 import { getServerBySlug, servers } from '../../config/servers';
 import Link from 'next/link';
@@ -37,40 +37,50 @@ export default function CategoryPage() {
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [loadingNewer, setLoadingNewer] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showSpam, setShowSpam] = useState(true);
+  const [showBitter, setShowBitter] = useState(true);
 
   const serverConfig = server ? getServerBySlug(server as string) : servers[0];
   const offset = posts.length;
 
   useEffect(() => {
     if (!server || !category) return;
-    
-    setLoading(true);
-    setPosts([]); // Reset posts when category changes
-    
-    fetch(`/api/timeline?server=${server}&category=${String(getCategoryKey(category as string))}&offset=0&limit=${POSTS_PER_PAGE}`)
-      .then(res => res.json())
-      .then((data: TimelineResponse) => {
-        const categoryPosts = data.buckets[getCategoryKey(category as string)] || [];
-        setPosts(categoryPosts);
-        setTotalCount(data.counts[getCategoryKey(category as string)] || 0);
-        setHasMore(categoryPosts.length >= POSTS_PER_PAGE && 
-          categoryPosts.length < data.counts[getCategoryKey(category as string)]);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, [server, category]);
+    refreshPosts();
+  }, [server, category, showSpam, showBitter]);
 
-  // Fetch counts
-  useEffect(() => {
-    if (!server) return;
+  const refreshPosts = async () => {
+    setLoading(true);
+    setPosts([]); // Reset posts
     
-    fetch(`/api/timeline?server=${server}&onlyCounts=true`)
-      .then(res => res.json())
-      .then(data => setCounts(data.counts));
-  }, [server]);
+    try {
+      // Get posts with category
+      const postsRes = await fetch(`/api/timeline?server=${server}&category=${getCategoryKey(category as string)}&offset=0&limit=${POSTS_PER_PAGE}`);
+      const postsData: TimelineResponse = await postsRes.json();
+      let categoryPosts = postsData.buckets[getCategoryKey(category as string)] || [];
+      
+      // Filter posts based on checkbox state
+      if (!showSpam) {
+        categoryPosts = categoryPosts.filter(post => !post.account_tags.some((tag: { tag: string }) => tag.tag === 'spam'));
+      }
+      if (!showBitter) {
+        categoryPosts = categoryPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'bitter'));
+      }
+
+      // Get updated counts
+      const countsRes = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
+      const countsData = await countsRes.json();
+      
+      setPosts(categoryPosts);
+      setTotalCount(countsData.counts[getCategoryKey(category as string)] || 0);
+      setHasMore(categoryPosts.length >= POSTS_PER_PAGE && 
+        categoryPosts.length < countsData.counts[getCategoryKey(category as string)]);
+      setCounts(countsData.counts);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadMore = async () => {
     if (loadingMore || !hasMore) return;
@@ -139,32 +149,6 @@ export default function CategoryPage() {
     }
   };
 
-  const refreshPosts = async () => {
-    setLoading(true);
-    setPosts([]); // Reset posts
-    
-    try {
-      // Get posts with category
-      const postsRes = await fetch(`/api/timeline?server=${server}&category=${getCategoryKey(category as string)}&offset=0&limit=${POSTS_PER_PAGE}`);
-      const postsData: TimelineResponse = await postsRes.json();
-      const categoryPosts = postsData.buckets[getCategoryKey(category as string)] || [];
-      
-      // Get updated counts
-      const countsRes = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
-      const countsData = await countsRes.json();
-      
-      setPosts(categoryPosts);
-      setTotalCount(countsData.counts[getCategoryKey(category as string)] || 0);
-      setHasMore(categoryPosts.length >= POSTS_PER_PAGE && 
-        categoryPosts.length < countsData.counts[getCategoryKey(category as string)]);
-      setCounts(countsData.counts);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (!serverConfig) {
     return <div className="p-4">Server not found</div>;
   }
@@ -221,6 +205,28 @@ export default function CategoryPage() {
                     )}
                   </svg>
                 </button>
+              </div>
+
+              {/* Checkboxes for spam and bitter */}
+              <div className="flex gap-2 mt-2 sm:mt-0">
+                <label className="flex items-center space-x-2">
+                  <input 
+                    type="checkbox" 
+                    checked={showSpam} 
+                    onChange={() => setShowSpam(!showSpam)} 
+                    className="form-checkbox"
+                  />
+                  <span>Spam</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input 
+                    type="checkbox" 
+                    checked={showBitter} 
+                    onChange={() => setShowBitter(!showBitter)} 
+                    className="form-checkbox"
+                  />
+                  <span>Bitter</span>
+                </label>
               </div>
 
               {/* Desktop tabs */}

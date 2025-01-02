@@ -349,7 +349,7 @@ export interface BucketedPosts {
   remaining: Post[];
 }
 
-interface AccountTag {
+export interface AccountTag {
   tag: string;
   count: number;
 }
