@@ -50,6 +50,8 @@ export default function CategoryPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSpam, setShowSpam] = useState(true);
   const [showBitter, setShowBitter] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+  const [destroying, setDestroying] = useState(false);
 
   const serverConfig = server ? getServerBySlug(server as string) : servers[0];
   const offset = posts.length;
@@ -160,6 +162,76 @@ export default function CategoryPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete all posts?')) {
+      return;
+    }
+    
+    setDeleting(true);
+    try {
+      const deleteRes = await fetch(`/api/timeline-sync?server=${server}&delete=true`, {
+        method: 'POST'
+      });
+      
+      if (!deleteRes.ok) {
+        throw new Error(`Delete failed: ${deleteRes.statusText}`);
+      }
+      
+      // Only refresh counts after successful deletion
+      const res = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch counts: ${res.statusText}`);
+      }
+      
+      const data = await res.json();
+      setCounts(data.counts);
+    } catch (error) {
+      console.error(error);
+      if (error instanceof Error) {
+        alert('Failed to delete posts: ' + error.message);
+      } else {
+        alert('Failed to delete posts: An unknown error occurred.');
+      }
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleDestroy = async () => {
+    if (!confirm('Are you sure you want to destroy the database? This will delete ALL posts from ALL servers.')) {
+      return;
+    }
+    
+    setDestroying(true);
+    try {
+      const destroyRes = await fetch(`/api/timeline-sync?delete=true`, {
+        method: 'POST'
+      });
+
+      if (!destroyRes.ok) {
+        throw new Error(`Destroy failed: ${destroyRes.statusText}`);
+      }
+      
+      // Only refresh counts after successful destruction
+      const res = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch counts: ${res.statusText}`);
+      }
+      
+      const data = await res.json();
+      setCounts(data.counts);
+    } catch (error) {
+      console.error(error);
+      if (error instanceof Error) {
+        alert('Failed to destroy database: ' + error.message);
+      } else {
+        alert('Failed to destroy database: An unknown error occurred.');
+      }
+    } finally {
+      setDestroying(false);
+    }
+  };
+
   if (!serverConfig) {
     return <div className="p-4">Server not found</div>;
   }
@@ -200,6 +272,20 @@ export default function CategoryPage() {
                     className="px-2 sm:px-4 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
                   >
                     {loadingOlder ? '...' : 'Older'}
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="px-2 sm:px-4 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600 disabled:bg-gray-400"
+                  >
+                    {deleting ? 'Deleting...' : 'Delete All Posts'}
+                  </button>
+                  <button
+                    onClick={handleDestroy}
+                    disabled={destroying}
+                    className="px-2 sm:px-4 py-2 text-sm bg-red-700 text-white rounded hover:bg-red-800 disabled:bg-gray-400"
+                  >
+                    {destroying ? 'Destroying...' : 'Destroy Database'}
                   </button>
                 </div>
 
