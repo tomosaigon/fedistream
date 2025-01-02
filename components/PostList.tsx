@@ -5,10 +5,9 @@ import { ImageModal } from './ImageModal';
 
 interface PostListProps {
   posts: Post[];
-  onTagUpdate?: () => void;
 }
 
-const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate }) => {
+const PostList: React.FC<PostListProps> = ({ posts: initialPosts }) => {
   const [posts, setPosts] = useState(initialPosts);
   const [activeImage, setActiveImage] = useState<MediaAttachment | null>(null);
   const [activePost, setActivePost] = useState<Post | null>(null);
@@ -42,7 +41,6 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
               : post
           )
         );
-        onTagUpdate?.(); // Optional full refresh
       } else {
         throw new Error(data.error);
       }
@@ -75,7 +73,6 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
               : post
           )
         );
-        onTagUpdate?.(); // Optional full refresh
       } else {
         throw new Error(data.error);
       }
@@ -86,9 +83,8 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
   };
 
   const renderMediaAttachments = (post: Post, mediaAttachments: MediaAttachment[]) => (
-    <div className={`grid gap-2 p-4 ${
+    <div className={`grid gap-2 p-3 sm:p-4 ${
       mediaAttachments.length === 1 ? 'grid-cols-1' :
-      mediaAttachments.length === 2 ? 'grid-cols-2' :
       'grid-cols-2'
     }`}>
       {mediaAttachments.map((media, index) => (
@@ -117,7 +113,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
               src={media.preview_url}
               alt=""
               className={`w-full rounded-lg hover:opacity-90 transition-opacity ${
-                mediaAttachments.length === 1 ? 'h-96' : 'h-48'
+                mediaAttachments.length === 1 ? 'h-64 sm:h-96' : 'h-40 sm:h-48'
               } object-cover`}
             />
           </div>
@@ -127,8 +123,8 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
   );
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <div className="space-y-4">
+    <div className="w-full sm:max-w-4xl mx-0 sm:mx-auto p-0">
+      <div className="space-y-1 sm:space-y-4">
         {posts.map((post) => {
           // Debug logging
           console.log('Post ID:', post.id);
@@ -138,19 +134,16 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
             : JSON.parse(post.media_attachments as string)) as MediaAttachment[];
 
           return (
-            <div key={post.id} className="flex bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden max-w-full">
-
-              <article 
-                className={`flex-grow min-w-0 ${  // Add min-w-0 to prevent flex child from expanding
-                  post.account_tags?.some(t => t.tag === 'cookie')
-                    ? 'bg-green-50 border-l-4 border-green-400 hover:bg-green-100' 
-                  : post.account_tags?.some(t => t.tag === 'spam')
-                    ? 'bg-red-50/5 opacity-10 hover:opacity-25 transition-opacity'  // Extremely light
-                  : post.account_tags?.some(t => t.tag === 'bitter')
-                    ? `bg-yellow-50 opacity-${Math.max(20, 30 - (post.account_tags.find(t => t.tag === 'bitter')?.count || 0) * 5)} hover:opacity-90`
-                  : 'bg-white'
-                }`}
-              >
+            <div key={post.id} className="flex flex-col sm:flex-row bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden max-w-full">
+              <article className={`flex-grow min-w-0 ${
+                post.account_tags?.some(t => t.tag === 'cookie')
+                  ? 'bg-green-50 border-l-4 border-green-400 hover:bg-green-100' 
+                : post.account_tags?.some(t => t.tag === 'spam')
+                  ? 'bg-red-50/5 opacity-10 hover:opacity-25 transition-opacity'
+                : post.account_tags?.some(t => t.tag === 'bitter')
+                  ? 'bg-yellow-50 opacity-20 hover:opacity-75 transition-opacity'
+                : 'bg-white'
+              }`}>
                 {/* Post Header */}
                 <div className={`p-4 flex items-start space-x-3 ${
                   post.account_tags?.some(t => t.tag === 'cookie')
@@ -238,9 +231,9 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
                 </div>
 
                 {/* Post Content */}
-                <div className="px-4 pb-2">
-                  <div
-                    className="prose max-w-none text-gray-800"
+                <div className="px-3 sm:px-4 pb-3">
+                  <div 
+                    className="prose max-w-none text-lg sm:text-base break-words"
                     dangerouslySetInnerHTML={{ __html: post.content }}
                   />
 
@@ -311,52 +304,51 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, onTagUpdate })
                 </div>
               </article>
 
-              {/* Admin section */}
-              <div className="w-48 flex-shrink-0 border-l p-4 bg-gray-50 flex flex-col gap-2">
-                <div className="text-xs text-gray-500 mb-2">
-                  <div>ID: {post.account_id}</div>
-                  <div>User: @{post.account_username}</div>
-                  {post.account_tags && post.account_tags.length > 0 && (
-                    <div className="mt-1">
-                      Tags: {post.account_tags.map(tag => tag.tag).join(', ')}
-                    </div>
-                  )}
-                </div>
-                {(['spam', 'bitter', 'cookie'] as ('spam' | 'bitter' | 'cookie')[]).map((tag) => {
-                  const hasTag = post.account_tags?.some(t => t.tag === tag);
-                  const count = getAccountTagCount(post, tag);
-                  
-                  const colors = {
-                    spam: 'red',
-                    bitter: 'yellow',
-                    cookie: 'green'
-                  };
-
-                  return hasTag ? (
-                    <div key={tag} className="flex gap-1">
+              {/* Admin section - full width on mobile, side panel on desktop */}
+              <div className="w-full sm:w-48 border-t sm:border-t-0 sm:border-l p-3 sm:p-4 bg-gray-50">
+                <div className="flex flex-row sm:flex-col gap-1 sm:gap-2">
+                  {(['spam', 'bitter', 'cookie'] as const).map((tag) => {
+                    const hasTag = post.account_tags?.some(t => t.tag === tag);
+                    const count = getAccountTagCount(post, tag);
+                    
+                    return hasTag ? (
+                      <div key={tag} className="flex gap-1">
+                        <button
+                          onClick={() => handleAdminAction(tag, post.account_id, post.account_username)}
+                          className={
+                            tag === 'spam' ? 'flex-1 px-2 py-1 bg-red-500 text-white rounded-l hover:bg-red-600' :
+                            tag === 'bitter' ? 'flex-1 px-2 py-1 bg-amber-500 text-white rounded-l hover:bg-amber-600' :
+                            'flex-1 px-2 py-1 bg-green-500 text-white rounded-l hover:bg-green-600'
+                          }
+                        >
+                          {tag} ({count})
+                        </button>
+                        <button
+                          onClick={() => handleClearTag(post.account_id, post.account_username, tag)}
+                          className={
+                            tag === 'spam' ? 'px-2 py-1 bg-red-500 text-white rounded-r hover:bg-red-600' :
+                            tag === 'bitter' ? 'px-2 py-1 bg-amber-500 text-white rounded-r hover:bg-amber-600' :
+                            'px-2 py-1 bg-green-500 text-white rounded-r hover:bg-green-600'
+                          }
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
                       <button
+                        key={tag}
                         onClick={() => handleAdminAction(tag, post.account_id, post.account_username)}
-                        className={`flex-1 px-2 py-1 bg-${colors[tag]}-500 text-white rounded-l hover:bg-${colors[tag]}-600`}
+                        className={
+                          tag === 'spam' ? 'w-full px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600' :
+                          tag === 'bitter' ? 'w-full px-3 py-1 bg-amber-500 text-white rounded hover:bg-amber-600' :
+                          'w-full px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600'
+                        }
                       >
-                        {tag} ({count})
+                        {tag}
                       </button>
-                      <button
-                        onClick={() => handleClearTag(post.account_id, post.account_username, tag)}
-                        className={`px-2 py-1 bg-${colors[tag]}-500 text-white rounded-r hover:bg-${colors[tag]}-600`}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      key={tag}
-                      onClick={() => handleAdminAction(tag, post.account_id, post.account_username)}
-                      className={`w-full px-3 py-1 bg-${colors[tag]}-500 text-white rounded hover:bg-${colors[tag]}-600`}
-                    >
-                      {tag}
-                    </button>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           );

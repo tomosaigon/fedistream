@@ -1,7 +1,24 @@
+/* globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-gray-50;
-} 
+@layer base {
+  html {
+    @apply text-base sm:text-sm;
+  }
+  
+  body {
+    @apply bg-gray-50;
+  }
+}
+
+@layer components {
+  .post-content {
+    @apply text-lg sm:text-base;
+  }
+  
+  .post-meta {
+    @apply text-base sm:text-sm;
+  }
+}

@@ -36,6 +36,7 @@ export default function CategoryPage() {
   const [counts, setCounts] = useState(null);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [loadingNewer, setLoadingNewer] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const serverConfig = server ? getServerBySlug(server as string) : servers[0];
   const offset = posts.length;
@@ -169,27 +170,61 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className="flex">
-      <main className="flex-1">
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-1 w-full">
         {/* Fixed navigation bar */}
         <nav className="sticky top-0 z-10 bg-white border-b shadow-sm">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-between py-2">
-              {/* Left side - Server Selector */}
-              <select 
-                value={server}
-                onChange={handleServerChange}
-                className="w-40 px-3 py-2 border rounded"
-              >
-                {servers.map(server => (
-                  <option key={server.slug} value={server.slug}>
-                    {server.name}
-                  </option>
-                ))}
-              </select>
+          <div className="max-w-7xl mx-auto px-3 sm:px-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between py-2">
+              {/* Top row with server selector, load buttons, and hamburger */}
+              <div className="flex items-center justify-between w-full gap-2">
+                <select 
+                  value={server}
+                  onChange={handleServerChange}
+                  className="w-32 sm:w-40 px-2 sm:px-3 py-2 text-sm border rounded"
+                >
+                  {servers.map(server => (
+                    <option key={server.slug} value={server.slug}>
+                      {server.name}
+                    </option>
+                  ))}
+                </select>
 
-              {/* Center - Category Tabs */}
-              <div className="flex space-x-1">
+                {/* Load buttons - smaller on mobile */}
+                <div className="flex gap-1 sm:gap-2">
+                  <button
+                    onClick={handleLoadNewer}
+                    disabled={loadingNewer}
+                    className="px-2 sm:px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
+                  >
+                    {loadingNewer ? '...' : 'Newer'}
+                  </button>
+                  <button
+                    onClick={handleLoadOlder}
+                    disabled={loadingOlder}
+                    className="px-2 sm:px-4 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
+                  >
+                    {loadingOlder ? '...' : 'Older'}
+                  </button>
+                </div>
+
+                {/* Mobile menu button */}
+                <button
+                  className="sm:hidden px-2 py-1 text-gray-500 hover:text-gray-700"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    {mobileMenuOpen ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    )}
+                  </svg>
+                </button>
+              </div>
+
+              {/* Desktop tabs */}
+              <div className="hidden sm:flex space-x-1">
                 {ORDERED_CATEGORIES.map(({ key, label }) => (
                   <Link
                     key={key}
@@ -208,29 +243,33 @@ export default function CategoryPage() {
                 ))}
               </div>
 
-              {/* Right side - Load Buttons */}
-              <div className="flex gap-2">
-                <button
-                  onClick={handleLoadNewer}
-                  disabled={loadingNewer}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
-                >
-                  {loadingNewer ? 'Loading...' : 'Load Newer'}
-                </button>
-                <button
-                  onClick={handleLoadOlder}
-                  disabled={loadingOlder}
-                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
-                >
-                  {loadingOlder ? 'Loading...' : 'Load Older'}
-                </button>
+              {/* Mobile dropdown menu */}
+              <div className={`${mobileMenuOpen ? 'block' : 'hidden'} sm:hidden w-full mt-2`}>
+                {ORDERED_CATEGORIES.map(({ key, label }) => (
+                  <Link
+                    key={key}
+                    href={`/${server}/${key}`}
+                    className={`block px-4 py-3 text-base font-medium transition-colors
+                      ${category === key 
+                        ? 'text-blue-600 bg-blue-50'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      }`}
+                  >
+                    {label}
+                    <span className="ml-2 text-sm text-gray-500">
+                      ({counts?.[getCategoryKey(key)] ?? 0})
+                    </span>
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
         </nav>
 
-        <div className="p-8">
-          <div className="p-4 flex items-center justify-between">
+        {/* Main content area - remove padding on mobile */}
+        <div className="p-0 sm:p-8">
+          {/* Back link and title */}
+          <div className="p-3 sm:p-4">
             <div>
               <Link 
                 href={`/?server=${server}`}
@@ -256,7 +295,6 @@ export default function CategoryPage() {
             <>
               <PostList 
                 posts={posts}
-                onTagUpdate={refreshPosts}
               />
               {hasMore && (
                 <div className="text-center py-4">
