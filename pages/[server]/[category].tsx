@@ -31,6 +31,7 @@ const ORDERED_CATEGORIES = [
   { key: 'with-images', label: 'Images' },
   { key: 'replies', label: 'Replies' },
   { key: 'network-mentions', label: 'Mentions' },
+  { key: 'hashtags', label: 'Hashtags' },
   { key: 'with-links', label: 'Links' },
   { key: 'from-bots', label: 'Bots' },
   { key: 'non-english', label: 'Non-English' },
@@ -425,6 +426,7 @@ function getCategoryKey(category: string): keyof BucketedPosts {
     'with-images': 'withImages',
     'replies': 'asReplies',
     'network-mentions': 'networkMentions',
+    'hashtags': 'hashtags',
     'with-links': 'withLinks',
     'from-bots': 'fromBots',
     'non-english': 'nonEnglish'
@@ -438,6 +440,7 @@ function getCategoryTitle(category: string): string {
     case 'with-images': return 'Posts with Images';
     case 'replies': return 'Reply Posts';
     case 'network-mentions': return 'Network Mentions';
+    case 'hashtags': return 'Hashtag Posts';
     case 'with-links': return 'Posts with Links';
     case 'regular': return 'Regular Posts';
     default: return 'Posts';

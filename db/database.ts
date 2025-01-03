@@ -80,9 +80,10 @@ export class DatabaseManager {
     if (post.account_bot) return 'fromBots';
     if (post.language !== 'en') return 'nonEnglish';
     if (mediaAttachments?.length > 0) return 'withImages';
-    if (post.in_reply_to_id) return 'asReplies';
-    if (isOnlyMentionsOrTags(post.content)) return 'networkMentions';
+    if (isHashtagPost(post.content)) return 'hashtags';
+    if (isNetworkMentionPost(post.content)) return 'networkMentions'; 
     if (post.content.includes('<a href="')) return 'withLinks';
+    if (post.in_reply_to_id) return 'asReplies';
     return 'remaining';
   }
 
@@ -197,6 +198,7 @@ export class DatabaseManager {
         withImages: 0,
         asReplies: 0,
         networkMentions: 0,
+        hashtags: 0,
         withLinks: 0,
         fromBots: 0,
         remaining: 0
@@ -214,6 +216,7 @@ export class DatabaseManager {
         withImages: 0,
         asReplies: 0,
         networkMentions: 0,
+        hashtags: 0,
         withLinks: 0,
         fromBots: 0,
         remaining: 0
@@ -267,30 +270,16 @@ export class DatabaseManager {
 
 }
 
-function isOnlyMentionsOrTags(content: string): boolean {
-  // Get all links from the content
+function isHashtagPost(content: string): boolean {
+  // Check for hashtag format
   const links = content.match(/<a[^>]*>.*?<\/a>/g) || [];
-  
-  // If there are no links, it's not a network mention post
-  if (links.length === 0) return false;
+  return links.some(link => link.includes('class="mention hashtag"') || link.includes('class="hashtag"'));
+}
 
-  // Check each link
-  return links.every(link => {
-    // Check for hashtag format
-    if (link.includes('class="mention hashtag"') || link.includes('class="hashtag"')) {
-      return link.includes('>#<span>');
-    }
-    // Check for mention format
-    else if (link.includes('class="u-url mention"')) {
-      return link.includes('>@<span>');
-    }
-    // If it contains spans with 'invisible' class, it's an external link
-    else if (link.includes('class="invisible"')) {
-      return false;
-    }
-    // Any other type of link
-    return false;
-  });
+function isNetworkMentionPost(content: string): boolean {
+  // Check for mention format
+  const links = content.match(/<a[^>]*>.*?<\/a>/g) || [];
+  return links.some(link => link.includes('class="u-url mention"'));
 }
 
 // Raw database type without account_tags field
@@ -344,8 +333,9 @@ export interface BucketedPosts {
   withImages: Post[];
   asReplies: Post[];
   networkMentions: Post[];
+  hashtags: Post[]; // Add new bucket
   withLinks: Post[];
-  fromBots: Post[]; 
+  fromBots: Post[];
   remaining: Post[];
 }
 
