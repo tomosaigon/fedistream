@@ -439,9 +439,10 @@ function getCategoryTitle(category: string): string {
     case 'non-english': return 'Non-English Posts';
     case 'with-images': return 'Posts with Images';
     case 'replies': return 'Reply Posts';
-    case 'network-mentions': return 'Network Mentions';
+    case 'network-mentions': return 'Mentions';
     case 'hashtags': return 'Hashtag Posts';
     case 'with-links': return 'Posts with Links';
+    case 'from-bots': return 'Bot Posts';
     case 'regular': return 'Regular Posts';
     default: return 'Posts';
   }
