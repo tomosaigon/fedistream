@@ -8,8 +8,9 @@ let dbManager: DatabaseManager;
 // Mocked Post data
 const testPost1: Post = {
   id: '123',
+  seen: 0,
   created_at: new Date('2023-01-01T00:00:00Z').toISOString(),
-  content: 'Hello World!',
+  content: 'Hello world!',
   language: 'en',
   in_reply_to_id: null,
   url: 'https://example.com',
@@ -17,12 +18,12 @@ const testPost1: Post = {
   account_username: 'user123',
   account_display_name: 'User 123',
   account_url: 'https://example.com/user123',
-  account_avatar: 'https://example.com/avatar.png',
+  account_avatar: 'https://example.com/avatar1.png',
   media_attachments: [],
   visibility: 'public',
   favourites_count: 10,
   reblogs_count: 5,
-  replies_count: 3,
+  replies_count: 2,
   server_slug: 'test-server',
   bucket: 'remaining',
   card: null,
@@ -32,8 +33,9 @@ const testPost1: Post = {
 
 const testPost2: Post = {
   id: '124',
+  seen: 0,
   created_at: new Date('2023-01-02T00:00:00Z').toISOString(),
-  content: 'Hello Again!',
+  content: 'Check out this image!',
   language: 'en',
   in_reply_to_id: null,
   url: 'https://example.com',
@@ -59,6 +61,7 @@ const testPost2: Post = {
 
 const testPost3: Post = {
   id: '125',
+  seen: 0,
   created_at: new Date('2023-01-03T00:00:00Z').toISOString(),
   content: 'Replying to post',
   language: 'en',
@@ -81,27 +84,34 @@ const testPost3: Post = {
   account_bot: false
 };
 
-// const testPost4 = {
-//   id: '126',
-//   created_at: new Date('2023-01-04T00:00:00Z').toISOString(),
-//   content: '<a href="https://example.com">@user</a>',
-//   language: 'en',
-//   in_reply_to_id: null,
-//   url: 'https://example.com',
-//   account_username: 'user126',
-//   account_display_name: 'User 126',
-//   account_url: 'https://example.com/user126',
-//   account_avatar: 'https://example.com/avatar4.png',
-//   media_attachments: JSON.stringify([]),
-//   visibility: 'public',
-//   favourites_count: 40,
-//   reblogs_count: 20,
-//   replies_count: 10,
-//   server_slug: 'test-server',
-// };
+const testPost4: Post = {
+  id: '126',
+  seen: 0,
+  created_at: new Date('2023-01-04T00:00:00Z').toISOString(),
+  content: 'boop beep bop',
+  language: 'en',
+  in_reply_to_id: null,
+  url: 'https://example.com',
+  account_id: '1004',
+  account_username: 'user126',
+  account_display_name: 'User 126',
+  account_url: 'https://example.com/user126',
+  account_avatar: 'https://example.com/avatar4.png',
+  media_attachments: [],
+  visibility: 'public',
+  favourites_count: 40,
+  reblogs_count: 20,
+  replies_count: 10,
+  server_slug: 'test-server',
+  bucket: 'fromBots',
+  card: null,
+  account_tags: [],
+  account_bot: true
+};
 
 const testPost5: Post = {
   id: '127',
+  seen: 0,
   created_at: new Date('2023-01-05T00:00:00Z').toISOString(),
   content: 'Check this out <a href="https://blog.example.com/protocol/" target="_blank" rel="nofollow noopener noreferrer"><span class="invisible">https://</span><span class="ellipsis">blog.example.com/</span><span class="invisible">ext-protocol/</span></a>',
   language: 'en',
@@ -126,6 +136,7 @@ const testPost5: Post = {
 
 const testPost6: Post = {
   id: '128',
+  seen: 0,
   created_at: new Date('2023-01-06T00:00:00Z').toISOString(),
   content: 'Hola Mundo!',
   language: 'es',
@@ -150,6 +161,7 @@ const testPost6: Post = {
 
 const testPost7: Post = {
   id: '129',
+  seen: 0,
   created_at: new Date('2023-01-07T00:00:00Z').toISOString(),
   content: '<a href="https://fosstodon.org/tags/example" class="mention hashtag" rel="tag">#<span>example</span></a>',
   language: 'en',
@@ -196,7 +208,7 @@ describe('DatabaseManager Tests', () => {
     // dbManager.insertPost(testPost1);
     // dbManager.insertPost(testPost2);
     dbManager.insertPost(testPost3);
-    // dbManager.insertPost(testPost4);
+    dbManager.insertPost(testPost4);
     dbManager.insertPost(testPost5);
     dbManager.insertPost(testPost6);
     dbManager.insertPost(testPost7);
@@ -209,7 +221,7 @@ describe('DatabaseManager Tests', () => {
       networkMentions: 0,
       hashtags: 1,
       withLinks: 1,
-      fromBots: 0,
+      fromBots: 1,
       remaining: 1,
     });
   });

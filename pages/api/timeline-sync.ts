@@ -65,6 +65,7 @@ interface MastodonPost {
 function mastodonPostToPost(mastodonPost: MastodonPost, serverSlug: string): Post {
   return {
     ...mastodonPost,
+    seen: 0,
     account_id: mastodonPost.account.id,
     account_username: mastodonPost.account.username,
     account_display_name: mastodonPost.account.display_name,

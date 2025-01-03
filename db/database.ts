@@ -24,6 +24,7 @@ export class DatabaseManager {
     this.db.exec(`
       CREATE TABLE posts (
         id TEXT PRIMARY KEY,
+        seen INTEGER DEFAULT 0,
         created_at TEXT NOT NULL,
         content TEXT NOT NULL,
         language TEXT,
@@ -102,12 +103,12 @@ export class DatabaseManager {
   public insertPost(post: Post) {
     const stmt = this.db.prepare(`
       INSERT OR REPLACE INTO posts (
-        id, created_at, content, language, in_reply_to_id, url,
+        id, seen, created_at, content, language, in_reply_to_id, url,
         account_id, account_username, account_display_name, account_url, account_avatar,
         media_attachments, visibility, favourites_count, reblogs_count, replies_count,
         server_slug, bucket, card
       ) VALUES (
-        @id, @created_at, @content, @language, @in_reply_to_id, @url,
+        @id, @seen, @created_at, @content, @language, @in_reply_to_id, @url,
         @account_id, @account_username, @account_display_name, @account_url, @account_avatar,
         @media_attachments, @visibility, 
         COALESCE(@favourites_count, 0),
@@ -285,6 +286,7 @@ function isNetworkMentionPost(content: string): boolean {
 // Raw database type without account_tags field
 interface SQLitePost {
   id: string;
+  seen: number; // bool
   created_at: string;
   content: string;
   language: string;
