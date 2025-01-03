@@ -178,13 +178,6 @@ export class DatabaseManager {
     }
   }
 
-  public getPostCounts(serverSlug: string): Record<string, number> {
-    const result = this.db.prepare('SELECT COUNT(*) as count FROM posts WHERE server_slug = ?').get(serverSlug) as { count: number };
-    return {
-      total: result?.count || 0
-    };
-  }
-
   public getCategoryCounts(serverSlug: string): Record<string, number> {
     try {
       const posts = this.db.prepare(`
