@@ -127,8 +127,8 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts }) => {
       <div className="space-y-1 sm:space-y-4">
         {posts.map((post) => {
           // Debug logging
-          console.log('Post ID:', post.id);
-          console.log('Card data:', post.card);
+          console.log('Post ID:', post.id, '+', (new Date(posts[0].created_at).getTime() - new Date(post.created_at).getTime())/(3600*1000), 'hours');
+          console.log('Content', post.content.substring(0, 80), 'Card title:', post.card?.title);
           const mediaAttachments = (Array.isArray(post.media_attachments) 
             ? post.media_attachments 
             : JSON.parse(post.media_attachments as string)) as MediaAttachment[];
