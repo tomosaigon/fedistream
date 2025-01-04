@@ -40,6 +40,7 @@ export default function CategoryPage() {
   const router = useRouter();
   const { server, category } = router.query;
   const [posts, setPosts] = useState<any[]>([]);
+  const [unfilteredPosts, setUnfilteredPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -84,33 +85,35 @@ export default function CategoryPage() {
   const refreshPosts = async () => {
     setLoading(true);
     setPosts([]); // Reset posts
+    setUnfilteredPosts([]); // Reset unfiltered posts
     
     try {
       // Get posts with category
       const postsRes = await fetch(`/api/timeline?server=${server}&category=${getCategoryKey(category as string)}&offset=0&limit=${POSTS_PER_PAGE}`);
       const postsData: TimelineResponse = await postsRes.json();
-      let categoryPosts = postsData.buckets[getCategoryKey(category as string)] || [];
+      const categoryPosts = postsData.buckets[getCategoryKey(category as string)] || [];
       
-      // Filter posts based on checkbox state
-      if (!showSpam) {
-        categoryPosts = categoryPosts.filter(post => !post.account_tags.some((tag: { tag: string }) => tag.tag === 'spam'));
-      }
-      if (!showBitter) {
-        categoryPosts = categoryPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'bitter'));
-      }
-      if (!showPhlog) {
-        categoryPosts = categoryPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'phlog'));
-      }
-
       // Get updated counts
       const countsRes = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
       const countsData = await countsRes.json();
       
-      setPosts(categoryPosts);
+      setUnfilteredPosts(categoryPosts);
       setTotalCount(countsData.counts[getCategoryKey(category as string)] || 0);
-      setHasMore(categoryPosts.length >= POSTS_PER_PAGE && 
-        categoryPosts.length < countsData.counts[getCategoryKey(category as string)]);
+      setHasMore(categoryPosts.length < countsData.counts[getCategoryKey(category as string)]);
       setCounts(countsData.counts);
+
+      let filteredPosts = categoryPosts;
+      if (!showSpam) {
+        filteredPosts = filteredPosts.filter(post => !post.account_tags.some((tag: { tag: string }) => tag.tag === 'spam'));
+      }
+      if (!showBitter) {
+        filteredPosts = filteredPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'bitter'));
+      }
+      if (!showPhlog) {
+        filteredPosts = filteredPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'phlog'));
+      }
+
+      setPosts(filteredPosts);
     } catch (err) {
       console.error(err);
     } finally {
@@ -127,8 +130,19 @@ export default function CategoryPage() {
         `/api/timeline?server=${server}&category=${getCategoryKey(category as string)}&offset=${offset}&limit=${POSTS_PER_PAGE}`
       );
       const data: TimelineResponse = await res.json();
-      const newPosts = data.buckets[getCategoryKey(category as string)] || [];
-      
+      let newPosts = data.buckets[getCategoryKey(category as string)] || [];
+
+      // Filter posts based on checkbox state
+      if (!showSpam) {
+        newPosts = newPosts.filter(post => !post.account_tags.some((tag: { tag: string }) => tag.tag === 'spam'));
+      }
+      if (!showBitter) {
+        newPosts = newPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'bitter'));
+      }
+      if (!showPhlog) {
+        newPosts = newPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'phlog'));
+      }
+
       setPosts(prev => [...prev, ...newPosts]);
       setHasMore(newPosts.length >= POSTS_PER_PAGE && posts.length + newPosts.length < totalCount);
     } catch (err) {
