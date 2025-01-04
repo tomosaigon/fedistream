@@ -83,7 +83,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { server, older, delete: deleteFlag } = req.query;
+  const { server, older, delete: deleteFlag, markSeen, seenFrom, seenTo, bucket } = req.query;
 
   // Handle database reset first
   // For non-delete operations, require server parameter
@@ -112,6 +112,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const serverConfig = getServerBySlug(server as string);
   if (!serverConfig) {
     return res.status(404).json({ error: 'Server not found' });
+  }
+
+  if (markSeen === 'true') {
+    if (!seenFrom || !seenTo || !bucket) {
+      return res.status(400).json({ error: 'seenFrom, seenTo, and bucket are required for markSeen' });
+    }
+    const updatedCount = dbManager.markPostsAsSeen(server as string, bucket as string, seenFrom as string, seenTo as string);
+    return res.status(200).json({ message: 'Posts marked as seen', updatedCount });
   }
 
   try {

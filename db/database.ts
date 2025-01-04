@@ -85,7 +85,7 @@ export class DatabaseManager {
     if (isNetworkMentionPost(post.content)) return 'networkMentions'; 
     if (post.content.includes('<a href="')) return 'withLinks';
     if (post.in_reply_to_id) return 'asReplies';
-    return 'remaining';
+    return 'regular';
   }
 
   public resetDatabase(serverSlug?: string) {
@@ -165,7 +165,7 @@ export class DatabaseManager {
         SELECT p.*, GROUP_CONCAT(at.tag) as account_tags
         FROM posts p
         LEFT JOIN account_tags at ON p.account_id = at.user_id
-        WHERE p.server_slug = ? AND p.bucket = ?
+        WHERE p.server_slug = ? AND p.bucket = ? AND p.seen = 0
         GROUP BY p.id
         ORDER BY p.created_at DESC 
         LIMIT ? OFFSET ?
@@ -183,7 +183,7 @@ export class DatabaseManager {
       const posts = this.db.prepare(`
         SELECT bucket, COUNT(*) as count
         FROM posts 
-        WHERE server_slug = ?
+        WHERE server_slug = ? AND seen = 0
         GROUP BY bucket
       `).all(serverSlug) as { bucket: keyof BucketedPosts, count: number }[];
 
@@ -195,7 +195,7 @@ export class DatabaseManager {
         hashtags: 0,
         withLinks: 0,
         fromBots: 0,
-        remaining: 0
+        regular: 0
       };
 
       posts.forEach(row => {
@@ -213,7 +213,7 @@ export class DatabaseManager {
         hashtags: 0,
         withLinks: 0,
         fromBots: 0,
-        remaining: 0
+        regular: 0
       };
     }
   }
@@ -251,6 +251,20 @@ export class DatabaseManager {
       tag: row.tag,
       count: row.count
     }));
+  }
+
+  public markPostsAsSeen(serverSlug: string, bucket: string, seenFrom: string, seenTo: string): number {
+    console.log(`Marking posts as seen for server: ${serverSlug}, bucket: ${bucket}, from: ${seenFrom}, to: ${seenTo}`);
+    
+    const stmt = this.db.prepare(`
+      UPDATE posts
+      SET seen = 1
+      WHERE server_slug = ? AND bucket = ? AND created_at BETWEEN ? AND ?
+    `);
+    
+    const result = stmt.run(serverSlug, bucket, seenFrom, seenTo);
+    console.log(`Rows updated: ${result.changes}`);
+    return result.changes;
   }
 
   private transformSQLitePost(sqlitePost: SQLitePost): Post {
@@ -328,10 +342,10 @@ export interface BucketedPosts {
   withImages: Post[];
   asReplies: Post[];
   networkMentions: Post[];
-  hashtags: Post[]; // Add new bucket
+  hashtags: Post[];
   withLinks: Post[];
   fromBots: Post[];
-  remaining: Post[];
+  regular: Post[];
 }
 
 export interface AccountTag {

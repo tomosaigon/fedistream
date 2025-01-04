@@ -234,6 +234,33 @@ export default function CategoryPage() {
     }
   };
 
+  const handleMarkSeen = async () => {
+    if (posts.length === 0) {
+      toast.error('No posts to mark as seen', toastOptions);
+      return;
+    }
+  
+    const seenFrom = posts[posts.length - 1].created_at; // Oldest post
+    const seenTo = posts[0].created_at; // Latest post
+    const bucket = getCategoryKey(category as string); // Transform category to bucket using getCategoryKey
+  
+    try {
+      const res = await fetch(`/api/timeline-sync?server=${server}&markSeen=true&seenFrom=${seenFrom}&seenTo=${seenTo}&bucket=${bucket}`, {
+        method: 'POST'
+      });
+  
+      if (!res.ok) {
+        throw new Error(`Mark seen failed: ${res.statusText}`);
+      }
+  
+      const data = await res.json();
+      toast.success(`Marked ${data.updatedCount} posts as seen`, toastOptions);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to mark posts as seen', toastOptions);
+    }
+  };
+
   if (!serverConfig) {
     return <div className="p-4">Server not found</div>;
   }
@@ -295,9 +322,15 @@ export default function CategoryPage() {
             <div className={`${databaseMenuOpen ? 'block' : 'hidden'} w-full mt-2`}>
               <div className="px-4 py-3">
                 <button
+                  onClick={handleMarkSeen}
+                  className="w-full px-4 py-2 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                >
+                  Mark Seen
+                </button>
+                <button
                   onClick={handleLoadNewer}
                   disabled={loadingNewer}
-                  className="w-full px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
+                  className="w-full mt-2 px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
                 >
                   {loadingNewer ? 'Loading Newer...' : 'Load Newer'}
                 </button>
@@ -419,10 +452,9 @@ export default function CategoryPage() {
   );
 }
 
-// Update category map for API
 function getCategoryKey(category: string): keyof BucketedPosts {
   const categoryMap: Record<string, keyof BucketedPosts> = {
-    'regular': 'remaining',
+    'regular': 'regular',
     'with-images': 'withImages',
     'replies': 'asReplies',
     'network-mentions': 'networkMentions',
@@ -431,7 +463,7 @@ function getCategoryKey(category: string): keyof BucketedPosts {
     'from-bots': 'fromBots',
     'non-english': 'nonEnglish'
   };
-  return categoryMap[category] || 'remaining';
+  return categoryMap[category] || 'regular';
 }
 
 function getCategoryTitle(category: string): string {
@@ -439,7 +471,7 @@ function getCategoryTitle(category: string): string {
     case 'non-english': return 'Non-English Posts';
     case 'with-images': return 'Posts with Images';
     case 'replies': return 'Reply Posts';
-    case 'network-mentions': return 'Mentions';
+    case 'network-mentions': return 'Network Mentions';
     case 'hashtags': return 'Hashtag Posts';
     case 'with-links': return 'Posts with Links';
     case 'from-bots': return 'Bot Posts';

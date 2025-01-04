@@ -25,7 +25,7 @@ const testPost1: Post = {
   reblogs_count: 5,
   replies_count: 2,
   server_slug: 'test-server',
-  bucket: 'remaining',
+  bucket: 'regular',
   card: null,
   account_tags: [],
   account_bot: false
@@ -222,7 +222,7 @@ describe('DatabaseManager Tests', () => {
       hashtags: 1,
       withLinks: 1,
       fromBots: 1,
-      remaining: 1,
+      regular: 1,
     });
   });
 

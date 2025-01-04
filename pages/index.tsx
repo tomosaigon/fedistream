@@ -10,7 +10,7 @@ interface Counts {
   asReplies: number;
   networkMentions: number;
   withLinks: number;
-  remaining: number;
+  regular: number;
 }
 
 export default function Home() {
@@ -254,7 +254,7 @@ export default function Home() {
           {loading ? (
             <p className="mt-2 text-sm text-gray-500">Loading...</p>
           ) : (
-            <p className="mt-2 text-sm text-gray-500">{counts?.remaining || 0} posts</p>
+            <p className="mt-2 text-sm text-gray-500">{counts?.regular || 0} posts</p>
           )}
         </Link>
       </div>
