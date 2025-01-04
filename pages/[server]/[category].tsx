@@ -273,6 +273,9 @@ export default function CategoryPage() {
   
       const data = await res.json();
       toast.success(`Marked ${data.updatedCount} posts as seen`, toastOptions);
+  
+      // Refresh the page to reflect the updated state
+      refreshPosts();
     } catch (error) {
       console.error(error);
       toast.error('Failed to mark posts as seen', toastOptions);
