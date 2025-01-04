@@ -54,7 +54,6 @@ export default function CategoryPage() {
   const [deleting, setDeleting] = useState(false);
   const [destroying, setDestroying] = useState(false);
   const [databaseMenuOpen, setDatabaseMenuOpen] = useState(false);
-  const [fetchedPostCount, setFetchedPostCount] = useState(0);
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -85,7 +84,6 @@ export default function CategoryPage() {
   const refreshPosts = async () => {
     setLoading(true);
     setPosts([]);
-    setFetchedPostCount(0);
     
     try {
       // Get posts with category
@@ -97,23 +95,11 @@ export default function CategoryPage() {
       const countsRes = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
       const countsData = await countsRes.json();
       
-      setFetchedPostCount(categoryPosts.length);
       setTotalCount(countsData.counts[getCategoryKey(category as string)] || 0);
       setHasMore(categoryPosts.length < countsData.counts[getCategoryKey(category as string)]);
       setCounts(countsData.counts);
 
-      let filteredPosts = categoryPosts;
-      if (!showSpam) {
-        filteredPosts = filteredPosts.filter(post => !post.account_tags.some((tag: { tag: string }) => tag.tag === 'spam'));
-      }
-      if (!showBitter) {
-        filteredPosts = filteredPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'bitter'));
-      }
-      if (!showPhlog) {
-        filteredPosts = filteredPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'phlog'));
-      }
-
-      setPosts(filteredPosts);
+      setPosts(categoryPosts);
     } catch (err) {
       console.error(err);
     } finally {
@@ -127,27 +113,14 @@ export default function CategoryPage() {
     setLoadingMore(true);
     try {
       const res = await fetch(
-        `/api/timeline?server=${server}&category=${getCategoryKey(category as string)}&offset=${fetchedPostCount}&limit=${POSTS_PER_PAGE}`
+        `/api/timeline?server=${server}&category=${getCategoryKey(category as string)}&offset=${posts.length}&limit=${POSTS_PER_PAGE}`
       );
       const data: TimelineResponse = await res.json();
       const newPosts = data.buckets[getCategoryKey(category as string)] || [];
 
-      setFetchedPostCount(prev => prev + newPosts.length);
-      setHasMore(fetchedPostCount + newPosts.length < totalCount);
+      setHasMore(posts.length + newPosts.length < totalCount);
 
-      // Filter posts based on checkbox state
-      let filteredPosts = newPosts;
-      if (!showSpam) {
-        filteredPosts = filteredPosts.filter(post => !post.account_tags.some((tag: { tag: string }) => tag.tag === 'spam'));
-      }
-      if (!showBitter) {
-        filteredPosts = filteredPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'bitter'));
-      }
-      if (!showPhlog) {
-        filteredPosts = filteredPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'phlog'));
-      }
-
-      setPosts(prev => [...prev, ...filteredPosts]);
+      setPosts(prev => [...prev, ...newPosts]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -480,7 +453,12 @@ export default function CategoryPage() {
             <div className="p-4">Loading...</div>
           ) : (
             <>
-              <PostList posts={posts} />
+              <PostList 
+                posts={posts} 
+                showSpam={showSpam} 
+                showBitter={showBitter} 
+                showPhlog={showPhlog} 
+              />
               <div className="text-center py-4">
                 <button
                   onClick={handleMarkSeen}
@@ -496,7 +474,7 @@ export default function CategoryPage() {
                     disabled={loadingMore}
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
                   >
-                    {loadingMore ? 'Loading...' : `Load More (${totalCount - fetchedPostCount} remaining)`}
+                    {loadingMore ? 'Loading...' : `Load More (${totalCount - posts.length} remaining)`}
                   </button>
                 </div>
               )}

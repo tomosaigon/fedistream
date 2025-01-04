@@ -5,9 +5,12 @@ import { ImageModal } from './ImageModal';
 
 interface PostListProps {
   posts: Post[];
+  showSpam: boolean;
+  showBitter: boolean;
+  showPhlog: boolean;
 }
 
-const PostList: React.FC<PostListProps> = ({ posts: initialPosts }) => {
+const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, showBitter, showPhlog }) => {
   const [posts, setPosts] = useState(initialPosts);
   const [activeImage, setActiveImage] = useState<MediaAttachment | null>(null);
   const [activePost, setActivePost] = useState<Post | null>(null);
@@ -126,6 +129,13 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts }) => {
     <div className="w-full sm:max-w-4xl mx-0 sm:mx-auto p-0">
       <div className="space-y-1 sm:space-y-4">
         {posts.map((post) => {
+          if (
+            (!showSpam && post.account_tags.some(tag => tag.tag === 'spam')) ||
+            (!showBitter && post.account_tags.some(tag => tag.tag === 'bitter')) ||
+            (!showPhlog && post.account_tags.some(tag => tag.tag === 'phlog'))
+          ) {
+            return null;
+          }
           // Debug logging
           console.log('Post ID:', post.id, '+', (new Date(posts[0].created_at).getTime() - new Date(post.created_at).getTime())/(3600*1000), 'hours');
           console.log('Content', post.content.substring(0, 80), 'Card title:', post.card?.title);
