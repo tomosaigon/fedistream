@@ -129,16 +129,18 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts }) => {
           // Debug logging
           console.log('Post ID:', post.id, '+', (new Date(posts[0].created_at).getTime() - new Date(post.created_at).getTime())/(3600*1000), 'hours');
           console.log('Content', post.content.substring(0, 80), 'Card title:', post.card?.title);
-          const mediaAttachments = (Array.isArray(post.media_attachments) 
-            ? post.media_attachments 
-            : JSON.parse(post.media_attachments as string)) as MediaAttachment[];
+          // const mediaAttachments = (Array.isArray(post.media_attachments) 
+          //   ? post.media_attachments 
+          //   : JSON.parse(post.media_attachments as string)) as MediaAttachment[];
 
           return (
             <div key={post.id} className="flex flex-col sm:flex-row bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden max-w-full">
               <article className={`flex-grow min-w-0 ${
-                post.account_tags?.some(t => t.tag === 'cookie')
-                  ? 'bg-green-50 border-l-4 border-green-400 hover:bg-green-100' 
-                : post.account_tags?.some(t => t.tag === 'spam')
+                post.account_tags?.some(t => t.tag === 'phlog')
+                  ? 'bg-yellow-100'
+                  : post.account_tags?.some(t => t.tag === 'cookie')
+                  ? 'bg-green-50 border-l-4 border-green-400 hover:bg-green-100'
+                  : post.account_tags?.some(t => t.tag === 'spam')
                   ? 'bg-red-50/5 opacity-10 hover:opacity-25 transition-all text-xs sm:text-[0.625rem]'
                 : post.account_tags?.some(t => t.tag === 'bitter')
                   ? 'bg-yellow-50 opacity-20 hover:opacity-75 transition-all text-xs sm:text-[0.625rem]'
@@ -146,12 +148,14 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts }) => {
               }`}>
                 {/* Post Header */}
                 <div className={`p-4 flex items-start space-x-3 ${
-                  post.account_tags?.some(t => t.tag === 'cookie')
+                  post.account_tags?.some(t => t.tag === 'phlog')
+                    ? 'border-b border-yellow-400'
+                    : post.account_tags?.some(t => t.tag === 'cookie')
                     ? `border-b border-green-${Math.min(400, 200 + (post.account_tags.find(t => t.tag === 'cookie')?.count || 0) * 50)}`
-                  : post.account_tags?.some(t => t.tag === 'spam')
-                    ? `border-b border-red-${Math.min(400, 200 + (post.account_tags.find(t => t.tag === 'spam')?.count || 0) * 50)}`
+                    : post.account_tags?.some(t => t.tag === 'spam')
+                    ? 'border-b border-red-400'
                   : post.account_tags?.some(t => t.tag === 'bitter')
-                    ? `border-b border-yellow-${Math.min(400, 200 + (post.account_tags.find(t => t.tag === 'bitter')?.count || 0) * 50)}`
+                    ? 'border-b border-yellow-400'
                   : 'border-b border-gray-200'
                 }`}>
                   {post.account_url && (
@@ -311,7 +315,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts }) => {
               {/* Admin section - full width on mobile, side panel on desktop */}
               <div className="w-full sm:w-48 border-t sm:border-t-0 sm:border-l p-3 sm:p-4 bg-gray-50">
                 <div className="flex flex-row sm:flex-col gap-1 sm:gap-2">
-                  {(['spam', 'bitter', 'cookie'] as const).map((tag) => {
+                  {(['spam', 'bitter', 'cookie', 'phlog'] as const).map((tag) => {
                     const hasTag = post.account_tags?.some(t => t.tag === tag);
                     const count = getAccountTagCount(post, tag);
                     
@@ -322,6 +326,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts }) => {
                           className={
                             tag === 'spam' ? 'flex-1 px-2 py-1 bg-red-500 text-white rounded-l hover:bg-red-600' :
                             tag === 'bitter' ? 'flex-1 px-2 py-1 bg-amber-500 text-white rounded-l hover:bg-amber-600' :
+                            tag === 'phlog' ? 'flex-1 px-2 py-1 bg-yellow-500 text-white rounded-l hover:bg-yellow-600' :
                             'flex-1 px-2 py-1 bg-green-500 text-white rounded-l hover:bg-green-600'
                           }
                         >
@@ -332,6 +337,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts }) => {
                           className={
                             tag === 'spam' ? 'px-2 py-1 bg-red-500 text-white rounded-r hover:bg-red-600' :
                             tag === 'bitter' ? 'px-2 py-1 bg-amber-500 text-white rounded-r hover:bg-amber-600' :
+                            tag === 'phlog' ? 'px-2 py-1 bg-yellow-500 text-white rounded-r hover:bg-yellow-600' :
                             'px-2 py-1 bg-green-500 text-white rounded-r hover:bg-green-600'
                           }
                         >
@@ -345,6 +351,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts }) => {
                         className={
                           tag === 'spam' ? 'w-full px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600' :
                           tag === 'bitter' ? 'w-full px-3 py-1 bg-amber-500 text-white rounded hover:bg-amber-600' :
+                          tag === 'phlog' ? 'w-full px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600' :
                           'w-full px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600'
                         }
                       >

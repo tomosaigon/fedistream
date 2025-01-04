@@ -4,18 +4,18 @@ import { BucketedPosts, Post, AccountTag } from '../../db/database';
 import PostList from '../../components/PostList';
 import { getServerBySlug, servers } from '../../config/servers';
 import Link from 'next/link';
-import { Toaster, toast, ToastPosition } from 'react-hot-toast';
+import { Toaster, toast, ToastOptions, ToastPosition } from 'react-hot-toast';
 
-const toastOptions = {
+const toastOptions: ToastOptions = {
   duration: 1000,
-  // position: 'top-right' as ToastPosition,
-  // style: {
-  //   cursor: 'pointer'
-  // },
-  onClick: () => {
-    console.log('TODO XXX Toast clicked!'); // Debug log
-    toast.dismiss(); // broken
-  }
+  position: 'bottom-right' as ToastPosition,
+  style: {
+    cursor: 'pointer'
+  },
+  // onClick: () => {
+  //   console.log('TODO XXX Toast clicked!'); // Debug log
+  //   toast.dismiss(); // broken
+  // }
 };
 
 interface TimelineResponse {
@@ -25,7 +25,6 @@ interface TimelineResponse {
 
 const POSTS_PER_PAGE = 25;
 
-// Add constant for ordered categories
 const ORDERED_CATEGORIES = [
   { key: 'regular', label: 'Regular Posts' },
   { key: 'with-images', label: 'Images' },
@@ -51,6 +50,7 @@ export default function CategoryPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSpam, setShowSpam] = useState(true);
   const [showBitter, setShowBitter] = useState(true);
+  const [showPhlog, setShowPhlog] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [destroying, setDestroying] = useState(false);
   const [databaseMenuOpen, setDatabaseMenuOpen] = useState(false);
@@ -79,7 +79,7 @@ export default function CategoryPage() {
   useEffect(() => {
     if (!server || !category) return;
     refreshPosts();
-  }, [server, category, showSpam, showBitter]);
+  }, [server, category, showSpam, showBitter, showPhlog]);
 
   const refreshPosts = async () => {
     setLoading(true);
@@ -97,6 +97,9 @@ export default function CategoryPage() {
       }
       if (!showBitter) {
         categoryPosts = categoryPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'bitter'));
+      }
+      if (!showPhlog) {
+        categoryPosts = categoryPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'phlog'));
       }
 
       // Get updated counts
@@ -399,7 +402,7 @@ export default function CategoryPage() {
                 </Link>
               ))}
 
-              {/* Checkboxes for spam and bitter */}
+              {/* Checkboxes */}
               <div className="px-4 py-3">
                 <label className="flex items-center space-x-2">
                   <input 
@@ -419,6 +422,15 @@ export default function CategoryPage() {
                   />
                   <span>Show Bitter</span>
                 </label>
+                <label className="flex items-center space-x-2 mt-2">
+                  <input 
+                    type="checkbox" 
+                    checked={showPhlog} 
+                    onChange={() => setShowPhlog(!showPhlog)} 
+                    className="form-checkbox"
+                  />
+                  <span>Show Phlog</span>
+                </label>
               </div>
             </div>
           </div>
@@ -437,7 +449,7 @@ export default function CategoryPage() {
               </Link>
               <h1 className="text-2xl font-bold mt-2">
                 {getCategoryTitle(category as string)} 
-                <span className="text-gray-500 text-lg ml-2">
+                <span className="text-gray-500 text-xl ml-2">
                   ({totalCount} total)
                 </span>
               </h1>
@@ -451,9 +463,15 @@ export default function CategoryPage() {
             <div className="p-4">Loading...</div>
           ) : (
             <>
-              <PostList 
-                posts={posts}
-              />
+              <PostList posts={posts} />
+              <div className="text-center py-4">
+                <button
+                  onClick={handleMarkSeen}
+                  className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                >
+                  Mark Seen
+                </button>
+              </div>
               {hasMore && (
                 <div className="text-center py-4">
                   <button
@@ -469,7 +487,7 @@ export default function CategoryPage() {
           )}
         </div>
       </main>
-      <Toaster position="top-right" />
+      <Toaster/>
     </div>
   );
 }
