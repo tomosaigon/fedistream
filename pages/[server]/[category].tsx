@@ -55,6 +55,24 @@ export default function CategoryPage() {
   const [destroying, setDestroying] = useState(false);
   const [databaseMenuOpen, setDatabaseMenuOpen] = useState(false);
 
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+    if (!mobileMenuOpen) {
+      setDatabaseMenuOpen(false);
+    }
+  };
+
+  const toggleDatabaseMenu = () => {
+    setDatabaseMenuOpen(!databaseMenuOpen);
+    if (!databaseMenuOpen) {
+      setMobileMenuOpen(false);
+    }
+  };
+
+  const handleCategoryClick = () => {
+    setMobileMenuOpen(false);
+  };
+
   const serverConfig = server ? getServerBySlug(server as string) : servers[0];
   const offset = posts.length;
 
@@ -289,7 +307,7 @@ export default function CategoryPage() {
                 {/* Database menu button */}
                 <button
                   className="px-2 py-1 text-gray-500 hover:text-gray-700"
-                  onClick={() => setDatabaseMenuOpen(!databaseMenuOpen)}
+                  onClick={toggleDatabaseMenu}
                 >
                   <svg className="w-6 h-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     {databaseMenuOpen ? (
@@ -304,7 +322,7 @@ export default function CategoryPage() {
                 {/* Mobile menu button labeled as Categories */}
                 <button
                   className="px-2 py-1 text-gray-500 hover:text-gray-700"
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  onClick={toggleMobileMenu}
                 >
                   <svg className="w-6 h-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     {mobileMenuOpen ? (
@@ -369,6 +387,7 @@ export default function CategoryPage() {
                       ? 'text-blue-600 bg-blue-50'
                       : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                     }`}
+                  onClick={handleCategoryClick}
                 >
                   {label}
                   <span className="ml-2 text-sm text-gray-500">
