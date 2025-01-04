@@ -40,7 +40,6 @@ export default function CategoryPage() {
   const router = useRouter();
   const { server, category } = router.query;
   const [posts, setPosts] = useState<any[]>([]);
-  const [unfilteredPosts, setUnfilteredPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -55,6 +54,7 @@ export default function CategoryPage() {
   const [deleting, setDeleting] = useState(false);
   const [destroying, setDestroying] = useState(false);
   const [databaseMenuOpen, setDatabaseMenuOpen] = useState(false);
+  const [fetchedPostCount, setFetchedPostCount] = useState(0);
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -84,8 +84,8 @@ export default function CategoryPage() {
 
   const refreshPosts = async () => {
     setLoading(true);
-    setPosts([]); // Reset posts
-    setUnfilteredPosts([]); // Reset unfiltered posts
+    setPosts([]);
+    setFetchedPostCount(0);
     
     try {
       // Get posts with category
@@ -97,7 +97,7 @@ export default function CategoryPage() {
       const countsRes = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
       const countsData = await countsRes.json();
       
-      setUnfilteredPosts(categoryPosts);
+      setFetchedPostCount(categoryPosts.length);
       setTotalCount(countsData.counts[getCategoryKey(category as string)] || 0);
       setHasMore(categoryPosts.length < countsData.counts[getCategoryKey(category as string)]);
       setCounts(countsData.counts);
@@ -127,24 +127,27 @@ export default function CategoryPage() {
     setLoadingMore(true);
     try {
       const res = await fetch(
-        `/api/timeline?server=${server}&category=${getCategoryKey(category as string)}&offset=${offset}&limit=${POSTS_PER_PAGE}`
+        `/api/timeline?server=${server}&category=${getCategoryKey(category as string)}&offset=${fetchedPostCount}&limit=${POSTS_PER_PAGE}`
       );
       const data: TimelineResponse = await res.json();
-      let newPosts = data.buckets[getCategoryKey(category as string)] || [];
+      const newPosts = data.buckets[getCategoryKey(category as string)] || [];
+
+      setFetchedPostCount(prev => prev + newPosts.length);
+      setHasMore(fetchedPostCount + newPosts.length < totalCount);
 
       // Filter posts based on checkbox state
+      let filteredPosts = newPosts;
       if (!showSpam) {
-        newPosts = newPosts.filter(post => !post.account_tags.some((tag: { tag: string }) => tag.tag === 'spam'));
+        filteredPosts = filteredPosts.filter(post => !post.account_tags.some((tag: { tag: string }) => tag.tag === 'spam'));
       }
       if (!showBitter) {
-        newPosts = newPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'bitter'));
+        filteredPosts = filteredPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'bitter'));
       }
       if (!showPhlog) {
-        newPosts = newPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'phlog'));
+        filteredPosts = filteredPosts.filter((post: Post) => !post.account_tags.some((tag: AccountTag) => tag.tag === 'phlog'));
       }
 
-      setPosts(prev => [...prev, ...newPosts]);
-      setHasMore(newPosts.length >= POSTS_PER_PAGE && posts.length + newPosts.length < totalCount);
+      setPosts(prev => [...prev, ...filteredPosts]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -493,7 +496,7 @@ export default function CategoryPage() {
                     disabled={loadingMore}
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
                   >
-                    {loadingMore ? 'Loading...' : `Load More (${totalCount - posts.length} remaining)`}
+                    {loadingMore ? 'Loading...' : `Load More (${totalCount - fetchedPostCount} remaining)`}
                   </button>
                 </div>
               )}
