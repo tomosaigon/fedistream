@@ -87,8 +87,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
 
   const renderMediaAttachments = (post: Post, mediaAttachments: MediaAttachment[]) => (
     <div className={`grid gap-2 p-3 sm:p-4 ${
-      mediaAttachments.length === 1 ? 'grid-cols-1' :
-      'grid-cols-2'
+      mediaAttachments.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
     }`}>
       {mediaAttachments.map((media, index) => (
         media.type === 'video' ? (
@@ -116,7 +115,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
               src={media.preview_url}
               alt=""
               className={`w-full rounded-lg hover:opacity-90 transition-opacity ${
-                mediaAttachments.length === 1 ? 'h-64 sm:h-96' : 'h-40 sm:h-48'
+                mediaAttachments.length === 1 ? 'h-auto' : 'h-40 sm:h-48'
               } object-cover`}
             />
           </div>
