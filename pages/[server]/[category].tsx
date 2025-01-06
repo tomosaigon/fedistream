@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { BucketedPosts, Post, AccountTag } from '../../db/database';
 import PostList from '../../components/PostList';
 import { getServerBySlug, servers } from '../../config/servers';
@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Toaster, toast, ToastOptions, ToastPosition } from 'react-hot-toast';
 
 const toastOptions: ToastOptions = {
-  duration: 1000,
+  duration: 2000,
   position: 'bottom-right' as ToastPosition,
   style: {
     cursor: 'pointer'
@@ -47,17 +47,18 @@ export default function CategoryPage() {
   const [counts, setCounts] = useState(null);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [loadingNewer, setLoadingNewer] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const [showSpam, setShowSpam] = useState(true);
   const [showBitter, setShowBitter] = useState(true);
   const [showPhlog, setShowPhlog] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [destroying, setDestroying] = useState(false);
   const [databaseMenuOpen, setDatabaseMenuOpen] = useState(false);
+  const latestFetchId = useRef(0);
 
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-    if (!mobileMenuOpen) {
+  const toggleCategoryMenu = () => {
+    setCategoryMenuOpen(!categoryMenuOpen);
+    if (!categoryMenuOpen) {
       setDatabaseMenuOpen(false);
     }
   };
@@ -65,16 +66,15 @@ export default function CategoryPage() {
   const toggleDatabaseMenu = () => {
     setDatabaseMenuOpen(!databaseMenuOpen);
     if (!databaseMenuOpen) {
-      setMobileMenuOpen(false);
+      setCategoryMenuOpen(false);
     }
   };
 
   const handleCategoryClick = () => {
-    setMobileMenuOpen(false);
+    setCategoryMenuOpen(false);
   };
 
   const serverConfig = server ? getServerBySlug(server as string) : servers[0];
-  const offset = posts.length;
 
   useEffect(() => {
     if (!server || !category) return;
@@ -82,6 +82,8 @@ export default function CategoryPage() {
   }, [server, category, showSpam, showBitter, showPhlog]);
 
   const refreshPosts = async () => {
+    const fetchId = ++latestFetchId.current;
+
     setLoading(true);
     setPosts([]);
     
@@ -94,6 +96,8 @@ export default function CategoryPage() {
       // Get updated counts
       const countsRes = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
       const countsData = await countsRes.json();
+
+      if (fetchId !== latestFetchId.current) return;
       
       setTotalCount(countsData.counts[getCategoryKey(category as string)] || 0);
       setHasMore(categoryPosts.length < countsData.counts[getCategoryKey(category as string)]);
@@ -103,7 +107,9 @@ export default function CategoryPage() {
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      if (fetchId === latestFetchId.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -136,6 +142,8 @@ export default function CategoryPage() {
 
   // Load newer/older handlers
   const handleLoadNewer = async () => {
+    const fetchId = ++latestFetchId.current;
+
     setLoadingNewer(true);
     try {
       const syncRes = await fetch(`/api/timeline-sync?server=${server}`, { method: 'POST' });
@@ -143,6 +151,7 @@ export default function CategoryPage() {
       
       if (syncData.newPosts > 0) {
         toast.success(`Loaded ${syncData.newPosts} newer posts`, toastOptions);
+        if (fetchId !== latestFetchId.current) return;
         refreshPosts(); // Reload posts if new content
       } else {
         toast('No new posts found', toastOptions);
@@ -163,7 +172,7 @@ export default function CategoryPage() {
       
       if (syncData.newPosts > 0) {
         toast.success(`Loaded ${syncData.newPosts} older posts`, toastOptions);
-        refreshPosts(); // Reload posts if new content
+        // refreshPosts(); // DONT Reload posts automatically
       } else {
         toast('No older posts found', toastOptions);
       }
@@ -251,6 +260,7 @@ export default function CategoryPage() {
       return;
     }
   
+    const fetchId = ++latestFetchId.current;
     const seenFrom = posts[posts.length - 1].created_at; // Oldest post
     const seenTo = posts[0].created_at; // Latest post
     const bucket = getCategoryKey(category as string); // Transform category to bucket using getCategoryKey
@@ -266,6 +276,8 @@ export default function CategoryPage() {
   
       const data = await res.json();
       toast.success(`Marked ${data.updatedCount} posts as seen`, toastOptions);
+  
+      if (fetchId !== latestFetchId.current) return;
   
       // Refresh the page to reflect the updated state
       refreshPosts();
@@ -315,13 +327,13 @@ export default function CategoryPage() {
                   <span className="ml-2">Database</span>
                 </button>
 
-                {/* Mobile menu button labeled as Categories */}
+                {/* Categories menu button */}
                 <button
                   className="px-2 py-1 text-gray-500 hover:text-gray-700"
-                  onClick={toggleMobileMenu}
+                  onClick={toggleCategoryMenu}
                 >
                   <svg className="w-6 h-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    {mobileMenuOpen ? (
+                    {categoryMenuOpen ? (
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     ) : (
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -372,8 +384,8 @@ export default function CategoryPage() {
               </div>
             </div>
 
-            {/* Mobile dropdown menu for categories and filters */}
-            <div className={`${mobileMenuOpen ? 'block' : 'hidden'} w-full mt-2`}>
+            {/* categories and filters */}
+            <div className={`${categoryMenuOpen ? 'block' : 'hidden'} w-full mt-2`}>
               {ORDERED_CATEGORIES.map(({ key, label }) => (
                 <Link
                   key={key}
