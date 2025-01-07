@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Post, MediaAttachment } from '../db/database';
-import { getNonStopWords, containsMutedWord } from '../utils/nonStopWords';
+import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils/nonStopWords';
 import useMutedWords from '../hooks/useMutedWords';
 import { ImageModal } from './ImageModal';
 
@@ -165,10 +165,11 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
           return (
             <div key={post.id} className="flex flex-col sm:flex-row bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden max-w-full">
               <article className={`flex-grow min-w-0 ${
-                post.account_tags?.some(t => t.tag === 'phlog')
-                  ? 'bg-yellow-100'
+                containsMutedWord(nonStopWords, mutedWords) ? 'bg-blue-50 opacity-10 hover:opacity-75'
                   : post.account_tags?.some(t => t.tag === 'cookie')
                   ? 'bg-green-50 border-l-4 border-green-400 hover:bg-green-100'
+                  : post.account_tags?.some(t => t.tag === 'phlog')
+                  ? 'bg-yellow-100 opacity-20 hover:opacity-75'
                   : post.account_tags?.some(t => t.tag === 'spam')
                   ? 'bg-red-50/5 opacity-10 hover:opacity-25 transition-all text-xs sm:text-[0.625rem]'
                 : post.account_tags?.some(t => t.tag === 'bitter')
@@ -177,15 +178,16 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
               }`}>
                 {/* Post Header */}
                 <div className={`p-4 flex items-start space-x-3 ${
-                  post.account_tags?.some(t => t.tag === 'phlog')
-                    ? 'border-b border-yellow-400'
-                    : post.account_tags?.some(t => t.tag === 'cookie')
-                    ? `border-b border-green-${Math.min(400, 200 + (post.account_tags.find(t => t.tag === 'cookie')?.count || 0) * 50)}`
-                    : post.account_tags?.some(t => t.tag === 'spam')
-                    ? 'border-b border-red-400'
-                  : post.account_tags?.some(t => t.tag === 'bitter')
-                    ? 'border-b border-yellow-400'
-                  : 'border-b border-gray-200'
+                  ''
+                  // post.account_tags?.some(t => t.tag === 'phlog')
+                  //   ? 'border-b border-yellow-400'
+                  //   : post.account_tags?.some(t => t.tag === 'cookie')
+                  //   ? `border-b border-green-${Math.min(400, 200 + (post.account_tags.find(t => t.tag === 'cookie')?.count || 0) * 50)}`
+                  //   : post.account_tags?.some(t => t.tag === 'spam')
+                  //   ? 'border-b border-red-400'
+                  // : post.account_tags?.some(t => t.tag === 'bitter')
+                  //   ? 'border-b border-yellow-400'
+                  // : 'border-b border-gray-200'
                 }`}>
                   {post.account_url && (
                     <a
@@ -360,7 +362,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
                     </div>
                     {containsMutedWord(nonStopWords, mutedWords) && (
                         <p className="text-red-500 text-xs sm:text-sm mt-2">
-                            Contains muted words.
+                            Contains muted words: {getMutedWordsFound(nonStopWords, mutedWords).join(', ')}
                         </p>
                     )}
                 </div>

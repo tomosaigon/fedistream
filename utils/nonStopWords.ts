@@ -138,3 +138,13 @@ export const getNonStopWords = (htmlString: string): string[] => {
 export const containsMutedWord = (nonStopWords: string[], mutedWords: Set<string>): boolean => {
   return nonStopWords.some(word => mutedWords.has(word));
 };
+
+/**
+ * Returns a list of muted words found in the non-stop words array.
+ * @param nonStopWords - An array of words to check.
+ * @param mutedWords - A set of words to mute.
+ * @returns An array of muted words found in the non-stop words array.
+ */
+export const getMutedWordsFound = (nonStopWords: string[], mutedWords: Set<string>): string[] => {
+  return nonStopWords.filter(word => mutedWords.has(word));
+};
