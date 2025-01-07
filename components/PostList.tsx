@@ -10,9 +10,10 @@ interface PostListProps {
   showSpam: boolean;
   showBitter: boolean;
   showPhlog: boolean;
+  highlightThreshold: number;
 }
 
-const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, showBitter, showPhlog }) => {
+const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, showBitter, showPhlog, highlightThreshold }) => {
   const { mutedWords, loading: loadingMutedWords, refreshMutedWords, addMutedWord } = useMutedWords();
   const [posts, setPosts] = useState(initialPosts);
   const [activeImage, setActiveImage] = useState<MediaAttachment | null>(null);
@@ -166,7 +167,9 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
             <div key={post.id} className="flex flex-col sm:flex-row bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden max-w-full">
               <article className={`flex-grow min-w-0 ${
                 containsMutedWord(nonStopWords, mutedWords) ? 'bg-blue-50 opacity-10 hover:opacity-75'
-                  : post.account_tags?.some(t => t.tag === 'cookie')
+                : highlightThreshold && post.reblogs_count + post.favourites_count > highlightThreshold
+                ? 'bg-pink-100 border-l-4 border-pink-400 hover:bg-green-100'
+                : post.account_tags?.some(t => t.tag === 'cookie')
                   ? 'bg-green-50 border-l-4 border-green-400 hover:bg-green-100'
                   : post.account_tags?.some(t => t.tag === 'phlog')
                   ? 'bg-yellow-100 opacity-20 hover:opacity-75'
