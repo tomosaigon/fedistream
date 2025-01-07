@@ -11,6 +11,9 @@ export class DatabaseManager {
     if (!this.tableExists('posts')) {
       this.initializeSchema();
     }
+    if (!this.tableExists('muted_words')) {
+      this.createMutedWordsTable();
+  }
   }
 
   private tableExists(tableName: string): boolean {
@@ -62,6 +65,24 @@ export class DatabaseManager {
       CREATE INDEX IF NOT EXISTS idx_account_tags_user_id ON account_tags(user_id);
       CREATE INDEX IF NOT EXISTS idx_account_tags_tag ON account_tags(tag);
     `);
+  }
+
+  private createMutedWordsTable() {
+    this.db.exec(`
+        CREATE TABLE muted_words (
+            word TEXT PRIMARY KEY
+        );
+    `);
+  }
+
+  public fetchMutedWords(): Set<string> {
+      const rows = this.db.prepare("SELECT word FROM muted_words").all() as { word: string }[];
+      return new Set(rows.map(row => row.word));
+  }
+
+  public addMutedWord(word: string): boolean {
+      const result = this.db.prepare("INSERT OR IGNORE INTO muted_words (word) VALUES (?)").run(word);
+      return result.changes > 0;
   }
 
   public determineBucket(post: Post): string {

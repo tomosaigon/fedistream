@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Post, MediaAttachment } from '../db/database';
+import { getNonStopWords, containsMutedWord } from '../utils/nonStopWords';
+import useMutedWords from '../hooks/useMutedWords';
 import { ImageModal } from './ImageModal';
 
 interface PostListProps {
@@ -11,6 +13,7 @@ interface PostListProps {
 }
 
 const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, showBitter, showPhlog }) => {
+  const { mutedWords, loading: loadingMutedWords, refreshMutedWords, addMutedWord } = useMutedWords();
   const [posts, setPosts] = useState(initialPosts);
   const [activeImage, setActiveImage] = useState<MediaAttachment | null>(null);
   const [activePost, setActivePost] = useState<Post | null>(null);
@@ -126,6 +129,20 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
 
   return (
     <div className="w-full sm:max-w-4xl mx-0 sm:mx-auto p-0">
+      <div>
+          <h2>Muted Words</h2>
+          {loadingMutedWords ? (
+              <p>Loading muted words...</p>
+          ) : (
+              <ul>
+                  {Array.from(mutedWords).map((word, index) => (
+                      <li key={index}>{word}</li>
+                  ))}
+              </ul>
+          )}
+          <button onClick={refreshMutedWords}>Refresh Muted Words</button>
+      </div>
+
       <div className="space-y-1 sm:space-y-4">
         {posts.map((post) => {
           if (
@@ -135,9 +152,12 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
           ) {
             return null;
           }
+
+          const nonStopWords = getNonStopWords(post.content);
+
           // Debug logging
-          console.log('Post ID:', post.id, '+', (new Date(posts[0].created_at).getTime() - new Date(post.created_at).getTime())/(3600*1000), 'hours');
-          console.log('Content', post.content.substring(0, 80), 'Card title:', post.card?.title);
+          // console.log('Post ID:', post.id, '+', (new Date(posts[0].created_at).getTime() - new Date(post.created_at).getTime())/(3600*1000), 'hours');
+          // console.log('Content', post.content.substring(0, 80), 'Card title:', post.card?.title);
           // const mediaAttachments = (Array.isArray(post.media_attachments) 
           //   ? post.media_attachments 
           //   : JSON.parse(post.media_attachments as string)) as MediaAttachment[];
@@ -318,6 +338,31 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
                   </div>
+                </div>
+
+                {/* Non-Stop Words Section */}
+                <div className="px-3 sm:px-4 pt-3">
+                    <p className="text-gray-600 text-xs sm:text-sm">Non-Stop Words:</p>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                        {nonStopWords.map((word) => (
+                            <button
+                                key={word}
+                                onClick={() => addMutedWord(word)} // Call the function when clicked
+                                className={`px-2 py-1 rounded text-xs sm:text-sm ${
+                                  word.startsWith('#')
+                                      ? 'bg-green-500 text-white hover:bg-red-600' // Styling for hashtags
+                                      : 'bg-blue-500 text-white hover:bg-red-600'  // Styling for regular words
+                              }`}
+                            >
+                                {word}
+                            </button>
+                        ))}
+                    </div>
+                    {containsMutedWord(nonStopWords, mutedWords) && (
+                        <p className="text-red-500 text-xs sm:text-sm mt-2">
+                            Contains muted words.
+                        </p>
+                    )}
                 </div>
               </article>
 
