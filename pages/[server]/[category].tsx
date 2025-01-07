@@ -339,7 +339,7 @@ export default function CategoryPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                     )}
                   </svg>
-                  <span className="ml-2">Categories</span>
+                  <span className="ml-2">Categories: {ORDERED_CATEGORIES.find(c => c.key === category)?.label ?? 'Unknown'}</span>
                 </button>
               </div>
             </div>
