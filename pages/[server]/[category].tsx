@@ -431,7 +431,7 @@ export default function CategoryPage() {
                     onChange={() => setShowPhlog(!showPhlog)} 
                     className="form-checkbox"
                   />
-                  <span>Show Phlog</span>
+                  <span>Show Phlog (Images)</span>
                 </label>
               </div>
             </div>
@@ -469,7 +469,7 @@ export default function CategoryPage() {
                 posts={posts} 
                 showSpam={showSpam} 
                 showBitter={showBitter} 
-                showPhlog={showPhlog} 
+                showPhlog={category === 'with-images' ? showPhlog : true} 
               />
               <div className="text-center py-4">
                 <button
