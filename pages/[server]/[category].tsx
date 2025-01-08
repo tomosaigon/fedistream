@@ -165,6 +165,50 @@ export default function CategoryPage() {
     }
   };
 
+  const handleLoadNewer5x = async () => {
+    const fetchId = ++latestFetchId.current;
+  
+    setLoadingNewer(true);
+    try {
+      let totalNewPosts = 0;
+  
+      for (let i = 0; i < 5; i++) {
+        const syncRes = await fetch(`/api/timeline-sync?server=${server}`, { method: 'POST' });
+        const syncData = await syncRes.json();
+  
+        if (syncData.newPosts > 0) {
+          totalNewPosts += syncData.newPosts;
+          toast.success(`Batch ${i + 1}: Loaded ${syncData.newPosts} newer posts`, toastOptions);
+  
+          // if (fetchId !== latestFetchId.current) return;
+          // refreshPosts();
+        } else {
+          toast(`Batch ${i + 1}: No new posts found`, toastOptions);
+          break; // Stop if no new posts in the current batch
+        }
+  
+        // Stop the loop if fewer than the limit were returned
+        if (syncData.newPosts < 40) {
+          toast(`Stopped after batch ${i + 1} as fewer than 40 posts were returned`, toastOptions);
+          break;
+        }
+      }
+  
+      if (totalNewPosts > 0) {
+        toast.success(`Loaded a total of ${totalNewPosts} newer posts`, toastOptions);
+        if (fetchId !== latestFetchId.current) return;
+        refreshPosts();
+      } else {
+        toast('No new posts found after 5x', toastOptions);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to load newer posts in 5x mode', toastOptions);
+    } finally {
+      setLoadingNewer(false);
+    }
+  };
+
   const handleLoadOlder = async () => {
     setLoadingOlder(true);
     try {
@@ -313,19 +357,26 @@ export default function CategoryPage() {
                   ))}
                 </select>
 
-                <div className="flex items-center space-x-0">
+                <div className="flex items-center space-x-2">
                     <button
                       onClick={handleMarkSeen}
-                      className="m-2 px-4 py-2 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                      className="px-4 py-2 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
                     >
                       Seen
                     </button>
                     <button
                       onClick={handleLoadNewer}
                       disabled={loadingNewer}
-                      className="m-2 px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
+                      className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
                     >
                       {loadingNewer ? 'Loading Newer...' : 'Newer'}
+                    </button>
+                    <button
+                      onClick={handleLoadNewer5x}
+                      disabled={loadingNewer}
+                      className="px-4 py-2 text-sm bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-gray-400"
+                    >
+                      {loadingNewer ? 'Loading Newer 5x...' : 'Newer 5x'}
                     </button>
                 </div>
 
@@ -376,6 +427,13 @@ export default function CategoryPage() {
                   className="w-full mt-2 px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
                 >
                   {loadingNewer ? 'Loading Newer...' : 'Load Newer'}
+                </button>
+                <button
+                  onClick={handleLoadNewer5x}
+                  disabled={loadingNewer}
+                  className="w-full mt-2 px-4 py-2 text-sm bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-gray-400"
+                >
+                  {loadingNewer ? 'Loading Newer 5x...' : 'Newer 5x'}
                 </button>
                 <button
                   onClick={handleLoadOlder}
