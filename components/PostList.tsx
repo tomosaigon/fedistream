@@ -372,17 +372,12 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
                   <div className="flex items-center space-x-2">
                     <svg
                       onClick={() => handleFavorite(post.url)}
-                      className="w-5 h-5 cursor-pointer"
-                      fill="none"
-                      stroke="currentColor"
+                      className="w-5 h-5 cursor-pointer hover:text-yellow-500 transition-colors"
+                      fill="currentColor"
+                      stroke="none"
                       viewBox="0 0 24 24"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      />
+                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                     </svg>
                     <span className="text-sm">{post.favourites_count || 0}</span>
                   </div>
@@ -411,17 +406,31 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
                             </button>
                         ))}
                     </div>
-                    {containsMutedWord(nonStopWords, mutedWords) && (
-                        <p className="text-red-500 text-xs sm:text-sm mt-2">
-                            Contains muted words: {getMutedWordsFound(nonStopWords, mutedWords).join(', ')}
-                        </p>
-                    )}
                 </div>
               </article>
 
               {/* Admin section - full width on mobile, side panel on desktop */}
               <div className="w-full sm:w-48 border-t sm:border-t-0 sm:border-l p-3 sm:p-4 bg-gray-50">
+                {containsMutedWord(nonStopWords, mutedWords) && (
+                  <p className="text-red-500 text-xs sm:text-sm m-2">
+                    Contains muted words: {getMutedWordsFound(nonStopWords, mutedWords).join(', ')}
+                  </p>
+                )}
                 <div className="flex flex-row sm:flex-col gap-1 sm:gap-2">
+                <button
+                    onClick={() => handleFavorite(post.url)}
+                    className="w-full px-3 py-1 bg-yellow-300 text-white rounded hover:bg-yellow-500 flex items-center justify-center space-x-2"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                    </svg>
+                    <span>fav</span>
+                  </button>
                   {(['spam', 'bitter', 'cookie', 'phlog'] as const).map((tag) => {
                     const hasTag = post.account_tags?.some(t => t.tag === tag);
                     const count = getAccountTagCount(post, tag);
@@ -437,7 +446,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
                             'flex-1 px-2 py-1 bg-green-500 text-white rounded-l hover:bg-green-600'
                           }
                         >
-                          {tag} ({count})
+                          {tag}({count})
                         </button>
                         <button
                           onClick={() => handleClearTag(post.account_id, post.account_username, tag)}
@@ -456,10 +465,10 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
                         key={tag}
                         onClick={() => handleAdminAction(tag, post.account_id, post.account_username)}
                         className={
-                          tag === 'spam' ? 'w-full px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600' :
-                          tag === 'bitter' ? 'w-full px-3 py-1 bg-amber-500 text-white rounded hover:bg-amber-600' :
-                          tag === 'phlog' ? 'w-full px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600' :
-                          'w-full px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600'
+                          tag === 'spam' ? 'w-full px-3 py-1 bg-red-200 text-white rounded hover:bg-red-600' :
+                          tag === 'bitter' ? 'w-full px-3 py-1 bg-amber-200 text-white rounded hover:bg-amber-600' :
+                          tag === 'phlog' ? 'w-full px-3 py-1 bg-yellow-300 text-white rounded hover:bg-yellow-600' :
+                          'w-full px-3 py-1 bg-green-300 text-white rounded hover:bg-green-600'
                         }
                       >
                         {tag}
