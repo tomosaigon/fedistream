@@ -24,29 +24,49 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
     setPosts(initialPosts);
   }, [initialPosts]);
 
-  const handleFavorite = async (postId: string) => {
+  const handleFavorite = async (postUrl: string) => {
     const token = localStorage.getItem('accessToken');
     const serverUrl = localStorage.getItem('serverUrl');
-
+  
     if (!token || !serverUrl) {
       console.error('Access token or server URL not found');
       return;
     }
-
+  
     try {
-      const response = await axios.post(
-        `${serverUrl}/api/v1/statuses/${postId}/favourite`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      console.log('Post favorited successfully', response.data);
-      // TODO update local state to reflect the updated favorites count
+      // Step 1: Search for the post using its URL on own Mastodon server
+      const searchApiUrl = `${serverUrl}/api/v2/search`;
+      const searchResponse = await axios.get(searchApiUrl, {
+        params: {
+          q: postUrl,
+          resolve: true, // Resolve remote posts
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      // Step 2: Extract the post ID from the search results
+      const status = searchResponse.data.statuses?.[0];
+      if (!status) {
+        console.error('Post not found on your server.');
+        return;
+      }
+  
+      const postId = status.id;
+  
+      // Step 3: Fav post on own server
+      const favoriteApiUrl = `${serverUrl}/api/v1/statuses/${postId}/favourite`;
+      const favoriteResponse = await axios.post(favoriteApiUrl, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      console.log('Post favorited successfully', favoriteResponse.data);
+      // TODO: Update local state to reflect the updated favorites count
     } catch (error) {
-      console.error('Failed to favorite post', error);
+      console.error('Error favoriting the post:', error);
     }
   };
   
@@ -361,7 +381,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
                   </div>
                   <div className="flex items-center space-x-2">
                     <svg
-                      onClick={() => handleFavorite(post.id)} // Add the click handler here
+                      onClick={() => handleFavorite(post.url)}
                       className="w-5 h-5 cursor-pointer"
                       fill="none"
                       stroke="currentColor"
