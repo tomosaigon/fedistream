@@ -344,7 +344,7 @@ export default function CategoryPage() {
           <div className="max-w-7xl mx-auto px-3 sm:px-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between py-2">
               {/* Top row with server selector, load buttons, and hamburger */}
-              <div className="flex items-center justify-between w-full gap-2">
+              <div className="flex items-center justify-between w-full">
                 <select 
                   value={server}
                   onChange={handleServerChange}
@@ -357,7 +357,7 @@ export default function CategoryPage() {
                   ))}
                 </select>
 
-                <div className="flex items-center space-x-2">
+                <div className="hidden sm:flex items-center space-x-2">
                     <button
                       onClick={handleMarkSeen}
                       className="px-4 py-2 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
