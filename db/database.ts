@@ -14,6 +14,9 @@ export class DatabaseManager {
     if (!this.tableExists('muted_words')) {
       this.createMutedWordsTable();
     }
+    if (!this.tableExists('credentials')) {
+      this.createCredentialsTable();
+    }
   }
 
   private tableExists(tableName: string): boolean {
@@ -75,6 +78,17 @@ export class DatabaseManager {
     `);
   }
 
+  private createCredentialsTable() {
+    this.db.exec(`
+        CREATE TABLE IF NOT EXISTS credentials (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            server_url TEXT NOT NULL,
+            access_token TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+    `);
+  }
+
   public fetchMutedWords(): Set<string> {
     const rows = this.db.prepare("SELECT word FROM muted_words").all() as { word: string }[];
     return new Set(rows.map(row => row.word));
@@ -83,6 +97,25 @@ export class DatabaseManager {
   public addMutedWord(word: string): boolean {
     const result = this.db.prepare("INSERT OR IGNORE INTO muted_words (word) VALUES (?)").run(word);
     return result.changes > 0;
+  }
+
+  public fetchAllCredentials(): { id: number; server_url: string; access_token: string; created_at: string }[] {
+    const stmt = this.db.prepare("SELECT * FROM credentials");
+    return stmt.all() as { id: number; server_url: string; access_token: string; created_at: string }[];
+  }
+
+  public insertCredential(serverUrl: string, accessToken: string): boolean {
+    const stmt = this.db.prepare(`
+        INSERT INTO credentials (server_url, access_token)
+        VALUES (?, ?)
+    `);
+    const result = stmt.run(serverUrl, accessToken);
+    return result.changes > 0;
+  }
+
+  public credentialExists(serverUrl: string): boolean {
+    const stmt = this.db.prepare("SELECT id FROM credentials WHERE server_url = ?");
+    return !!stmt.get(serverUrl);
   }
 
   public determineBucket(post: Post): string {
@@ -113,11 +146,13 @@ export class DatabaseManager {
     if (serverSlug) {
       this.db.prepare('DELETE FROM posts WHERE server_slug = ?').run(serverSlug);
     } else {
-      const tables = ['account_tags', 'posts'];
+      const tables = ['account_tags', 'posts', 'muted_words', 'credentials'];
       tables.forEach(table => {
         this.db.exec(`DROP TABLE IF EXISTS ${table}`);
       });
       this.initializeSchema();
+      this.createMutedWordsTable();
+      this.createCredentialsTable();
     }
   }
 

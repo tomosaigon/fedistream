@@ -4,13 +4,14 @@ import { Post, MediaAttachment } from '../db/database';
 import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils/nonStopWords';
 import useMutedWords from '../hooks/useMutedWords';
 import { ImageModal } from './ImageModal';
+import axios from 'axios';
 
 interface PostListProps {
   posts: Post[];
   showSpam: boolean;
   showBitter: boolean;
   showPhlog: boolean;
-  highlightThreshold: number;
+  highlightThreshold: number | null;
 }
 
 const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, showBitter, showPhlog, highlightThreshold }) => {
@@ -23,6 +24,32 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
     setPosts(initialPosts);
   }, [initialPosts]);
 
+  const handleFavorite = async (postId: string) => {
+    const token = localStorage.getItem('accessToken');
+    const serverUrl = localStorage.getItem('serverUrl');
+
+    if (!token || !serverUrl) {
+      console.error('Access token or server URL not found');
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${serverUrl}/api/v1/statuses/${postId}/favourite`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log('Post favorited successfully', response.data);
+      // TODO update local state to reflect the updated favorites count
+    } catch (error) {
+      console.error('Failed to favorite post', error);
+    }
+  };
+  
   const handleAdminAction = async (action: string, userId: string, username: string) => {
     try {
       const res = await fetch('/api/tag-account', {
@@ -333,8 +360,19 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
                     <span className="text-sm">{post.reblogs_count || 0}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    <svg
+                      onClick={() => handleFavorite(post.id)} // Add the click handler here
+                      className="w-5 h-5 cursor-pointer"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      />
                     </svg>
                     <span className="text-sm">{post.favourites_count || 0}</span>
                   </div>

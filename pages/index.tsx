@@ -168,6 +168,7 @@ export default function Home() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Mastodon Timeline Categories</h1>
+        <Link href="/credentials">Manage Mastodon Credentials</Link>
         <div className="flex items-center space-x-4">
           <select 
             value={serverSlug}
