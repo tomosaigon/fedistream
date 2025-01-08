@@ -267,8 +267,8 @@ export default function CategoryPage() {
     const bucket = getCategoryKey(category as string); // Transform category to bucket using getCategoryKey
   
     try {
-      const res = await fetch(`/api/timeline-sync?server=${server}&markSeen=true&seenFrom=${seenFrom}&seenTo=${seenTo}&bucket=${bucket}`, {
-        method: 'POST'
+      const res = await fetch(`/api/mark-seen?server=${server}&seenFrom=${seenFrom}&seenTo=${seenTo}&bucket=${bucket}`, {
+        method: 'POST',
       });
   
       if (!res.ok) {
