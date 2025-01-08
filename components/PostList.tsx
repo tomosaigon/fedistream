@@ -181,20 +181,6 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
 
   return (
     <div className="w-full sm:max-w-4xl mx-0 sm:mx-auto p-0">
-      <div>
-          <h2>Muted Words</h2>
-          {loadingMutedWords ? (
-              <p>Loading muted words...</p>
-          ) : (
-              <ul>
-                  {Array.from(mutedWords).map((word, index) => (
-                      <li key={index}>{word}</li>
-                  ))}
-              </ul>
-          )}
-          <button onClick={refreshMutedWords}>Refresh Muted Words</button>
-      </div>
-
       <div className="space-y-1 sm:space-y-4">
         {posts.map((post) => {
           if (

@@ -14,8 +14,22 @@ const useMutedWords = () => {
             }
 
             const data = await response.json();
-            const wordsArray = data.mutedWords || [];
-            setMutedWords(new Set(wordsArray)); // Convert the array to a Set
+
+            const wordsArray: string[] = Array.isArray(data.mutedWords) ?
+                data.mutedWords : [];
+
+            // Sort words: Hashtags should appear first, then the rest of the words alphabetically
+            const sortedWords = wordsArray.sort((a, b) => {
+                if (a.startsWith('#') && !b.startsWith('#')) {
+                    return -1; // a should come before b
+                }
+                if (!a.startsWith('#') && b.startsWith('#')) {
+                    return 1; // b should come before a
+                }
+                return a.localeCompare(b); // Alphabetical sorting for the rest
+            });
+
+            setMutedWords(new Set(sortedWords)); // Convert the array to a Set
         } catch (error) {
             console.error('Error fetching muted words:', error);
         } finally {
@@ -42,11 +56,34 @@ const useMutedWords = () => {
         }
     };
 
+    const removeMutedWord = async (word: string) => {
+        try {
+            const response = await fetch('/api/muted-words', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ word }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to remove muted word');
+            }
+
+            // Update the local state to remove the word
+            setMutedWords((prev) => {
+                const updatedSet = new Set(prev);
+                updatedSet.delete(word);
+                return updatedSet;
+            });
+        } catch (error) {
+            console.error('Error removing muted word:', error);
+        }
+    };
+
     useEffect(() => {
         refreshMutedWords(); // Fetch muted words on component mount
     }, []);
 
-    return { mutedWords, loading, refreshMutedWords, addMutedWord };
+    return { mutedWords, loading, refreshMutedWords, addMutedWord, removeMutedWord };
 };
 
 export default useMutedWords;

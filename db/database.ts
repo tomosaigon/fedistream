@@ -99,6 +99,11 @@ export class DatabaseManager {
     return result.changes > 0;
   }
 
+  public removeMutedWord(word: string): boolean {
+    const result = this.db.prepare("DELETE FROM muted_words WHERE word = ?").run(word);
+    return result.changes > 0;
+  }
+
   public fetchAllCredentials(): { id: number; server_url: string; access_token: string; created_at: string }[] {
     const stmt = this.db.prepare("SELECT * FROM credentials");
     return stmt.all() as { id: number; server_url: string; access_token: string; created_at: string }[];

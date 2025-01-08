@@ -376,7 +376,7 @@ export default function CategoryPage() {
                       disabled={loadingNewer}
                       className="px-4 py-2 text-sm bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-gray-400"
                     >
-                      {loadingNewer ? 'Loading Newer 5x...' : 'Newer 5x'}
+                      {loadingNewer ? 'Loading Newer 5x...' : 'Newer×5'}
                     </button>
                 </div>
 
@@ -456,6 +456,22 @@ export default function CategoryPage() {
                 >
                   {destroying ? 'Destroying...' : 'Destroy Database'}
                 </button>
+
+                {/* Link to Muted Words */}
+                <Link
+                  href="/muted-words"
+                  className="w-full mt-2 px-4 py-2 text-sm text-blue-500 hover:text-blue-600 rounded transition-all duration-200 text-center block"
+                >
+                  Muted Words
+                </Link>
+
+                {/* Link to Mastodon API Credentials Manager */}
+                <Link
+                  href="/credentials"
+                  className="w-full mt-2 px-4 py-2 text-sm text-blue-500 hover:text-blue-600 rounded transition-all duration-200 text-center block"
+                >
+                  Mastodon API Credentials
+                </Link>
               </div>
             </div>
 
@@ -567,25 +583,23 @@ export default function CategoryPage() {
                 showPhlog={category === 'with-images' ? showPhlog : true}
                 highlightThreshold={highlightThreshold}
               />
-              <div className="text-center py-4">
-                <button
-                  onClick={handleMarkSeen}
-                  className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                >
-                  Mark Seen
-                </button>
-              </div>
-              {hasMore && (
-                <div className="text-center py-4">
+                <div className="flex justify-center items-center space-x-4 py-4">
                   <button
-                    onClick={loadMore}
-                    disabled={loadingMore}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                    onClick={handleMarkSeen}
+                    className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
                   >
-                    {loadingMore ? 'Loading...' : `Load More (${totalCount - posts.length} remaining)`}
+                    Mark Seen
                   </button>
+                  {hasMore && (
+                    <button
+                      onClick={loadMore}
+                      disabled={loadingMore}
+                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                    >
+                      {loadingMore ? 'Loading...' : `Load More (${totalCount - posts.length} remaining)`}
+                    </button>
+                  )}
                 </div>
-              )}
             </>
           )}
         </div>
