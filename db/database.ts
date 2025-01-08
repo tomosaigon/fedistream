@@ -11,6 +11,9 @@ export class DatabaseManager {
     if (!this.tableExists('posts')) {
       this.initializeSchema();
     }
+    if (!this.tableExists('account_tags')) {
+      this.createAccountTagsTable();
+    }
     if (!this.tableExists('muted_words')) {
       this.createMutedWordsTable();
     }
@@ -56,7 +59,11 @@ export class DatabaseManager {
       CREATE INDEX IF NOT EXISTS idx_posts_account_username ON posts(account_username);
       CREATE INDEX IF NOT EXISTS idx_posts_server_slug ON posts(server_slug);
       CREATE INDEX IF NOT EXISTS idx_posts_account_id ON posts(account_id);
+    `);
+  }
 
+  private createAccountTagsTable() {
+    this.db.exec(`
       CREATE TABLE account_tags (
         user_id TEXT NOT NULL,
         username TEXT NOT NULL,
@@ -64,7 +71,8 @@ export class DatabaseManager {
         count INTEGER NOT NULL DEFAULT 1,
         UNIQUE(user_id, tag)
       );
-
+    `);
+    this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_account_tags_user_id ON account_tags(user_id);
       CREATE INDEX IF NOT EXISTS idx_account_tags_tag ON account_tags(tag);
     `);
@@ -170,6 +178,7 @@ export class DatabaseManager {
         this.db.exec(`DROP TABLE IF EXISTS ${table}`);
       });
       this.initializeSchema();
+      this.createAccountTagsTable();
       this.createMutedWordsTable();
       this.createCredentialsTable();
     }
