@@ -20,7 +20,11 @@ import { Post } from '../../db/database';
 // limit
 // Integer. Maximum number of results to return. Defaults to 20 statuses. Max 40 statuses.
 
-async function fetchTimelinePage(baseUrl: string, options?: { maxId?: string; minId?: string }) {
+async function fetchTimelinePage(baseUrl: string, options?: { 
+  maxId?: string; 
+  minId?: string; 
+  home?: boolean; 
+}) {
   const params = {
     local: true,
     limit: 40,
@@ -28,11 +32,34 @@ async function fetchTimelinePage(baseUrl: string, options?: { maxId?: string; mi
     ...(options?.minId && { min_id: options.minId })
   };
 
+  // Fetch the access token if we are fetching the home timeline
+  let token = '';
+  if (options?.home) {
+    // Get the access token using the baseUrl
+    token = dbManager.getTokenByServer(baseUrl) || '';
+    if (!token) {
+      throw new Error('Access token not found for the given server URL');
+    }
+  }
+
   const queryString = new URLSearchParams(params as unknown as Record<string, string>).toString();
-  console.log('Fetching timeline page with query:', `${baseUrl}/api/v1/timelines/public?${queryString}`);
-  const response = await axios.get(
-    `${baseUrl}/api/v1/timelines/public?${queryString}`
-  );
+  let timelineUrl = `${baseUrl}/api/v1/timelines/public?${queryString}`;
+
+  if (options?.home) {
+    timelineUrl = `${baseUrl}/api/v1/timelines/home?${queryString}`;
+  }
+
+  console.log('Fetching timeline page with query:', timelineUrl);
+
+  const config = token
+    ? {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    : {}; // Only add the Authorization header if there's a token
+
+  const response = await axios.get(timelineUrl, config);
 
   return response.data;
 }
@@ -117,29 +144,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     console.log('Refreshing posts for server:', serverConfig.slug);
     let newPosts = [];
-    
+
+    // Check if the server is $HOME
+    const isHomeServer = serverConfig.slug === '$HOME';
+
+    // Set home option to true if the server is $HOME
+    const fetchOptions = isHomeServer ? { home: true } : {};
+
     if (older === 'true') {
       const oldestPostId = dbManager.getOldestPostId(server as string);
       console.log('Oldest post ID:', oldestPostId);
       
       if (oldestPostId) {
-        // All results returned will be lesser than this ID. In effect, sets an upper bound on results.
-        const posts = await fetchTimelinePage(serverConfig.baseUrl, { maxId: oldestPostId });
+        const posts = await fetchTimelinePage(serverConfig.baseUrl, { maxId: oldestPostId, ...fetchOptions });
         newPosts = posts;
       } else {
-        const posts = await fetchTimelinePage(serverConfig.baseUrl);
+        const posts = await fetchTimelinePage(serverConfig.baseUrl, fetchOptions);
         newPosts = posts;
       }
     } else {
       const latestPostId = dbManager.getLatestPostId(server as string);
       console.log('Latest post ID:', latestPostId);
-      
+
       if (latestPostId) {
-        // Returns results immediately newer than this ID. In effect, sets a cursor at this ID and paginates forward.
-        const posts = await fetchTimelinePage(serverConfig.baseUrl, { minId: latestPostId });
+        const posts = await fetchTimelinePage(serverConfig.baseUrl, { minId: latestPostId, ...fetchOptions });
         newPosts = posts;
       } else {
-        const posts = await fetchTimelinePage(serverConfig.baseUrl);
+        const posts = await fetchTimelinePage(serverConfig.baseUrl, fetchOptions);
         newPosts = posts;
       }
     }

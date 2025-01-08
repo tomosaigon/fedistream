@@ -109,6 +109,20 @@ export class DatabaseManager {
     return stmt.all() as { id: number; server_url: string; access_token: string; created_at: string }[];
   }
 
+  public getTokenByServer(serverUrl: string): string | null {
+    const stmt = this.db.prepare(`
+      SELECT access_token 
+      FROM credentials 
+      WHERE server_url = ? 
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `);
+    
+    const result = stmt.get(serverUrl) as { access_token: string } | undefined;
+    
+    return result?.access_token || null;
+  }
+
   public insertCredential(serverUrl: string, accessToken: string): boolean {
     const stmt = this.db.prepare(`
         INSERT INTO credentials (server_url, access_token)
