@@ -30,6 +30,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
   
     if (!token || !serverUrl) {
       console.error('Access token or server URL not found');
+      toast.error('Access token or server URL is missing');
       return;
     }
   
@@ -50,12 +51,13 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
       const status = searchResponse.data.statuses?.[0];
       if (!status) {
         console.error('Post not found on your server.');
+        toast.error('Post not found on your server.');
         return;
       }
   
       const postId = status.id;
   
-      // Step 3: Fav post on own server
+      // Step 3: Favorite the post on own server
       const favoriteApiUrl = `${serverUrl}/api/v1/statuses/${postId}/favourite`;
       const favoriteResponse = await axios.post(favoriteApiUrl, {}, {
         headers: {
@@ -64,9 +66,11 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
       });
   
       console.log('Post favorited successfully', favoriteResponse.data);
+      toast.success('Post favorited successfully');
       // TODO: Update local state to reflect the updated favorites count
     } catch (error) {
       console.error('Error favoriting the post:', error);
+      toast.error('Failed to favorite the post');
     }
   };
   
