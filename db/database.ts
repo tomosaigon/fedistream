@@ -7,13 +7,13 @@ export class DatabaseManager {
     const dbPath = process.env.DATABASE_FILE || 'mastodon.db';
     console.log('Database path:', dbPath);
     this.db = new Database(dbPath);
-    
+
     if (!this.tableExists('posts')) {
       this.initializeSchema();
     }
     if (!this.tableExists('muted_words')) {
       this.createMutedWordsTable();
-  }
+    }
   }
 
   private tableExists(tableName: string): boolean {
@@ -76,18 +76,18 @@ export class DatabaseManager {
   }
 
   public fetchMutedWords(): Set<string> {
-      const rows = this.db.prepare("SELECT word FROM muted_words").all() as { word: string }[];
-      return new Set(rows.map(row => row.word));
+    const rows = this.db.prepare("SELECT word FROM muted_words").all() as { word: string }[];
+    return new Set(rows.map(row => row.word));
   }
 
   public addMutedWord(word: string): boolean {
-      const result = this.db.prepare("INSERT OR IGNORE INTO muted_words (word) VALUES (?)").run(word);
-      return result.changes > 0;
+    const result = this.db.prepare("INSERT OR IGNORE INTO muted_words (word) VALUES (?)").run(word);
+    return result.changes > 0;
   }
 
   public determineBucket(post: Post): string {
     let mediaAttachments = [];
-    
+
     try {
       if (typeof post.media_attachments === 'string') {
         mediaAttachments = JSON.parse(post.media_attachments);
@@ -98,12 +98,12 @@ export class DatabaseManager {
       console.warn('Failed to parse media_attachments:', error);
       mediaAttachments = [];
     }
-    
+
     if (post.account_bot) return 'fromBots';
     if (post.language !== 'en') return 'nonEnglish';
     if (mediaAttachments?.length > 0) return 'withImages';
     if (isHashtagPost(post.content)) return 'hashtags';
-    if (isNetworkMentionPost(post.content)) return 'networkMentions'; 
+    if (isNetworkMentionPost(post.content)) return 'networkMentions';
     if (post.content.includes('<a href="')) return 'withLinks';
     if (post.in_reply_to_id) return 'asReplies';
     return 'regular';
@@ -141,7 +141,7 @@ export class DatabaseManager {
 
     const postData = {
       ...post,
-      media_attachments: Array.isArray(post.media_attachments) 
+      media_attachments: Array.isArray(post.media_attachments)
         ? JSON.stringify(post.media_attachments)
         : post.media_attachments || '[]',
       card: post.card ? JSON.stringify(post.card) : null, // Stringify card object
@@ -159,7 +159,7 @@ export class DatabaseManager {
       ORDER BY created_at DESC 
       LIMIT 1
     `).get(serverSlug) as { id: string } | undefined;
-    
+
     return result?.id;
   }
 
@@ -171,14 +171,14 @@ export class DatabaseManager {
       ORDER BY created_at ASC 
       LIMIT 1
     `).get(serverSlug) as { id: string } | undefined;
-    
+
     return result?.id;
   }
 
   public getBucketedPostsByCategory(
-    serverSlug: string, 
+    serverSlug: string,
     bucket: keyof BucketedPosts,
-    limit: number = 20, 
+    limit: number = 20,
     offset: number = 0
   ): Post[] {
     try {
@@ -276,13 +276,13 @@ export class DatabaseManager {
 
   public markPostsAsSeen(serverSlug: string, bucket: string, seenFrom: string, seenTo: string): number {
     console.log(`Marking posts as seen for server: ${serverSlug}, bucket: ${bucket}, from: ${seenFrom}, to: ${seenTo}`);
-    
+
     const stmt = this.db.prepare(`
       UPDATE posts
       SET seen = 1
       WHERE server_slug = ? AND bucket = ? AND created_at BETWEEN ? AND ?
     `);
-    
+
     const result = stmt.run(serverSlug, bucket, seenFrom, seenTo);
     console.log(`Rows updated: ${result.changes}`);
     return result.changes;
