@@ -28,7 +28,9 @@ const testPost1: Post = {
   bucket: 'regular',
   card: null,
   account_tags: [],
-  account_bot: false
+  account_bot: false,
+  poll: null,
+  reblogged_id: null
 };
 
 const testPost2: Post = {
@@ -56,7 +58,9 @@ const testPost2: Post = {
   bucket: 'withImages',
   card: null,
   account_tags: [],
-  account_bot: false
+  account_bot: false,
+  poll: null,
+  reblogged_id: null
 };
 
 const testPost3: Post = {
@@ -81,7 +85,9 @@ const testPost3: Post = {
   bucket: 'asReplies',
   card: null,
   account_tags: [],
-  account_bot: false
+  account_bot: false,
+  poll: null,
+  reblogged_id: null
 };
 
 const testPost4: Post = {
@@ -106,7 +112,9 @@ const testPost4: Post = {
   bucket: 'fromBots',
   card: null,
   account_tags: [],
-  account_bot: true
+  account_bot: true,
+  poll: null,
+  reblogged_id: null
 };
 
 const testPost5: Post = {
@@ -131,7 +139,9 @@ const testPost5: Post = {
   bucket: 'withLinks',
   card: null,
   account_tags: [],
-  account_bot: false
+  account_bot: false,
+  poll: null,
+  reblogged_id: null
 };
 
 const testPost6: Post = {
@@ -156,7 +166,9 @@ const testPost6: Post = {
   bucket: 'nonEnglish',
   card: null,
   account_tags: [],
-  account_bot: false
+  account_bot: false,
+  poll: null,
+  reblogged_id: null
 };
 
 const testPost7: Post = {
@@ -181,7 +193,9 @@ const testPost7: Post = {
   bucket: 'networkMentions',
   card: null,
   account_tags: [],
-  account_bot: false
+  account_bot: false,
+  poll: null,
+  reblogged_id: null
 };
 
 describe('DatabaseManager Tests', () => {

@@ -73,6 +73,21 @@ interface MastodonAccount {
   bot: boolean;
 }
 
+interface MastodonPollOption {
+  title: string;
+  votes_count: number;
+}
+
+interface MastodonPoll {
+  id: string;
+  options: MastodonPollOption[];
+  votes_count: number;
+  expires_at: string | null;
+  expired: boolean;
+  multiple: boolean;
+  voters_count: number | null;
+}
+
 interface MastodonPost {
   id: string;
   created_at: string;
@@ -87,6 +102,9 @@ interface MastodonPost {
   reblogs_count: number;
   replies_count: number;
   card: any | null;
+  poll: MastodonPoll | null; // XXX
+  // reblogged_id: string | null;
+  reblog: string | null;
 }
 
 function mastodonPostToPost(mastodonPost: MastodonPost, serverSlug: string): Post {
@@ -101,7 +119,33 @@ function mastodonPostToPost(mastodonPost: MastodonPost, serverSlug: string): Pos
     account_bot: mastodonPost.account.bot,
     server_slug: serverSlug,
     bucket: '',
-    account_tags: []
+    account_tags: [],
+    poll: mastodonPost.poll ? mastodonPollToPoll(mastodonPost.poll) : null,
+    reblogged_id: mastodonPost.reblog,
+    // poll: mastodonPost.poll ? {
+    //   id: mastodonPost.poll.id,
+    //   options: mastodonPost.poll.options.map(option => ({
+    //     label: option.label,
+    //     votes: option.votes,
+    //   })),
+    //   votes_count: mastodonPost.poll.votes_count,
+    //   expires_at: mastodonPost.poll.expires_at,
+    // } : null,
+  };
+}
+
+function mastodonPollToPoll(mastodonPoll: MastodonPoll): Poll {
+  return {
+    id: mastodonPoll.id,
+    options: mastodonPoll.options.map(option => ({
+      title: option.title, // Map `title` directly
+      votes_count: option.votes_count, // Map `votes_count` directly
+    })),
+    votes_count: mastodonPoll.votes_count,
+    expires_at: mastodonPoll.expires_at,
+    expired: mastodonPoll.expired,
+    multiple: mastodonPoll.multiple,
+    voters_count: mastodonPoll.voters_count ?? null, // Handle nullable field
   };
 }
 

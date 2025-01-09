@@ -52,6 +52,8 @@ export class DatabaseManager {
         server_slug TEXT NOT NULL,
         bucket TEXT NOT NULL,
         card TEXT,
+        poll TEXT,
+        reblogged_id TEXT,
         UNIQUE(id, server_slug)
       );
 
@@ -190,7 +192,7 @@ export class DatabaseManager {
         id, seen, created_at, content, language, in_reply_to_id, url,
         account_id, account_username, account_display_name, account_url, account_avatar,
         media_attachments, visibility, favourites_count, reblogs_count, replies_count,
-        server_slug, bucket, card
+        server_slug, bucket, card, poll, reblogged_id
       ) VALUES (
         @id, @seen, @created_at, @content, @language, @in_reply_to_id, @url,
         @account_id, @account_username, @account_display_name, @account_url, @account_avatar,
@@ -198,7 +200,7 @@ export class DatabaseManager {
         COALESCE(@favourites_count, 0),
         COALESCE(@reblogs_count, 0),
         COALESCE(@replies_count, 0),
-        @server_slug, @bucket, @card
+        @server_slug, @bucket, @card, @poll, @reblogged_id
       )
     `);
 
@@ -208,7 +210,8 @@ export class DatabaseManager {
         ? JSON.stringify(post.media_attachments)
         : post.media_attachments || '[]',
       card: post.card ? JSON.stringify(post.card) : null, // Stringify card object
-      bucket: this.determineBucket(post)
+      poll: post.poll ? JSON.stringify(post.poll) : null, // Stringify poll object
+      bucket: this.determineBucket(post),
     };
 
     return stmt.run(postData);
@@ -356,7 +359,8 @@ export class DatabaseManager {
       ...sqlitePost,
       media_attachments: JSON.parse(sqlitePost.media_attachments),
       card: sqlitePost.card ? JSON.parse(sqlitePost.card) : null,
-      account_tags: this.getAccountTags(sqlitePost.account_id)
+      account_tags: this.getAccountTags(sqlitePost.account_id),
+      poll: sqlitePost.poll ? JSON.parse(sqlitePost.poll) : null,
     };
   }
 
@@ -397,16 +401,18 @@ interface SQLitePost {
   server_slug: string;
   bucket: string;
   card: string | null;
+  poll: string | null;
+  reblogged_id: string | null;
 }
 
 // Account tags come from JOIN with account_tags table
-export interface Post extends Omit<SQLitePost, 'media_attachments' | 'card'> {
-  media_attachments: MediaAttachment[];
-  card: PostCard | null;
-  account_tags: AccountTag[];
+export interface Post extends Omit<SQLitePost, 'media_attachments' | 'card' | 'poll'> {
+  media_attachments: MediaAttachment[]; // Transform media_attachments to array of objects
+  card: PostCard | null; // Transform card to PostCard type
+  poll: Poll | null; // Transform poll to Poll type
+  account_tags: AccountTag[]; // Join account_tags to include associated tags
 }
 
-// Transformed types
 export interface PostCard {
   url: string;
   title: string;
@@ -419,6 +425,21 @@ export interface MediaAttachment {
   type: string;
   url?: string;
   preview_url?: string;
+}
+
+export interface PollOption {
+  title: string;
+  votes_count: number;
+}
+
+export interface Poll {
+  id: string;
+  options: PollOption[];
+  votes_count: number;
+  expires_at: string | null;
+  expired: boolean;
+  multiple: boolean;
+  voters_count: number | null;
 }
 
 export interface BucketedPosts {

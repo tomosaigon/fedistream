@@ -350,6 +350,43 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
                       </div>
                     </a>
                   )}
+
+                  {/* Poll */}
+                  {post.poll && (
+                    <div className="mt-4 border-t pt-4">
+                      <h4 className="font-semibold text-lg mb-2">Poll</h4>
+                      <ul className="space-y-2">
+                        {(() => {
+                          const poll = post.poll!; // Assert `post.poll` is not null here
+                          return poll.options.map((option, index) => {
+                            const percentage = poll.votes_count
+                              ? Math.round((option.votes_count / poll.votes_count) * 100)
+                              : 0;
+                            return (
+                              <li key={index}>
+                                <div className="flex justify-between mb-1 text-sm">
+                                  <span className="flex items-center gap-1">
+                                    <span>{option.title}</span>
+                                  </span>
+                                  <span className="text-gray-500">{percentage}%</span>
+                                </div>
+                                <div className="relative w-full h-2 bg-gray-300 rounded-full">
+                                  <div
+                                    className="absolute h-full bg-blue-500 rounded-full"
+                                    style={{ width: `${percentage}%` }}
+                                  />
+                                </div>
+                              </li>
+                            );
+                          });
+                        })()}
+                      </ul>
+                      <div className="text-gray-500 text-sm mt-3 flex justify-between">
+                        <span>{post.poll.voters_count || '0'} people</span>
+                        <span>{post.poll.expired ? "Closed" : "Active"}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Media Attachments */}
@@ -417,7 +454,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
                   </p>
                 )}
                 <div className="flex flex-row sm:flex-col gap-1 sm:gap-2">
-                <button
+                  <button
                     onClick={() => handleFavorite(post.url)}
                     className="w-full px-3 py-1 bg-yellow-300 text-white rounded hover:bg-yellow-500 flex items-center justify-center space-x-2"
                   >
