@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getServerBySlug } from '../../config/servers';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { dbManager } from '../../db';
-import { Post } from '../../db/database';
+import { Poll, Post } from '../../db/database';
 
 // https://docs.joinmastodon.org/methods/timelines/
 // local
