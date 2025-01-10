@@ -15,7 +15,7 @@ interface PostListProps {
 }
 
 const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, showBitter, showPhlog, highlightThreshold }) => {
-  const { mutedWords, loading: loadingMutedWords, refreshMutedWords, addMutedWord } = useMutedWords();
+  const { mutedWords, addMutedWord } = useMutedWords();
   const [posts, setPosts] = useState(initialPosts);
   const [activeImage, setActiveImage] = useState<MediaAttachment | null>(null);
   const [activePost, setActivePost] = useState<Post | null>(null);
@@ -217,18 +217,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
                 : 'bg-white'
               }`}>
                 {/* Post Header */}
-                <div className={`p-4 flex items-start space-x-3 ${
-                  ''
-                  // post.account_tags?.some(t => t.tag === 'phlog')
-                  //   ? 'border-b border-yellow-400'
-                  //   : post.account_tags?.some(t => t.tag === 'cookie')
-                  //   ? `border-b border-green-${Math.min(400, 200 + (post.account_tags.find(t => t.tag === 'cookie')?.count || 0) * 50)}`
-                  //   : post.account_tags?.some(t => t.tag === 'spam')
-                  //   ? 'border-b border-red-400'
-                  // : post.account_tags?.some(t => t.tag === 'bitter')
-                  //   ? 'border-b border-yellow-400'
-                  // : 'border-b border-gray-200'
-                }`}>
+                <div className={`p-4 flex items-start space-x-3`}>
                   {post.account_url && (
                     <a
                       href={post.account_url}
