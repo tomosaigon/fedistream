@@ -12,10 +12,6 @@ const toastOptions: ToastOptions = {
   style: {
     cursor: 'pointer'
   },
-  // onClick: () => {
-  //   console.log('TODO XXX Toast clicked!'); // Debug log
-  //   toast.dismiss(); // broken
-  // }
 };
 
 interface TimelineResponse {
@@ -25,16 +21,28 @@ interface TimelineResponse {
 
 const POSTS_PER_PAGE = 25;
 
-const ORDERED_CATEGORIES = [
-  { key: 'regular', label: 'Regular Posts' },
-  { key: 'with-images', label: 'Images' },
-  { key: 'replies', label: 'Replies' },
-  { key: 'network-mentions', label: 'Mentions' },
-  { key: 'hashtags', label: 'Hashtags' },
-  { key: 'with-links', label: 'Links' },
-  { key: 'from-bots', label: 'Bots' },
-  { key: 'non-english', label: 'Non-English' },
+export const CATEGORY_MAP = [
+  { slug: 'regular', bucket: Bucket.regular, label: 'Regular Posts' },
+  { slug: 'with-images', bucket: Bucket.withImages, label: 'Posts with Images' },
+  { slug: 'replies', bucket: Bucket.asReplies, label: 'Reply Posts' },
+  { slug: 'network-mentions', bucket: Bucket.networkMentions, label: 'Network Mentions' },
+  { slug: 'hashtags', bucket: Bucket.hashtags, label: 'Hashtag Posts' },
+  { slug: 'with-links', bucket: Bucket.withLinks, label: 'Posts with Links' },
+  { slug: 'from-bots', bucket: Bucket.fromBots, label: 'Bot Posts' },
+  { slug: 'non-english', bucket: Bucket.nonEnglish, label: 'Non-English Posts' },
+  { slug: 'reblogs', bucket: Bucket.reblogs, label: 'Reblog Posts' },
 ] as const;
+
+// Function to get the Bucket value from a category slug
+export function getCategoryKey(categorySlug: string): Bucket {
+  const category = CATEGORY_MAP.find(c => c.slug === categorySlug);
+  return category?.bucket || Bucket.regular;
+}
+
+export function getCategoryLabel(categorySlug: string): string {
+  const category = CATEGORY_MAP.find(c => c.slug === categorySlug);
+  return category?.label || 'Unknown';
+}
 
 export default function CategoryPage() {
   const router = useRouter();
@@ -407,7 +415,7 @@ export default function CategoryPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                     )}
                   </svg>
-                  <span className="ml-2">Cat: {ORDERED_CATEGORIES.find(c => c.key === category)?.label ?? 'Unknown'}</span>
+                  <span className="ml-2">Cat: {getCategoryLabel(category as string)}</span>
                 </button>
               </div>
             </div>
@@ -477,12 +485,12 @@ export default function CategoryPage() {
 
             {/* categories and filters */}
             <div className={`${categoryMenuOpen ? 'block' : 'hidden'} w-full mt-2`}>
-              {ORDERED_CATEGORIES.map(({ key, label }) => (
+              {CATEGORY_MAP.map(({ slug: key, label }) => (
                 <Link
                   key={key}
                   href={`/${server}/${key}`}
                   className={`block px-4 py-3 text-base font-medium transition-colors
-                    ${category === key 
+                    ${category === key
                       ? 'text-blue-600 bg-blue-50'
                       : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                     }`}
@@ -561,7 +569,7 @@ export default function CategoryPage() {
                 ← Back to Categories
               </Link>
               <h1 className="text-2xl font-bold mt-2">
-                {getCategoryTitle(category as string)} 
+                {getCategoryLabel(category as string)} 
                 <span className="text-gray-500 text-xl ml-2">
                   ({totalCount} total)
                 </span>
@@ -609,31 +617,3 @@ export default function CategoryPage() {
   );
 }
 
-function getCategoryKey(category: string): Bucket {
-  const categoryMap: Record<string, Bucket> = {
-    'regular': Bucket.regular,
-    'with-images': Bucket.withImages,
-    'replies': Bucket.asReplies,
-    'network-mentions': Bucket.networkMentions,
-    'hashtags': Bucket.hashtags,
-    'with-links': Bucket.withLinks,
-    'from-bots': Bucket.fromBots,
-    'non-english': Bucket.nonEnglish,
-  };
-
-  return categoryMap[category] || Bucket.regular;
-}
-
-function getCategoryTitle(category: string): string {
-  switch (category) {
-    case 'non-english': return 'Non-English Posts';
-    case 'with-images': return 'Posts with Images';
-    case 'replies': return 'Reply Posts';
-    case 'network-mentions': return 'Network Mentions';
-    case 'hashtags': return 'Hashtag Posts';
-    case 'with-links': return 'Posts with Links';
-    case 'from-bots': return 'Bot Posts';
-    case 'regular': return 'Regular Posts';
-    default: return 'Posts';
-  }
-}
