@@ -51,6 +51,7 @@ export class DatabaseManager {
       CREATE TABLE posts (
         id TEXT PRIMARY KEY,
         parent_id TEXT,
+        was_reblogged	INTEGER DEFAULT 0,
         seen INTEGER DEFAULT 0,
         created_at TEXT NOT NULL,
         content TEXT NOT NULL,
@@ -169,22 +170,24 @@ export class DatabaseManager {
 
   public insertPost(post: Post) {
     const stmt = this.db.prepare(`
-      INSERT OR REPLACE INTO posts (
-        id, parent_id, seen, created_at, content, language, in_reply_to_id, uri, url,
+      INSERT INTO posts (
+        id, parent_id, was_reblogged, seen, created_at, content, language, in_reply_to_id, uri, url,
         account_id, account_username, account_acct, account_display_name, account_url, account_avatar,
         media_attachments, visibility, favourites_count, reblogs_count, replies_count,
         server_slug, bucket, card, poll
-      ) VALUES (
-        @id, @parent_id, @seen, @created_at, @content, @language, @in_reply_to_id, @uri, @url,
+      ) 
+      VALUES (
+        @id, @parent_id, @was_reblogged, @seen, @created_at, @content, @language, @in_reply_to_id, @uri, @url,
         @account_id, @account_username, @account_acct, @account_display_name, @account_url, @account_avatar,
-        @media_attachments, @visibility, 
+        @media_attachments, @visibility,
         COALESCE(@favourites_count, 0),
         COALESCE(@reblogs_count, 0),
         COALESCE(@replies_count, 0),
         @server_slug, @bucket, @card, @poll
       )
+      ON CONFLICT(id, server_slug) DO NOTHING
     `);
-
+  
     const postData = {
       ...post,
       media_attachments: Array.isArray(post.media_attachments)
@@ -194,16 +197,23 @@ export class DatabaseManager {
       poll: post.poll ? JSON.stringify(post.poll) : null, // Stringify poll object
       bucket: determineBucket(post),
     };
-    console.log('Inserting post:', postData);
-
-    return stmt.run(postData);
+  
+    // console.log('Inserting post:', postData);
+  
+    const result = stmt.run(postData);
+  
+    if (result.changes === 0) {
+      console.log(`No new post inserted (ID: ${post.id}, Server: ${post.server_slug})`);
+    }
+  
+    return result;
   }
 
   public getLatestPostId(serverSlug: string): string | undefined {
     const result = this.db.prepare(`
       SELECT id 
       FROM posts 
-      WHERE server_slug = ? 
+      WHERE server_slug = ? AND was_reblogged = 0
       ORDER BY created_at DESC 
       LIMIT 1
     `).get(serverSlug) as { id: string } | undefined;
@@ -215,7 +225,7 @@ export class DatabaseManager {
     const result = this.db.prepare(`
       SELECT id 
       FROM posts 
-      WHERE server_slug = ? 
+      WHERE server_slug = ? AND was_reblogged = 0
       ORDER BY created_at ASC 
       LIMIT 1
     `).get(serverSlug) as { id: string } | undefined;
@@ -280,6 +290,7 @@ export class DatabaseManager {
         const transformRow = (row: SQLitePostWithReblog): SQLitePost => ({
           id: row.reblog_id!,
           parent_id: row.reblog_parent_id!,
+          was_reblogged: row.reblog_was_reblogged!,
           seen: row.reblog_seen!,
           created_at: row.reblog_created_at!,
           content: row.reblog_content!,
@@ -408,13 +419,13 @@ export class DatabaseManager {
       reblog: null, // Reblogs are handled separately
     };
   }
-
 }
 
 // Raw database type without account_tags field
 interface SQLitePost {
   id: string;
   parent_id: string | null; // -- The ID of the original post if this post is a reblog. NULL for normal posts.
+  was_reblogged: number; // 0 for normal posts, 1 for reblogs
   seen: number; // bool
   created_at: string;
   content: string;
@@ -443,6 +454,7 @@ interface SQLitePost {
 interface SQLitePostWithReblog extends SQLitePost {
   reblog_id?: string;
   reblog_parent_id?: string | null;
+  reblog_was_reblogged?: number;
   reblog_seen?: number;
   reblog_created_at?: string;
   reblog_content?: string;

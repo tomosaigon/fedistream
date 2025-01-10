@@ -59,6 +59,7 @@ async function fetchTimelinePage(baseUrl: string, options?: {
       }
     : {}; // Only add the Authorization header if there's a token
 
+  // console.log('as curl: ', `curl -H "Authorization: Bearer ${token}" ${timelineUrl}`); 
   const response = await axios.get(timelineUrl, config);
 
   return response.data;
@@ -93,6 +94,7 @@ interface MastodonPost {
   poll: Poll | null;
   // reblogged_id: string | null;
   reblog: MastodonPost | null;
+  was_reblogged: number;
 }
 
 function mastodonPostToPost(mastodonPost: MastodonPost, serverSlug: string): Post {
@@ -199,8 +201,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Store new posts in database
     newPosts.forEach((post: MastodonPost) => {
+      post.was_reblogged = 0;
       // console.log('Inserting post:', post);
       if (post.reblog) {
+        post.reblog.was_reblogged = 1;
         // console.log('Reblogged post:', post.reblog);
         dbManager.insertPost(mastodonPostToPost(post.reblog, server as string));
 

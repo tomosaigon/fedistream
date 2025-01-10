@@ -9,6 +9,7 @@ let dbManager: DatabaseManager;
 const testPost1: Post = {
   id: '123',
   seen: 0,
+  was_reblogged: 0,
   created_at: new Date('2023-01-01T00:00:00Z').toISOString(),
   content: 'Hello world!',
   language: 'en',
@@ -39,6 +40,7 @@ const testPost1: Post = {
 const testPost2: Post = {
   id: '124',
   seen: 0,
+  was_reblogged: 0,
   created_at: new Date('2023-01-02T00:00:00Z').toISOString(),
   content: 'Check out this image!',
   language: 'en',
@@ -72,6 +74,7 @@ const testPost2: Post = {
 const testPost3: Post = {
   id: '125',
   seen: 0,
+  was_reblogged: 0,
   created_at: new Date('2023-01-03T00:00:00Z').toISOString(),
   content: 'Replying to post',
   language: 'en',
@@ -102,6 +105,7 @@ const testPost3: Post = {
 const testPost4: Post = {
   id: '126',
   seen: 0,
+  was_reblogged: 0,
   created_at: new Date('2023-01-04T00:00:00Z').toISOString(),
   content: 'boop beep bop',
   language: 'en',
@@ -132,6 +136,7 @@ const testPost4: Post = {
 const testPost5: Post = {
   id: '127',
   seen: 0,
+  was_reblogged: 0,
   created_at: new Date('2023-01-05T00:00:00Z').toISOString(),
   content: 'Check this out <a href="https://blog.example.com/protocol/" target="_blank" rel="nofollow noopener noreferrer"><span class="invisible">https://</span><span class="ellipsis">blog.example.com/</span><span class="invisible">ext-protocol/</span></a>',
   language: 'en',
@@ -162,6 +167,7 @@ const testPost5: Post = {
 const testPost6: Post = {
   id: '128',
   seen: 0,
+  was_reblogged: 0,
   created_at: new Date('2023-01-06T00:00:00Z').toISOString(),
   content: 'Hola Mundo!',
   language: 'es',
@@ -192,6 +198,7 @@ const testPost6: Post = {
 const testPost7: Post = {
   id: '129',
   seen: 0,
+  was_reblogged: 0,
   created_at: new Date('2023-01-07T00:00:00Z').toISOString(),
   content: '<a href="https://fosstodon.org/tags/example" class="mention hashtag" rel="tag">#<span>example</span></a>',
   language: 'en',
