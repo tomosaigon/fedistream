@@ -2,24 +2,30 @@ import Database from 'better-sqlite3';
 
 export class DatabaseManager {
   private db: Database.Database;
+  private tableMappings: { [key: string]: () => void };
 
   constructor() {
     const dbPath = process.env.DATABASE_FILE || 'mastodon.db';
     console.log('Database path:', dbPath);
     this.db = new Database(dbPath);
 
-    if (!this.tableExists('posts')) {
-      this.initializeSchema();
-    }
-    if (!this.tableExists('account_tags')) {
-      this.createAccountTagsTable();
-    }
-    if (!this.tableExists('muted_words')) {
-      this.createMutedWordsTable();
-    }
-    if (!this.tableExists('credentials')) {
-      this.createCredentialsTable();
-    }
+    // Map table names to their corresponding creation methods (with correct 'this' binding)
+    this.tableMappings = {
+      posts: () => this.createPostsTable(),
+      account_tags: () => this.createAccountTagsTable(),
+      muted_words: () => this.createMutedWordsTable(),
+      credentials: () => this.createCredentialsTable()
+    };
+
+    this.ensureTablesExist();
+  }
+
+  private ensureTablesExist(): void {
+    Object.keys(this.tableMappings).forEach(table => {
+      if (!this.tableExists(table)) {
+        this.tableMappings[table]();
+      }
+    });
   }
 
   private tableExists(tableName: string): boolean {
@@ -29,7 +35,19 @@ export class DatabaseManager {
     return !!result;
   }
 
-  private initializeSchema() {
+  public resetDatabase(serverSlug?: string): void {
+    if (serverSlug) {
+      this.db.prepare('DELETE FROM posts WHERE server_slug = ?').run(serverSlug);
+    } else {
+      Object.keys(this.tableMappings).forEach(table => {
+        this.db.exec(`DROP TABLE IF EXISTS ${table}`);
+      });
+      this.ensureTablesExist();
+    }
+  }
+
+  private createPostsTable() {
+    console.log('Creating posts table', this.db);
     this.db.exec(`
       CREATE TABLE posts (
         id TEXT PRIMARY KEY,
@@ -173,21 +191,6 @@ export class DatabaseManager {
     if (post.content.includes('<a href="')) return 'withLinks';
     if (post.in_reply_to_id) return 'asReplies';
     return 'regular';
-  }
-
-  public resetDatabase(serverSlug?: string) {
-    if (serverSlug) {
-      this.db.prepare('DELETE FROM posts WHERE server_slug = ?').run(serverSlug);
-    } else {
-      const tables = ['account_tags', 'posts', 'muted_words', 'credentials'];
-      tables.forEach(table => {
-        this.db.exec(`DROP TABLE IF EXISTS ${table}`);
-      });
-      this.initializeSchema();
-      this.createAccountTagsTable();
-      this.createMutedWordsTable();
-      this.createCredentialsTable();
-    }
   }
 
   public insertPost(post: Post) {
