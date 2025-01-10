@@ -67,18 +67,21 @@ async function fetchTimelinePage(baseUrl: string, options?: {
 interface MastodonAccount {
   id: string;
   username: string;
+  // acct - full
   display_name: string;
   url: string;
   avatar: string;
   bot: boolean;
 }
 
+// aka Status
 interface MastodonPost {
   id: string;
   created_at: string;
   content: string;
   language: string;
   in_reply_to_id: string | null;
+  uri: string;
   url: string;
   account: MastodonAccount;
   media_attachments: any[];
@@ -87,9 +90,9 @@ interface MastodonPost {
   reblogs_count: number;
   replies_count: number;
   card: any | null;
-  poll: Poll | null; // XXX
+  poll: Poll | null;
   // reblogged_id: string | null;
-  reblog: string | null;
+  reblog: MastodonPost | null;
 }
 
 function mastodonPostToPost(mastodonPost: MastodonPost, serverSlug: string): Post {
@@ -106,7 +109,11 @@ function mastodonPostToPost(mastodonPost: MastodonPost, serverSlug: string): Pos
     bucket: '',
     account_tags: [],
     poll: mastodonPost.poll ? mastodonPost.poll : null,
-    reblogged_id: mastodonPost.reblog,
+    parent_id: mastodonPost.reblog ? mastodonPost.reblog.id : null,
+    reblog: mastodonPost.reblog ? mastodonPostToPost(mastodonPost.reblog, serverSlug) : null,
+    // reblogged_at: mastodonPost.reblog ? mastodonPost.reblog.created_at : null,
+    // reblog: mastodonPost.reblog ? mastodonPostToPost(mastodonPost.reblog, serverSlug) : null,
+    // reblogged_id: mastodonPost.reblog,
     // poll: mastodonPost.poll ? {
     //   id: mastodonPost.poll.id,
     //   options: mastodonPost.poll.options.map(option => ({
@@ -192,6 +199,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Store new posts in database
     newPosts.forEach((post: MastodonPost) => {
       // console.log('Inserting post:', post);
+      if (post.reblog) {
+        // console.log('Reblogged post:', post.reblog);
+        dbManager.insertPost(mastodonPostToPost(post.reblog, server as string));
+
+      }
       dbManager.insertPost(mastodonPostToPost(post, server as string));
     });
 

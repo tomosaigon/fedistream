@@ -190,8 +190,17 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
           ) {
             return null;
           }
-
+          
           const nonStopWords = getNonStopWords(post.content);
+
+          let reblogger = null;
+
+  // If the post is a reblog, set Reblogger and replace post with the reblogged content
+  if (post.reblog) {
+    reblogger = { ...post }; // Store the current post as the Reblogger
+    post = post.reblog;      // Replace the post with the reblogged content
+  }
+
 
           // Debug logging
           // console.log('Post ID:', post.id, '+', (new Date(posts[0].created_at).getTime() - new Date(post.created_at).getTime())/(3600*1000), 'hours');
@@ -202,6 +211,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
 
           return (
             <div key={post.id} className="flex flex-col sm:flex-row bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden max-w-full">
+
               <article className={`flex-grow min-w-0 ${
                 containsMutedWord(nonStopWords, mutedWords) ? 'bg-blue-50 opacity-10 hover:opacity-75'
                 : highlightThreshold && post.reblogs_count + post.favourites_count > highlightThreshold
@@ -216,6 +226,52 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
                   ? 'bg-yellow-50 opacity-20 hover:opacity-75 transition-all text-xs sm:text-[0.625rem]'
                 : 'bg-white'
               }`}>
+                {/* Reblog Header */}
+                {reblogger && (
+                  <div className="flex items-center space-x-2 text-sm sm:text-base text-gray-500 italic p-4">
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
+                    </svg>
+                    <span>
+                      <a
+                        href={reblogger.account_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline font-semibold"
+                      >
+                        {reblogger.account_display_name}
+                      </a>{" "}
+                      boosted on{" "}
+                      <a
+                        href={reblogger.uri}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline"
+                      >
+                        {new Date(reblogger.created_at).toLocaleDateString(undefined, {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}{" "}
+                        at{" "}
+                        {new Date(reblogger.created_at).toLocaleTimeString(undefined, {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </a>
+                    </span>
+                  </div>
+                )}
                 {/* Post Header */}
                 <div className={`p-4 flex items-start space-x-3`}>
                   {post.account_url && (

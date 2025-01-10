@@ -33,11 +33,13 @@ export class DatabaseManager {
     this.db.exec(`
       CREATE TABLE posts (
         id TEXT PRIMARY KEY,
+        parent_id TEXT,
         seen INTEGER DEFAULT 0,
         created_at TEXT NOT NULL,
         content TEXT NOT NULL,
         language TEXT,
         in_reply_to_id TEXT,
+        uri TEXT,
         url TEXT,
         account_id TEXT,
         account_username TEXT NOT NULL,
@@ -53,8 +55,8 @@ export class DatabaseManager {
         bucket TEXT NOT NULL,
         card TEXT,
         poll TEXT,
-        reblogged_id TEXT,
         UNIQUE(id, server_slug)
+        FOREIGN KEY(parent_id) REFERENCES posts(id) ON DELETE CASCADE
       );
 
       CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at);
@@ -161,8 +163,9 @@ export class DatabaseManager {
       mediaAttachments = [];
     }
 
+    if (post.parent_id) return 'reblogs';
     if (post.account_bot) return 'fromBots';
-    if (post.language !== 'en') return 'nonEnglish';
+    if (post.language && post.language !== 'en') return 'nonEnglish'; // assume unspecified language is English
     if (mediaAttachments?.length > 0) return 'withImages';
     if (isHashtagPost(post.content)) return 'hashtags';
     if (isNetworkMentionPost(post.content)) return 'networkMentions';
@@ -189,18 +192,18 @@ export class DatabaseManager {
   public insertPost(post: Post) {
     const stmt = this.db.prepare(`
       INSERT OR REPLACE INTO posts (
-        id, seen, created_at, content, language, in_reply_to_id, url,
+        id, parent_id, seen, created_at, content, language, in_reply_to_id, uri, url,
         account_id, account_username, account_display_name, account_url, account_avatar,
         media_attachments, visibility, favourites_count, reblogs_count, replies_count,
-        server_slug, bucket, card, poll, reblogged_id
+        server_slug, bucket, card, poll
       ) VALUES (
-        @id, @seen, @created_at, @content, @language, @in_reply_to_id, @url,
+        @id, @parent_id, @seen, @created_at, @content, @language, @in_reply_to_id, @uri, @url,
         @account_id, @account_username, @account_display_name, @account_url, @account_avatar,
         @media_attachments, @visibility, 
         COALESCE(@favourites_count, 0),
         COALESCE(@reblogs_count, 0),
         COALESCE(@replies_count, 0),
-        @server_slug, @bucket, @card, @poll, @reblogged_id
+        @server_slug, @bucket, @card, @poll
       )
     `);
 
@@ -213,6 +216,7 @@ export class DatabaseManager {
       poll: post.poll ? JSON.stringify(post.poll) : null, // Stringify poll object
       bucket: this.determineBucket(post),
     };
+    console.log('Inserting post:', postData);
 
     return stmt.run(postData);
   }
@@ -248,17 +252,89 @@ export class DatabaseManager {
     offset: number = 0
   ): Post[] {
     try {
-      const posts = this.db.prepare(`
-        SELECT p.*, GROUP_CONCAT(at.tag) as account_tags
-        FROM posts p
-        LEFT JOIN account_tags at ON p.account_id = at.user_id
-        WHERE p.server_slug = ? AND p.bucket = ? AND p.seen = 0
-        GROUP BY p.id
-        ORDER BY p.created_at DESC 
-        LIMIT ? OFFSET ?
-      `).all(serverSlug, bucket, limit, offset) as SQLitePost[];
-
-      return posts.map((post) => this.transformSQLitePost(post));
+      const rows = this.db
+        .prepare(
+          `
+          SELECT 
+            p.*, 
+            rp.id AS reblog_id,
+            rp.parent_id AS reblog_parent_id,
+            rp.seen AS reblog_seen,
+            rp.created_at AS reblog_created_at,
+            rp.content AS reblog_content,
+            rp.language AS reblog_language,
+            rp.in_reply_to_id AS reblog_in_reply_to_id,
+            rp.uri AS reblog_uri,
+            rp.url AS reblog_url,
+            rp.account_id AS reblog_account_id,
+            rp.account_username AS reblog_account_username,
+            rp.account_display_name AS reblog_account_display_name,
+            rp.account_url AS reblog_account_url,
+            rp.account_avatar AS reblog_account_avatar,
+            rp.media_attachments AS reblog_media_attachments,
+            rp.visibility AS reblog_visibility,
+            rp.favourites_count AS reblog_favourites_count,
+            rp.reblogs_count AS reblog_reblogs_count,
+            rp.replies_count AS reblog_replies_count,
+            rp.server_slug AS reblog_server_slug,
+            rp.bucket AS reblog_bucket,
+            rp.card AS reblog_card,
+            rp.poll AS reblog_poll,
+            GROUP_CONCAT(at.tag) AS account_tags
+          FROM posts p
+          LEFT JOIN posts rp ON p.parent_id = rp.id
+          LEFT JOIN account_tags at ON p.account_id = at.user_id
+          WHERE 
+            p.server_slug = ? AND p.seen = 0
+            AND (
+              (p.parent_id IS NOT NULL AND rp.bucket = ?)
+              OR (p.parent_id IS NULL AND p.bucket = ?)
+            )
+          GROUP BY p.id
+          ORDER BY p.created_at DESC
+          LIMIT ? OFFSET ?
+        `
+        )
+        .all(serverSlug, bucket, bucket, limit, offset) as SQLitePostWithReblog[];
+  
+      const posts = rows.map((row: SQLitePostWithReblog) => {
+        const transformRow = (row: SQLitePostWithReblog): SQLitePost => ({
+          id: row.reblog_id!,
+          parent_id: row.reblog_parent_id!,
+          seen: row.reblog_seen!,
+          created_at: row.reblog_created_at!,
+          content: row.reblog_content!,
+          language: row.reblog_language!,
+          in_reply_to_id: row.reblog_in_reply_to_id!,
+          uri: row.reblog_uri!,
+          url: row.reblog_url!,
+          account_id: row.reblog_account_id!,
+          account_username: row.reblog_account_username!,
+          account_display_name: row.reblog_account_display_name!,
+          account_url: row.reblog_account_url!,
+          account_avatar: row.reblog_account_avatar!,
+          account_bot: row.reblog_account_bot!,
+          media_attachments: row.reblog_media_attachments!,
+          visibility: row.reblog_visibility!,
+          favourites_count: row.reblog_favourites_count!,
+          reblogs_count: row.reblog_reblogs_count!,
+          replies_count: row.reblog_replies_count!,
+          server_slug: row.reblog_server_slug!,
+          bucket: row.reblog_bucket!,
+          card: row.reblog_card!,
+          poll: row.reblog_poll!,
+        });
+      
+        const mainPost = this.transformSQLitePost(row);
+        const reblog = row.parent_id ? this.transformSQLitePost(transformRow(row)) : null;
+        if (reblog) {
+          // console.log('Reblog:', reblog);
+        }
+      
+        return { ...mainPost, reblog };
+      });
+  
+      return posts;
     } catch (error) {
       console.error('Error in getBucketedPostsByCategory:', error);
       return [];
@@ -282,7 +358,8 @@ export class DatabaseManager {
         hashtags: 0,
         withLinks: 0,
         fromBots: 0,
-        regular: 0
+        regular: 0,
+        reblogs: 0
       };
 
       posts.forEach(row => {
@@ -300,7 +377,8 @@ export class DatabaseManager {
         hashtags: 0,
         withLinks: 0,
         fromBots: 0,
-        regular: 0
+        regular: 0,
+        reblogs: 0
       };
     }
   }
@@ -361,6 +439,7 @@ export class DatabaseManager {
       card: sqlitePost.card ? JSON.parse(sqlitePost.card) : null,
       account_tags: this.getAccountTags(sqlitePost.account_id),
       poll: sqlitePost.poll ? JSON.parse(sqlitePost.poll) : null,
+      reblog: null, // Reblogs are handled separately
     };
   }
 
@@ -381,11 +460,13 @@ function isNetworkMentionPost(content: string): boolean {
 // Raw database type without account_tags field
 interface SQLitePost {
   id: string;
+  parent_id: string | null; // -- The ID of the original post if this post is a reblog. NULL for normal posts.
   seen: number; // bool
   created_at: string;
   content: string;
-  language: string;
+  language: string | null;
   in_reply_to_id: string | null;
+  uri: string;
   url: string;
   account_id: string;
   account_username: string;
@@ -402,7 +483,33 @@ interface SQLitePost {
   bucket: string;
   card: string | null;
   poll: string | null;
-  reblogged_id: string | null;
+}
+
+interface SQLitePostWithReblog extends SQLitePost {
+  reblog_id?: string;
+  reblog_parent_id?: string | null;
+  reblog_seen?: number;
+  reblog_created_at?: string;
+  reblog_content?: string;
+  reblog_language?: string | null;
+  reblog_in_reply_to_id?: string | null;
+  reblog_uri?: string | null;
+  reblog_url?: string | null;
+  reblog_account_id?: string | null;
+  reblog_account_username?: string;
+  reblog_account_display_name?: string;
+  reblog_account_url?: string | null;
+  reblog_account_avatar?: string | null;
+  reblog_account_bot?: boolean;
+  reblog_media_attachments?: string;
+  reblog_visibility?: string | null;
+  reblog_favourites_count?: number;
+  reblog_reblogs_count?: number;
+  reblog_replies_count?: number;
+  reblog_server_slug?: string;
+  reblog_bucket?: string;
+  reblog_card?: string | null;
+  reblog_poll?: string | null;
 }
 
 // Account tags come from JOIN with account_tags table
@@ -411,6 +518,7 @@ export interface Post extends Omit<SQLitePost, 'media_attachments' | 'card' | 'p
   card: PostCard | null; // Transform card to PostCard type
   poll: Poll | null; // Transform poll to Poll type
   account_tags: AccountTag[]; // Join account_tags to include associated tags
+  reblog: Post | null;
 }
 
 export interface PostCard {
@@ -451,6 +559,7 @@ export interface BucketedPosts {
   withLinks: Post[];
   fromBots: Post[];
   regular: Post[];
+  reblogs: Post[];
 }
 
 export interface AccountTag {

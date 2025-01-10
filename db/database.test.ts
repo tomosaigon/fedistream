@@ -13,6 +13,7 @@ const testPost1: Post = {
   content: 'Hello world!',
   language: 'en',
   in_reply_to_id: null,
+  uri: 'https://example.com',
   url: 'https://example.com',
   account_id: '1001',
   account_username: 'user123',
@@ -30,7 +31,8 @@ const testPost1: Post = {
   account_tags: [],
   account_bot: false,
   poll: null,
-  reblogged_id: null
+  parent_id: null,
+  reblog: null,
 };
 
 const testPost2: Post = {
@@ -40,6 +42,7 @@ const testPost2: Post = {
   content: 'Check out this image!',
   language: 'en',
   in_reply_to_id: null,
+  uri: 'https://example.com',
   url: 'https://example.com',
   account_id: '1002',
   account_username: 'user124',
@@ -60,7 +63,8 @@ const testPost2: Post = {
   account_tags: [],
   account_bot: false,
   poll: null,
-  reblogged_id: null
+  parent_id: null,
+  reblog: null,
 };
 
 const testPost3: Post = {
@@ -70,6 +74,7 @@ const testPost3: Post = {
   content: 'Replying to post',
   language: 'en',
   in_reply_to_id: '123',
+  uri: 'https://example.com',
   url: 'https://example.com',
   account_id: '1003',
   account_username: 'user125',
@@ -87,7 +92,8 @@ const testPost3: Post = {
   account_tags: [],
   account_bot: false,
   poll: null,
-  reblogged_id: null
+  parent_id: null,
+  reblog: null,
 };
 
 const testPost4: Post = {
@@ -97,6 +103,7 @@ const testPost4: Post = {
   content: 'boop beep bop',
   language: 'en',
   in_reply_to_id: null,
+  uri: 'https://example.com',
   url: 'https://example.com',
   account_id: '1004',
   account_username: 'user126',
@@ -114,7 +121,8 @@ const testPost4: Post = {
   account_tags: [],
   account_bot: true,
   poll: null,
-  reblogged_id: null
+  parent_id: null,
+  reblog: null,
 };
 
 const testPost5: Post = {
@@ -124,6 +132,7 @@ const testPost5: Post = {
   content: 'Check this out <a href="https://blog.example.com/protocol/" target="_blank" rel="nofollow noopener noreferrer"><span class="invisible">https://</span><span class="ellipsis">blog.example.com/</span><span class="invisible">ext-protocol/</span></a>',
   language: 'en',
   in_reply_to_id: null,
+  uri: 'https://example.com',
   url: 'https://example.com',
   account_id: '1005',
   account_username: 'user127',
@@ -141,7 +150,8 @@ const testPost5: Post = {
   account_tags: [],
   account_bot: false,
   poll: null,
-  reblogged_id: null
+  parent_id: null,
+  reblog: null,
 };
 
 const testPost6: Post = {
@@ -151,6 +161,7 @@ const testPost6: Post = {
   content: 'Hola Mundo!',
   language: 'es',
   in_reply_to_id: null,
+  uri: 'https://example.com',
   url: 'https://example.com',
   account_id: '1006',
   account_username: 'user128',
@@ -168,7 +179,8 @@ const testPost6: Post = {
   account_tags: [],
   account_bot: false,
   poll: null,
-  reblogged_id: null
+  parent_id: null,
+  reblog: null,
 };
 
 const testPost7: Post = {
@@ -178,6 +190,7 @@ const testPost7: Post = {
   content: '<a href="https://fosstodon.org/tags/example" class="mention hashtag" rel="tag">#<span>example</span></a>',
   language: 'en',
   in_reply_to_id: null,
+  uri: 'https://example.com',
   url: 'https://example.com',
   account_id: '1007',
   account_username: 'user129',
@@ -195,7 +208,8 @@ const testPost7: Post = {
   account_tags: [],
   account_bot: false,
   poll: null,
-  reblogged_id: null
+  parent_id: null,
+  reblog: null,
 };
 
 describe('DatabaseManager Tests', () => {
@@ -230,6 +244,7 @@ describe('DatabaseManager Tests', () => {
     const categoryCounts = dbManager.getCategoryCounts('test-server');
     expect(categoryCounts).toEqual({
       nonEnglish: 1,
+      reblogs: 0,
       withImages: 1,
       asReplies: 1,
       networkMentions: 0,
