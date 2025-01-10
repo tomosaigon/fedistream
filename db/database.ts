@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+import { Bucket, determineBucket } from './bucket';
 
 export class DatabaseManager {
   private db: Database.Database;
@@ -9,7 +10,6 @@ export class DatabaseManager {
     console.log('Database path:', dbPath);
     this.db = new Database(dbPath);
 
-    // Map table names to their corresponding creation methods (with correct 'this' binding)
     this.tableMappings = {
       posts: () => this.createPostsTable(),
       account_tags: () => this.createAccountTagsTable(),
@@ -47,7 +47,6 @@ export class DatabaseManager {
   }
 
   private createPostsTable() {
-    console.log('Creating posts table', this.db);
     this.db.exec(`
       CREATE TABLE posts (
         id TEXT PRIMARY KEY,
@@ -168,31 +167,6 @@ export class DatabaseManager {
     return !!stmt.get(serverUrl);
   }
 
-  public determineBucket(post: Post): string {
-    let mediaAttachments = [];
-
-    try {
-      if (typeof post.media_attachments === 'string') {
-        mediaAttachments = JSON.parse(post.media_attachments);
-      } else if (Array.isArray(post.media_attachments)) {
-        mediaAttachments = post.media_attachments;
-      }
-    } catch (error) {
-      console.warn('Failed to parse media_attachments:', error);
-      mediaAttachments = [];
-    }
-
-    if (post.parent_id) return 'reblogs';
-    if (post.account_bot) return 'fromBots';
-    if (post.language && post.language !== 'en') return 'nonEnglish'; // assume unspecified language is English
-    if (mediaAttachments?.length > 0) return 'withImages';
-    if (isHashtagPost(post.content)) return 'hashtags';
-    if (isNetworkMentionPost(post.content)) return 'networkMentions';
-    if (post.content.includes('<a href="')) return 'withLinks';
-    if (post.in_reply_to_id) return 'asReplies';
-    return 'regular';
-  }
-
   public insertPost(post: Post) {
     const stmt = this.db.prepare(`
       INSERT OR REPLACE INTO posts (
@@ -218,7 +192,7 @@ export class DatabaseManager {
         : post.media_attachments || '[]',
       card: post.card ? JSON.stringify(post.card) : null, // Stringify card object
       poll: post.poll ? JSON.stringify(post.poll) : null, // Stringify poll object
-      bucket: this.determineBucket(post),
+      bucket: determineBucket(post),
     };
     console.log('Inserting post:', postData);
 
@@ -251,7 +225,7 @@ export class DatabaseManager {
 
   public getBucketedPostsByCategory(
     serverSlug: string,
-    bucket: keyof BucketedPosts,
+    bucket: Bucket,
     limit: number = 20,
     offset: number = 0
   ): Post[] {
@@ -347,26 +321,22 @@ export class DatabaseManager {
     }
   }
 
-  public getCategoryCounts(serverSlug: string): Record<string, number> {
+  public getCategoryCounts(serverSlug: string): Record<Bucket, number> {
+    const counts: Record<Bucket, number> = {} as Record<Bucket, number>;
+
+    Object.values(Bucket).forEach(bucket => {
+      counts[bucket] = 0;
+    });
+
     try {
       const posts = this.db.prepare(`
         SELECT bucket, COUNT(*) as count
         FROM posts 
         WHERE server_slug = ? AND seen = 0
         GROUP BY bucket
-      `).all(serverSlug) as { bucket: keyof BucketedPosts, count: number }[];
-
-      const counts = {
-        nonEnglish: 0,
-        withImages: 0,
-        asReplies: 0,
-        networkMentions: 0,
-        hashtags: 0,
-        withLinks: 0,
-        fromBots: 0,
-        regular: 0,
-        reblogs: 0
-      };
+      `).all(serverSlug) as { bucket: Bucket, count: number }[];
+      // If the database contains an unexpected value for bucket 
+      // (e.g., one not part of the Bucket enum), it could cause runtime issues.
 
       posts.forEach(row => {
         counts[row.bucket] = row.count;
@@ -375,17 +345,7 @@ export class DatabaseManager {
       return counts;
     } catch (error) {
       console.error('Error in getCategoryCounts:', error);
-      return {
-        nonEnglish: 0,
-        withImages: 0,
-        asReplies: 0,
-        networkMentions: 0,
-        hashtags: 0,
-        withLinks: 0,
-        fromBots: 0,
-        regular: 0,
-        reblogs: 0
-      };
+      return counts;
     }
   }
 
@@ -449,18 +409,6 @@ export class DatabaseManager {
     };
   }
 
-}
-
-function isHashtagPost(content: string): boolean {
-  // Check for hashtag format
-  const links = content.match(/<a[^>]*>.*?<\/a>/g) || [];
-  return links.some(link => link.includes('class="mention hashtag"') || link.includes('class="hashtag"'));
-}
-
-function isNetworkMentionPost(content: string): boolean {
-  // Check for mention format
-  const links = content.match(/<a[^>]*>.*?<\/a>/g) || [];
-  return links.some(link => link.includes('class="u-url mention"'));
 }
 
 // Raw database type without account_tags field
@@ -558,17 +506,9 @@ export interface Poll {
   voters_count: number | null;
 }
 
-export interface BucketedPosts {
-  nonEnglish: Post[];
-  withImages: Post[];
-  asReplies: Post[];
-  networkMentions: Post[];
-  hashtags: Post[];
-  withLinks: Post[];
-  fromBots: Post[];
-  regular: Post[];
-  reblogs: Post[];
-}
+export type BucketedPosts = {
+  [K in Bucket]: Post[];
+};
 
 export interface AccountTag {
   tag: string;

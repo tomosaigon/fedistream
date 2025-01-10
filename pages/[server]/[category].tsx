@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useRef } from 'react';
-import { BucketedPosts, Post, AccountTag } from '../../db/database';
+import { Bucket } from '../../db/bucket';
 import PostList from '../../components/PostList';
 import { getServerBySlug, servers } from '../../config/servers';
 import Link from 'next/link';
@@ -609,18 +609,19 @@ export default function CategoryPage() {
   );
 }
 
-function getCategoryKey(category: string): keyof BucketedPosts {
-  const categoryMap: Record<string, keyof BucketedPosts> = {
-    'regular': 'regular',
-    'with-images': 'withImages',
-    'replies': 'asReplies',
-    'network-mentions': 'networkMentions',
-    'hashtags': 'hashtags',
-    'with-links': 'withLinks',
-    'from-bots': 'fromBots',
-    'non-english': 'nonEnglish'
+function getCategoryKey(category: string): Bucket {
+  const categoryMap: Record<string, Bucket> = {
+    'regular': Bucket.regular,
+    'with-images': Bucket.withImages,
+    'replies': Bucket.asReplies,
+    'network-mentions': Bucket.networkMentions,
+    'hashtags': Bucket.hashtags,
+    'with-links': Bucket.withLinks,
+    'from-bots': Bucket.fromBots,
+    'non-english': Bucket.nonEnglish,
   };
-  return categoryMap[category] || 'regular';
+
+  return categoryMap[category] || Bucket.regular;
 }
 
 function getCategoryTitle(category: string): string {
