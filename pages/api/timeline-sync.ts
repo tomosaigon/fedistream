@@ -67,7 +67,7 @@ async function fetchTimelinePage(baseUrl: string, options?: {
 interface MastodonAccount {
   id: string;
   username: string;
-  // acct - full
+  acct: string;
   display_name: string;
   url: string;
   avatar: string;
@@ -101,6 +101,7 @@ function mastodonPostToPost(mastodonPost: MastodonPost, serverSlug: string): Pos
     seen: 0,
     account_id: mastodonPost.account.id,
     account_username: mastodonPost.account.username,
+    account_acct: mastodonPost.account.acct,
     account_display_name: mastodonPost.account.display_name,
     account_url: mastodonPost.account.url,
     account_avatar: mastodonPost.account.avatar,

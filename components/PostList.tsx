@@ -195,13 +195,10 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
 
           let reblogger = null;
 
-  // If the post is a reblog, set Reblogger and replace post with the reblogged content
-  if (post.reblog) {
-    reblogger = { ...post }; // Store the current post as the Reblogger
-    post = post.reblog;      // Replace the post with the reblogged content
-  }
-
-
+          if (post.reblog) {
+            reblogger = { ...post };
+            post = post.reblog;
+          }
           // Debug logging
           // console.log('Post ID:', post.id, '+', (new Date(posts[0].created_at).getTime() - new Date(post.created_at).getTime())/(3600*1000), 'hours');
           // console.log('Content', post.content.substring(0, 80), 'Card title:', post.card?.title);
@@ -304,7 +301,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
                               {post.account_display_name}
                             </div>
                             <div className="text-sm text-gray-500">
-                              @{post.account_username}
+                              @{post.account_acct ? post.account_acct : post.account_username}
                             </div>
                           </a>
                         ) : (
@@ -313,7 +310,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
                               {post.account_display_name}
                             </div>
                             <div className="text-sm text-gray-500">
-                              @{post.account_username}
+                              @{post.account_acct ? post.account_acct : post.account_username}
                             </div>
                           </>
                         )}

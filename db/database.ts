@@ -43,6 +43,7 @@ export class DatabaseManager {
         url TEXT,
         account_id TEXT,
         account_username TEXT NOT NULL,
+        account_acct TEXT,
         account_display_name TEXT NOT NULL,
         account_url TEXT,
         account_avatar TEXT,
@@ -193,12 +194,12 @@ export class DatabaseManager {
     const stmt = this.db.prepare(`
       INSERT OR REPLACE INTO posts (
         id, parent_id, seen, created_at, content, language, in_reply_to_id, uri, url,
-        account_id, account_username, account_display_name, account_url, account_avatar,
+        account_id, account_username, account_acct, account_display_name, account_url, account_avatar,
         media_attachments, visibility, favourites_count, reblogs_count, replies_count,
         server_slug, bucket, card, poll
       ) VALUES (
         @id, @parent_id, @seen, @created_at, @content, @language, @in_reply_to_id, @uri, @url,
-        @account_id, @account_username, @account_display_name, @account_url, @account_avatar,
+        @account_id, @account_username, @account_acct, @account_display_name, @account_url, @account_avatar,
         @media_attachments, @visibility, 
         COALESCE(@favourites_count, 0),
         COALESCE(@reblogs_count, 0),
@@ -268,6 +269,7 @@ export class DatabaseManager {
             rp.url AS reblog_url,
             rp.account_id AS reblog_account_id,
             rp.account_username AS reblog_account_username,
+            rp.account_acct AS reblog_account_acct,
             rp.account_display_name AS reblog_account_display_name,
             rp.account_url AS reblog_account_url,
             rp.account_avatar AS reblog_account_avatar,
@@ -310,6 +312,7 @@ export class DatabaseManager {
           url: row.reblog_url!,
           account_id: row.reblog_account_id!,
           account_username: row.reblog_account_username!,
+          account_acct: row.reblog_account_acct!,
           account_display_name: row.reblog_account_display_name!,
           account_url: row.reblog_account_url!,
           account_avatar: row.reblog_account_avatar!,
@@ -470,6 +473,7 @@ interface SQLitePost {
   url: string;
   account_id: string;
   account_username: string;
+  account_acct: string;
   account_display_name: string;
   account_url: string;
   account_avatar: string;
@@ -497,6 +501,7 @@ interface SQLitePostWithReblog extends SQLitePost {
   reblog_url?: string | null;
   reblog_account_id?: string | null;
   reblog_account_username?: string;
+  reblog_account_acct?: string;
   reblog_account_display_name?: string;
   reblog_account_url?: string | null;
   reblog_account_avatar?: string | null;
