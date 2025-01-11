@@ -22,38 +22,53 @@ interface TimelineResponse {
 }
 
 const POSTS_PER_PAGE = 25;
+const FILTER_SETTINGS_KEY = 'filterSettings';
 
 export default function CategoryPage() {
   const router = useRouter();
   const { server, category } = router.query;
+
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [counts, setCounts] = useState(null);
-  const [loadingOlder, setLoadingOlder] = useState(false);
   const [loadingNewer, setLoadingNewer] = useState(false);
-  const [showSpam, setShowSpam] = useState(true);
-  const [showBitter, setShowBitter] = useState(true);
-  const [showPhlog, setShowPhlog] = useState(true);
-  const [highlightThreshold, setHighlightThreshold] = useState<number | null>(null);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [destroying, setDestroying] = useState(false);
   const latestFetchId = useRef(0);
 
-  const toggleShowSpam = () => setShowSpam(prev => !prev);
-  const toggleShowBitter = () => setShowBitter(prev => !prev);
-  const toggleShowPhlog = () => setShowPhlog(prev => !prev);
+  const [filterSettings, setFilterSettings] = useState({
+    showSpam: true,
+    showBitter: true,
+    showPhlog: true,
+    highlightThreshold: null as number | null,
+  });
 
-  // XXX if (!server || !category) return; 
+  // Update filter settings in localStorage and state
+  const updateFilterSettings = (newSettings: Partial<typeof filterSettings>) => {
+    const updatedSettings = { ...filterSettings, ...newSettings };
+    setFilterSettings(updatedSettings);
+    localStorage.setItem(FILTER_SETTINGS_KEY, JSON.stringify(updatedSettings));
+  };
+
+  // Load filter settings from localStorage on initial render
+  useEffect(() => {
+    const savedSettings = localStorage.getItem(FILTER_SETTINGS_KEY);
+    if (savedSettings) {
+      setFilterSettings(JSON.parse(savedSettings));
+    }
+  }, []);
+
   const { bucket, label: bucketLabel } = getCategoryBySlug((category ? category : 'regular') as string);
   const serverConfig = server ? getServerBySlug(server as string) : servers[0];
 
   useEffect(() => {
     if (!server || !category) return;
     refreshPosts();
-  }, [server, category, showSpam, showBitter, showPhlog]);
+  }, [server, category, filterSettings]);
 
   const refreshPosts = async () => {
     const fetchId = ++latestFetchId.current;
@@ -62,7 +77,6 @@ export default function CategoryPage() {
     setPosts([]);
     
     try {
-      // Get posts with category
       const postsRes = await fetch(`/api/timeline?server=${server}&category=${bucket}&offset=0&limit=${POSTS_PER_PAGE}`);
       const postsData: TimelineResponse = await postsRes.json();
       const categoryPosts = postsData.buckets[bucket] || [];
@@ -309,31 +323,24 @@ export default function CategoryPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1 w-full">
-      <NavigationBar
-        server={server as string}
-        onServerChange={handleServerChange}
-        category={category ? category as string : 'regular'}
-        counts={counts}
-        showSpam={showSpam}
-        toggleShowSpam={toggleShowSpam}
-        showBitter={showBitter}
-        toggleShowBitter={toggleShowBitter}
-        showPhlog={showPhlog}
-        toggleShowPhlog={toggleShowPhlog}
-        highlightThreshold={highlightThreshold}
-        setHighlightThreshold={setHighlightThreshold}
-        onMarkSeen={handleMarkSeen}
-        onLoadNewer={handleLoadNewer}
-        onLoadNewer5x={handleLoadNewer5x}
-        onLoadOlder={handleLoadOlder}
-        onDelete={handleDelete}
-        onDestroy={handleDestroy}
-        loadingNewer={loadingNewer}
-        loadingOlder={loadingOlder}
-        deleting={deleting}
-        destroying={destroying}
-      />
-        {/* Main content area - remove padding on mobile */}
+        <NavigationBar
+          server={server as string}
+          onServerChange={handleServerChange}
+          category={category ? (category as string) : 'regular'}
+          counts={counts}
+          filterSettings={filterSettings}
+          updateFilterSettings={updateFilterSettings}
+          onMarkSeen={handleMarkSeen}
+          onLoadNewer={handleLoadNewer}
+          onLoadNewer5x={handleLoadNewer5x}
+          onLoadOlder={handleLoadOlder}
+          onDelete={handleDelete}
+          onDestroy={handleDestroy}
+          loadingNewer={loadingNewer}
+          loadingOlder={loadingOlder}
+          deleting={deleting}
+          destroying={destroying}
+        />
         <div className="p-0 sm:p-8">
           {/* Back link and title */}
           <div className="p-3 sm:p-4">
@@ -355,17 +362,13 @@ export default function CategoryPage() {
               </p>
             </div>
           </div>
-
           {loading ? (
             <div className="p-4">Loading...</div>
           ) : (
             <>
-              <PostList 
-                posts={posts} 
-                showSpam={showSpam} 
-                showBitter={showBitter} 
-                showPhlog={category === 'with-images' ? showPhlog : true}
-                highlightThreshold={highlightThreshold}
+              <PostList
+                posts={posts}
+                filterSettings={filterSettings}
               />
                 <div className="flex justify-center items-center space-x-4 py-4">
                   <button

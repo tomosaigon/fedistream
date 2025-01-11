@@ -11,18 +11,13 @@ interface NavigationBarProps {
 
   counts: Record<string, number> | null;
 
-  showSpam: boolean;
-  toggleShowSpam: () => void;
-
-  showBitter: boolean;
-  toggleShowBitter: () => void;
-
-  showPhlog: boolean;
-  toggleShowPhlog: () => void;
-
-  highlightThreshold: number | null;
-  setHighlightThreshold: (threshold: number | null) => void;
-
+  filterSettings: {
+    showSpam: boolean;
+    showBitter: boolean;
+    showPhlog: boolean;
+    highlightThreshold: number | null;
+  };
+  updateFilterSettings: (newSettings: Partial<NavigationBarProps['filterSettings']>) => void;
   onMarkSeen: () => void;
   onLoadNewer: () => void;
   onLoadNewer5x: () => void;
@@ -41,14 +36,8 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
   onServerChange,
   category,
   counts,
-  showSpam,
-  toggleShowSpam,
-  showBitter,
-  toggleShowBitter,
-  showPhlog,
-  toggleShowPhlog,
-  highlightThreshold,
-  setHighlightThreshold,
+  filterSettings,
+  updateFilterSettings,
   onMarkSeen,
   onLoadNewer,
   onLoadNewer5x,
@@ -218,8 +207,8 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                 <label className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    checked={showSpam}
-                    onChange={toggleShowSpam}
+                    checked={filterSettings.showSpam}
+                    onChange={() => updateFilterSettings({ showSpam: !filterSettings.showSpam })}
                     className="form-checkbox"
                   />
                   <span>Show Spam</span>
@@ -227,8 +216,8 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                 <label className="flex items-center space-x-2 mt-2">
                   <input
                     type="checkbox"
-                    checked={showBitter}
-                    onChange={toggleShowBitter}
+                    checked={filterSettings.showBitter}
+                    onChange={() => updateFilterSettings({ showBitter: !filterSettings.showBitter })}
                     className="form-checkbox"
                   />
                   <span>Show Bitter</span>
@@ -236,8 +225,8 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                 <label className="flex items-center space-x-2 mt-2">
                   <input
                     type="checkbox"
-                    checked={showPhlog}
-                    onChange={toggleShowPhlog}
+                    checked={filterSettings.showPhlog}
+                    onChange={() => updateFilterSettings({ showPhlog: !filterSettings.showPhlog })}
                     className="form-checkbox"
                   />
                   <span>Show Phlog (Images)</span>
@@ -245,12 +234,8 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                 <label className="flex items-center space-x-2 mt-2">
                   <input
                     type="checkbox"
-                    checked={highlightThreshold === 5}
-                    onChange={() =>
-                      setHighlightThreshold(
-                        highlightThreshold === 5 ? null : 5
-                      )
-                    }
+                    checked={filterSettings.highlightThreshold === 5}
+                    onChange={() => updateFilterSettings({ highlightThreshold: 5 })}
                     className="form-checkbox"
                   />
                   <span>Highlight 5+ retoot/favs</span>
@@ -258,12 +243,8 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                 <label className="flex items-center space-x-2 mt-2">
                   <input
                     type="checkbox"
-                    checked={highlightThreshold === 10}
-                    onChange={() =>
-                      setHighlightThreshold(
-                        highlightThreshold === 10 ? null : 10
-                      )
-                    }
+                    checked={filterSettings.highlightThreshold === 10}
+                    onChange={() => updateFilterSettings({ highlightThreshold: 10 })}
                     className="form-checkbox"
                   />
                   <span>Highlight 10+ retoot/favs</span>

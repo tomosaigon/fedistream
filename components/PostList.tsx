@@ -8,13 +8,15 @@ import axios from 'axios';
 
 interface PostListProps {
   posts: Post[];
-  showSpam: boolean;
-  showBitter: boolean;
-  showPhlog: boolean;
-  highlightThreshold: number | null;
+  filterSettings: {
+    showSpam: boolean;
+    showBitter: boolean;
+    showPhlog: boolean;
+    highlightThreshold: number | null;
+  };
 }
 
-const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, showBitter, showPhlog, highlightThreshold }) => {
+const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings }) => {
   const { mutedWords, addMutedWord } = useMutedWords();
   const [posts, setPosts] = useState(initialPosts);
   const [activeImage, setActiveImage] = useState<MediaAttachment | null>(null);
@@ -184,9 +186,9 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
       <div className="space-y-1 sm:space-y-4">
         {posts.map((post) => {
           if (
-            (!showSpam && post.account_tags.some(tag => tag.tag === 'spam')) ||
-            (!showBitter && post.account_tags.some(tag => tag.tag === 'bitter')) ||
-            (!showPhlog && post.account_tags.some(tag => tag.tag === 'phlog'))
+            (!filterSettings.showSpam && post.account_tags.some(tag => tag.tag === 'spam')) ||
+            (!filterSettings.showBitter && post.account_tags.some(tag => tag.tag === 'bitter')) ||
+            (!filterSettings.showPhlog && post.account_tags.some(tag => tag.tag === 'phlog'))
           ) {
             return null;
           }
@@ -211,7 +213,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, showSpam, show
 
               <article className={`flex-grow min-w-0 ${
                 containsMutedWord(nonStopWords, mutedWords) ? 'bg-blue-50 opacity-10 hover:opacity-75'
-                : highlightThreshold && post.reblogs_count + post.favourites_count > highlightThreshold
+                : filterSettings.highlightThreshold && post.reblogs_count + post.favourites_count > filterSettings.highlightThreshold
                 ? 'bg-pink-100 border-l-4 border-pink-400 hover:bg-green-100'
                 : post.account_tags?.some(t => t.tag === 'cookie')
                   ? 'bg-green-50 border-l-4 border-green-400 hover:bg-green-100'
