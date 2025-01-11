@@ -14,12 +14,10 @@ export const CATEGORY_MAP = [
 
 export type Category = typeof CATEGORY_MAP[number];
 
-export function getCategoryKey(categorySlug: string): Bucket {
+export function getCategoryBySlug(categorySlug: string): { bucket: Bucket; label: string } {
   const category = CATEGORY_MAP.find(c => c.slug === categorySlug);
-  return category?.bucket || Bucket.regular;
-}
-
-export function getCategoryLabel(categorySlug: string): string {
-  const category = CATEGORY_MAP.find(c => c.slug === categorySlug);
-  return category?.label || 'Unknown';
+  if (!category) {
+    throw new Error(`Invalid category slug: ${categorySlug}`);
+  }
+  return { bucket: category.bucket, label: category.label };
 }

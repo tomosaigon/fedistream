@@ -5,7 +5,7 @@ import { getServerBySlug, servers } from '../../config/servers';
 import Link from 'next/link';
 import { Toaster, toast, ToastOptions, ToastPosition } from 'react-hot-toast';
 import NavigationBar from '../../components/NavigationBar';
-import { getCategoryKey, getCategoryLabel } from '../../db/categories';
+import { getCategoryBySlug } from '../../db/categories';
 
 
 const toastOptions: ToastOptions = {
@@ -47,6 +47,7 @@ export default function CategoryPage() {
   const toggleShowPhlog = () => setShowPhlog(prev => !prev);
 
   const serverConfig = server ? getServerBySlug(server as string) : servers[0];
+  const { bucket, label: bucketLabel } = getCategoryBySlug(category as string);
 
   useEffect(() => {
     if (!server || !category) return;
@@ -61,9 +62,9 @@ export default function CategoryPage() {
     
     try {
       // Get posts with category
-      const postsRes = await fetch(`/api/timeline?server=${server}&category=${getCategoryKey(category as string)}&offset=0&limit=${POSTS_PER_PAGE}`);
+      const postsRes = await fetch(`/api/timeline?server=${server}&category=${bucket}&offset=0&limit=${POSTS_PER_PAGE}`);
       const postsData: TimelineResponse = await postsRes.json();
-      const categoryPosts = postsData.buckets[getCategoryKey(category as string)] || [];
+      const categoryPosts = postsData.buckets[bucket] || [];
       
       // Get updated counts
       const countsRes = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
@@ -71,8 +72,8 @@ export default function CategoryPage() {
 
       if (fetchId !== latestFetchId.current) return;
       
-      setTotalCount(countsData.counts[getCategoryKey(category as string)] || 0);
-      setHasMore(categoryPosts.length < countsData.counts[getCategoryKey(category as string)]);
+      setTotalCount(countsData.counts[bucket] || 0);
+      setHasMore(categoryPosts.length < countsData.counts[bucket]);
       setCounts(countsData.counts);
 
       setPosts(categoryPosts);
@@ -91,10 +92,10 @@ export default function CategoryPage() {
     setLoadingMore(true);
     try {
       const res = await fetch(
-        `/api/timeline?server=${server}&category=${getCategoryKey(category as string)}&offset=${posts.length}&limit=${POSTS_PER_PAGE}`
+        `/api/timeline?server=${server}&category=${bucket}&offset=${posts.length}&limit=${POSTS_PER_PAGE}`
       );
       const data: TimelineResponse = await res.json();
-      const newPosts = data.buckets[getCategoryKey(category as string)] || [];
+      const newPosts = data.buckets[bucket] || [];
 
       setHasMore(posts.length + newPosts.length < totalCount);
 
@@ -277,7 +278,6 @@ export default function CategoryPage() {
     const fetchId = ++latestFetchId.current;
     const seenFrom = posts[posts.length - 1].created_at; // Oldest post
     const seenTo = posts[0].created_at; // Latest post
-    const bucket = getCategoryKey(category as string); // Transform category to bucket using getCategoryKey
   
     try {
       const res = await fetch(`/api/mark-seen?server=${server}&seenFrom=${seenFrom}&seenTo=${seenTo}&bucket=${bucket}`, {
@@ -344,7 +344,7 @@ export default function CategoryPage() {
                 ← Back to Categories
               </Link>
               <h1 className="text-2xl font-bold mt-2">
-                {getCategoryLabel(category as string)} 
+                {bucketLabel} 
                 <span className="text-gray-500 text-xl ml-2">
                   ({totalCount} total)
                 </span>

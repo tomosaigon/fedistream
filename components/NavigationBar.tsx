@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { servers, getServerBySlug } from '../config/servers';
-import { CATEGORY_MAP, getCategoryKey, getCategoryLabel } from '../db/categories';
-import { ToastOptions, toast } from 'react-hot-toast';
+import { servers } from '../config/servers';
+import { CATEGORY_MAP, getCategoryBySlug } from '../db/categories';
 
 interface NavigationBarProps {
   server: string;
@@ -36,14 +35,6 @@ interface NavigationBarProps {
   deleting: boolean;
   destroying: boolean;
 }
-
-const toastOptions: ToastOptions = {
-  duration: 2000,
-  position: 'bottom-right',
-  style: {
-    cursor: 'pointer',
-  },
-};
 
 const NavigationBar: React.FC<NavigationBarProps> = ({
   server,
@@ -190,7 +181,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                   />
                 )}
               </svg>
-              <span className="ml-2">Cat: {getCategoryLabel(category)}</span>
+              <span className="ml-2">Cat: {getCategoryBySlug(category).label}</span>
             </button>
           </div>
         </div>
@@ -260,7 +251,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 
         {/* Categories and Filters Dropdown Menu */}
         <div className={`${categoryMenuOpen ? 'block' : 'hidden'} w-full mt-2`}>
-          {CATEGORY_MAP.map(({ slug, label }) => (
+          {CATEGORY_MAP.map(({ slug, bucket, label }) => (
             <Link
               key={slug}
               href={`/${server}/${slug}`}
@@ -273,7 +264,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
             >
               {label}
               <span className="ml-2 text-sm text-gray-500">
-                ({counts?.[getCategoryKey(slug)] ?? 0})
+                ({counts?.[bucket] ?? 0})
               </span>
             </Link>
           ))}
