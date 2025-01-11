@@ -46,8 +46,9 @@ export default function CategoryPage() {
   const toggleShowBitter = () => setShowBitter(prev => !prev);
   const toggleShowPhlog = () => setShowPhlog(prev => !prev);
 
+  // XXX if (!server || !category) return; 
+  const { bucket, label: bucketLabel } = getCategoryBySlug((category ? category : 'regular') as string);
   const serverConfig = server ? getServerBySlug(server as string) : servers[0];
-  const { bucket, label: bucketLabel } = getCategoryBySlug(category as string);
 
   useEffect(() => {
     if (!server || !category) return;
@@ -311,7 +312,7 @@ export default function CategoryPage() {
       <NavigationBar
         server={server as string}
         onServerChange={handleServerChange}
-        category={category as string}
+        category={category ? category as string : 'regular'}
         counts={counts}
         showSpam={showSpam}
         toggleShowSpam={toggleShowSpam}
