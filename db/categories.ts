@@ -1,15 +1,15 @@
 import { Bucket } from './bucket';
 
 export const CATEGORY_MAP = [
-  { slug: 'regular', bucket: Bucket.regular, label: 'Regular Posts' },
-  { slug: 'with-images', bucket: Bucket.withImages, label: 'Posts with Images' },
-  { slug: 'replies', bucket: Bucket.asReplies, label: 'Reply Posts' },
-  { slug: 'network-mentions', bucket: Bucket.networkMentions, label: 'Network Mentions' },
-  { slug: 'hashtags', bucket: Bucket.hashtags, label: 'Hashtag Posts' },
-  { slug: 'with-links', bucket: Bucket.withLinks, label: 'Posts with Links' },
-  { slug: 'from-bots', bucket: Bucket.fromBots, label: 'Bot Posts' },
-  { slug: 'non-english', bucket: Bucket.nonEnglish, label: 'Non-English Posts' },
-  { slug: 'reblogs', bucket: Bucket.reblogs, label: 'Reblog Posts' },
+  { slug: 'regular', bucket: Bucket.regular, label: 'Regular' },
+  { slug: 'with-images', bucket: Bucket.withImages, label: 'Images' },
+  { slug: 'replies', bucket: Bucket.asReplies, label: 'Replies' },
+  { slug: 'network-mentions', bucket: Bucket.networkMentions, label: 'Mentions' },
+  { slug: 'hashtags', bucket: Bucket.hashtags, label: 'Hashtags' },
+  { slug: 'with-links', bucket: Bucket.withLinks, label: 'Links' },
+  { slug: 'from-bots', bucket: Bucket.fromBots, label: 'Bots' },
+  { slug: 'non-english', bucket: Bucket.nonEnglish, label: 'Non-English' },
+  { slug: 'reblogs', bucket: Bucket.reblogs, label: 'Reblogs' },
 ] as const;
 
 export type Category = typeof CATEGORY_MAP[number];
