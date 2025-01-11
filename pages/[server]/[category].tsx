@@ -1,10 +1,12 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useRef } from 'react';
-import { Bucket } from '../../db/bucket';
 import PostList from '../../components/PostList';
 import { getServerBySlug, servers } from '../../config/servers';
 import Link from 'next/link';
 import { Toaster, toast, ToastOptions, ToastPosition } from 'react-hot-toast';
+import NavigationBar from '../../components/NavigationBar';
+import { getCategoryKey, getCategoryLabel } from '../../db/categories';
+
 
 const toastOptions: ToastOptions = {
   duration: 2000,
@@ -21,29 +23,6 @@ interface TimelineResponse {
 
 const POSTS_PER_PAGE = 25;
 
-export const CATEGORY_MAP = [
-  { slug: 'regular', bucket: Bucket.regular, label: 'Regular Posts' },
-  { slug: 'with-images', bucket: Bucket.withImages, label: 'Posts with Images' },
-  { slug: 'replies', bucket: Bucket.asReplies, label: 'Reply Posts' },
-  { slug: 'network-mentions', bucket: Bucket.networkMentions, label: 'Network Mentions' },
-  { slug: 'hashtags', bucket: Bucket.hashtags, label: 'Hashtag Posts' },
-  { slug: 'with-links', bucket: Bucket.withLinks, label: 'Posts with Links' },
-  { slug: 'from-bots', bucket: Bucket.fromBots, label: 'Bot Posts' },
-  { slug: 'non-english', bucket: Bucket.nonEnglish, label: 'Non-English Posts' },
-  { slug: 'reblogs', bucket: Bucket.reblogs, label: 'Reblog Posts' },
-] as const;
-
-// Function to get the Bucket value from a category slug
-export function getCategoryKey(categorySlug: string): Bucket {
-  const category = CATEGORY_MAP.find(c => c.slug === categorySlug);
-  return category?.bucket || Bucket.regular;
-}
-
-export function getCategoryLabel(categorySlug: string): string {
-  const category = CATEGORY_MAP.find(c => c.slug === categorySlug);
-  return category?.label || 'Unknown';
-}
-
 export default function CategoryPage() {
   const router = useRouter();
   const { server, category } = router.query;
@@ -55,33 +34,17 @@ export default function CategoryPage() {
   const [counts, setCounts] = useState(null);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [loadingNewer, setLoadingNewer] = useState(false);
-  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const [showSpam, setShowSpam] = useState(true);
   const [showBitter, setShowBitter] = useState(true);
   const [showPhlog, setShowPhlog] = useState(true);
   const [highlightThreshold, setHighlightThreshold] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [destroying, setDestroying] = useState(false);
-  const [databaseMenuOpen, setDatabaseMenuOpen] = useState(false);
   const latestFetchId = useRef(0);
 
-  const toggleCategoryMenu = () => {
-    setCategoryMenuOpen(!categoryMenuOpen);
-    if (!categoryMenuOpen) {
-      setDatabaseMenuOpen(false);
-    }
-  };
-
-  const toggleDatabaseMenu = () => {
-    setDatabaseMenuOpen(!databaseMenuOpen);
-    if (!databaseMenuOpen) {
-      setCategoryMenuOpen(false);
-    }
-  };
-
-  const handleCategoryClick = () => {
-    setCategoryMenuOpen(false);
-  };
+  const toggleShowSpam = () => setShowSpam(prev => !prev);
+  const toggleShowBitter = () => setShowBitter(prev => !prev);
+  const toggleShowPhlog = () => setShowPhlog(prev => !prev);
 
   const serverConfig = server ? getServerBySlug(server as string) : servers[0];
 
@@ -143,9 +106,7 @@ export default function CategoryPage() {
     }
   };
 
-  // Server change handler
-  const handleServerChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newServer = event.target.value;
+  const handleServerChange = (newServer: string) => {
     router.push(`/${newServer}/${category}`);
   };
 
@@ -347,216 +308,30 @@ export default function CategoryPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1 w-full">
-        {/* Fixed navigation bar */}
-        <nav className="sticky top-0 z-10 bg-white border-b shadow-sm">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between py-2">
-              {/* Top row with server selector, load buttons, and hamburger */}
-              <div className="flex items-center justify-between w-full">
-                <select 
-                  value={server}
-                  onChange={handleServerChange}
-                  className="w-32 sm:w-40 px-2 sm:px-3 py-2 text-sm border rounded"
-                >
-                  {servers.map(server => (
-                    <option key={server.slug} value={server.slug}>
-                      {server.name}
-                    </option>
-                  ))}
-                </select>
-
-                <div className="hidden sm:flex items-center space-x-2">
-                    <button
-                      onClick={handleMarkSeen}
-                      className="px-4 py-2 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                    >
-                      Seen
-                    </button>
-                    <button
-                      onClick={handleLoadNewer}
-                      disabled={loadingNewer}
-                      className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
-                    >
-                      {loadingNewer ? 'Loading Newer...' : 'Newer'}
-                    </button>
-                    <button
-                      onClick={handleLoadNewer5x}
-                      disabled={loadingNewer}
-                      className="px-4 py-2 text-sm bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-gray-400"
-                    >
-                      {loadingNewer ? 'Loading Newer 5x...' : 'Newer×5'}
-                    </button>
-                </div>
-
-                {/* Database menu button */}
-                <button
-                  className="px-2 py-1 text-gray-500 hover:text-gray-700"
-                  onClick={toggleDatabaseMenu}
-                >
-                  <svg className="w-6 h-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    {databaseMenuOpen ? (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    ) : (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    )}
-                  </svg>
-                  <span className="ml-2">DB</span>
-                </button>
-
-                {/* Categories menu button */}
-                <button
-                  className="px-2 py-1 text-gray-500 hover:text-gray-700"
-                  onClick={toggleCategoryMenu}
-                >
-                  <svg className="w-6 h-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    {categoryMenuOpen ? (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    ) : (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    )}
-                  </svg>
-                  <span className="ml-2">Cat: {getCategoryLabel(category as string)}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Database dropdown menu */}
-            <div className={`${databaseMenuOpen ? 'block' : 'hidden'} w-full mt-2`}>
-              <div className="px-4 py-3">
-                <button
-                  onClick={handleMarkSeen}
-                  className="w-full px-4 py-2 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                >
-                  Mark Seen
-                </button>
-                <button
-                  onClick={handleLoadNewer}
-                  disabled={loadingNewer}
-                  className="w-full mt-2 px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
-                >
-                  {loadingNewer ? 'Loading Newer...' : 'Load Newer'}
-                </button>
-                <button
-                  onClick={handleLoadNewer5x}
-                  disabled={loadingNewer}
-                  className="w-full mt-2 px-4 py-2 text-sm bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-gray-400"
-                >
-                  {loadingNewer ? 'Loading Newer 5x...' : 'Newer 5x'}
-                </button>
-                <button
-                  onClick={handleLoadOlder}
-                  disabled={loadingOlder}
-                  className="w-full mt-2 px-4 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
-                >
-                  {loadingOlder ? 'Loading Older...' : 'Load Older'}
-                </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  className="w-full mt-2 px-4 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600 disabled:bg-gray-400"
-                >
-                  {deleting ? 'Deleting...' : 'Delete All Posts'}
-                </button>
-                <button
-                  onClick={handleDestroy}
-                  disabled={destroying}
-                  className="w-full mt-2 px-4 py-2 text-sm bg-red-700 text-white rounded hover:bg-red-800 disabled:bg-gray-400"
-                >
-                  {destroying ? 'Destroying...' : 'Destroy Database'}
-                </button>
-
-                {/* Link to Muted Words */}
-                <Link
-                  href="/muted-words"
-                  className="w-full mt-2 px-4 py-2 text-sm text-blue-500 hover:text-blue-600 rounded transition-all duration-200 text-center block"
-                >
-                  Muted Words
-                </Link>
-
-                {/* Link to Mastodon API Credentials Manager */}
-                <Link
-                  href="/credentials"
-                  className="w-full mt-2 px-4 py-2 text-sm text-blue-500 hover:text-blue-600 rounded transition-all duration-200 text-center block"
-                >
-                  Mastodon API Credentials
-                </Link>
-              </div>
-            </div>
-
-            {/* categories and filters */}
-            <div className={`${categoryMenuOpen ? 'block' : 'hidden'} w-full mt-2`}>
-              {CATEGORY_MAP.map(({ slug: key, label }) => (
-                <Link
-                  key={key}
-                  href={`/${server}/${key}`}
-                  className={`block px-4 py-3 text-base font-medium transition-colors
-                    ${category === key
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                    }`}
-                  onClick={handleCategoryClick}
-                >
-                  {label}
-                  <span className="ml-2 text-sm text-gray-500">
-                    ({counts?.[getCategoryKey(key)] ?? 0})
-                  </span>
-                </Link>
-              ))}
-
-              {/* Checkboxes */}
-              <div className="px-4 py-3">
-                <label className="flex items-center space-x-2">
-                  <input 
-                    type="checkbox" 
-                    checked={showSpam} 
-                    onChange={() => setShowSpam(!showSpam)} 
-                    className="form-checkbox"
-                  />
-                  <span>Show Spam</span>
-                </label>
-                <label className="flex items-center space-x-2 mt-2">
-                  <input 
-                    type="checkbox" 
-                    checked={showBitter} 
-                    onChange={() => setShowBitter(!showBitter)} 
-                    className="form-checkbox"
-                  />
-                  <span>Show Bitter</span>
-                </label>
-                <label className="flex items-center space-x-2 mt-2">
-                  <input 
-                    type="checkbox" 
-                    checked={showPhlog} 
-                    onChange={() => setShowPhlog(!showPhlog)} 
-                    className="form-checkbox"
-                  />
-                  <span>Show Phlog (Images)</span>
-                </label>
-
-                {/* Highlights */}
-                <label className="flex items-center space-x-2 mt-2">
-                  <input 
-                    type="checkbox" 
-                    checked={highlightThreshold === 5} 
-                    onChange={() => setHighlightThreshold(5)} 
-                    className="form-checkbox"
-                  />
-                  <span>Highlight 5+ retoot/favs</span>
-                </label>
-                <label className="flex items-center space-x-2 mt-2">
-                  <input 
-                    type="checkbox" 
-                    checked={highlightThreshold === 10} 
-                    onChange={() => setHighlightThreshold(10)} 
-                    className="form-checkbox"
-                  />
-                  <span>Highlight 10+ retoot/favs</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </nav>
-
+      <NavigationBar
+        server={server as string}
+        onServerChange={handleServerChange}
+        category={category as string}
+        counts={counts}
+        showSpam={showSpam}
+        toggleShowSpam={toggleShowSpam}
+        showBitter={showBitter}
+        toggleShowBitter={toggleShowBitter}
+        showPhlog={showPhlog}
+        toggleShowPhlog={toggleShowPhlog}
+        highlightThreshold={highlightThreshold}
+        setHighlightThreshold={setHighlightThreshold}
+        onMarkSeen={handleMarkSeen}
+        onLoadNewer={handleLoadNewer}
+        onLoadNewer5x={handleLoadNewer5x}
+        onLoadOlder={handleLoadOlder}
+        onDelete={handleDelete}
+        onDestroy={handleDestroy}
+        loadingNewer={loadingNewer}
+        loadingOlder={loadingOlder}
+        deleting={deleting}
+        destroying={destroying}
+      />
         {/* Main content area - remove padding on mobile */}
         <div className="p-0 sm:p-8">
           {/* Back link and title */}
