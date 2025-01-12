@@ -40,6 +40,7 @@ export default function CategoryPage() {
     showSpam: true,
     showBitter: true,
     showPhlog: true,
+    showNonStopWords: true,
     highlightThreshold: null as number | null,
   });
 

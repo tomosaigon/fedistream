@@ -12,6 +12,7 @@ interface PostListProps {
     showSpam: boolean;
     showBitter: boolean;
     showPhlog: boolean;
+    showNonStopWords: boolean;
     highlightThreshold: number | null;
   };
 }
@@ -200,6 +201,16 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
           if (post.reblog) {
             reblogger = { ...post };
             post = post.reblog;
+          }
+
+          const isMuted = containsMutedWord(nonStopWords, mutedWords);
+          if (isMuted) {
+            // TODO - Add way to reveal the muted post
+            return (
+              <div className="muted-disclaimer bg-gray-100 text-center p-2 text-sm text-red-500">
+                Contains muted words: {getMutedWordsFound(nonStopWords, mutedWords).join(', ')}
+              </div>
+            )
           }
           // Debug logging
           // console.log('Post ID:', post.id, '+', (new Date(posts[0].created_at).getTime() - new Date(post.created_at).getTime())/(3600*1000), 'hours');
@@ -470,24 +481,26 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
                 </div>
 
                 {/* Non-Stop Words Section */}
-                <div className="px-3 sm:px-4 pt-3">
+                {filterSettings.showNonStopWords && (
+                  <div className="px-3 sm:px-4 pt-3">
                     <p className="text-gray-600 text-xs sm:text-sm">Non-Stop Words:</p>
                     <div className="flex flex-wrap gap-2 mt-2">
-                        {nonStopWords.map((word) => (
-                            <button
-                                key={word}
-                                onClick={() => addMutedWord(word)} // Call the function when clicked
-                                className={`px-2 py-1 rounded text-xs sm:text-sm ${
-                                  word.startsWith('#')
-                                      ? 'bg-green-500 text-white hover:bg-red-600' // Styling for hashtags
-                                      : 'bg-blue-500 text-white hover:bg-red-600'  // Styling for regular words
-                              }`}
-                            >
-                                {word}
-                            </button>
-                        ))}
+                      {nonStopWords.map((word) => (
+                        <button
+                          key={word}
+                          onClick={() => addMutedWord(word)} // Call the function when clicked
+                          className={`px-2 py-1 rounded text-xs sm:text-sm ${
+                            word.startsWith('#')
+                              ? 'bg-green-500 text-white hover:bg-red-600' // Styling for hashtags
+                              : 'bg-blue-500 text-white hover:bg-red-600'  // Styling for regular words
+                          }`}
+                        >
+                          {word}
+                        </button>
+                      ))}
                     </div>
-                </div>
+                  </div>
+                )}
               </article>
 
               {/* Admin section - full width on mobile, side panel on desktop */}

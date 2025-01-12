@@ -16,6 +16,7 @@ interface NavigationBarProps {
     showSpam: boolean;
     showBitter: boolean;
     showPhlog: boolean;
+    showNonStopWords: boolean;
     highlightThreshold: number | null;
   };
   updateFilterSettings: (newSettings: Partial<NavigationBarProps['filterSettings']>) => void;
@@ -215,6 +216,15 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                     className="form-checkbox"
                   />
                   <span>Show Phlog (Images)</span>
+                </label>
+                <label className="flex items-center space-x-2 mt-2">
+                  <input
+                    type="checkbox"
+                    checked={filterSettings.showNonStopWords}
+                    onChange={() => updateFilterSettings({ showNonStopWords: !filterSettings.showNonStopWords })}
+                    className="form-checkbox"
+                  />
+                  <span>Show Non-Stop Words</span>
                 </label>
                 <label className="flex items-center space-x-2 mt-2">
                   <input
