@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { servers } from '../config/servers';
 import { CATEGORY_MAP, getCategoryBySlug } from '../db/categories';
+import AsyncButton from './AsyncButton';
 
 interface NavigationBarProps {
   server: string;
@@ -18,17 +19,12 @@ interface NavigationBarProps {
     highlightThreshold: number | null;
   };
   updateFilterSettings: (newSettings: Partial<NavigationBarProps['filterSettings']>) => void;
-  onMarkSeen: () => void;
-  onSyncNewer: () => void;
-  onSyncNewer5x: () => void;
-  onSyncOlder: () => void;
-  onDelete: () => void;
-  onDestroy: () => void;
-
-  syncingNewer: boolean;
-  syncingOlder: boolean;
-  deleting: boolean;
-  destroying: boolean;
+  onMarkSeen: () => Promise<void>;
+  onSyncNewer: () => Promise<void>;
+  onSyncNewer5x: () => Promise<void>;
+  onSyncOlder: () => Promise<void>;
+  onDelete: () => Promise<void>;
+  onDestroy: () => Promise<void>;
 }
 
 const NavigationBar: React.FC<NavigationBarProps> = ({
@@ -44,10 +40,6 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
   onSyncOlder,
   onDelete,
   onDestroy,
-  syncingNewer,
-  syncingOlder,
-  deleting,
-  destroying,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -71,28 +63,26 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
           </select>
 
           <div className="hidden sm:flex items-center space-x-2">
-            <button
-              onClick={onMarkSeen}
-              className="px-4 py-2 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
-            >
-              Seen
-            </button>
-            <button
-              onClick={onSyncNewer}
-              disabled={syncingNewer}
-              className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
-            >
-              {syncingNewer ? 'Syncing Newer...' : 'Newer'}
-            </button>
-            <button
-              onClick={onSyncNewer5x}
-              disabled={syncingNewer}
-              className="px-4 py-2 text-sm bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-gray-400"
-            >
-              {syncingNewer ? 'Syncing Newer 5x...' : 'Newer×5'}
-            </button>
+            <AsyncButton
+              callback={onMarkSeen}
+              loadingText="Marking Seen..."
+              defaultText="Seen"
+              color="yellow"
+            />
+            <AsyncButton
+              callback={onSyncNewer}
+              loadingText="Syncing Newer..."
+              defaultText="Newer"
+              color="blue"
+            />
+            <AsyncButton
+              callback={onSyncNewer5x}
+              loadingText="Syncing Newer 5x..."
+              defaultText="Newer×5"
+              color="purple"
+            />
           </div>
-            
+
           {/* Toggle Menu Button */}
           <button
             className="px-2 py-1 text-gray-500 hover:text-gray-700"
@@ -128,48 +118,43 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
         <div className={`${menuOpen ? 'block' : 'hidden'} w-full mt-2`}>
           <div className="grid grid-cols-2 gap-4 px-4 py-3">
             {/* Left Column: Database Functions */}
-            <div>
-              <button
-                onClick={onMarkSeen}
-                className="w-full px-4 py-2 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
-              >
-                Mark Seen
-              </button>
-              <button
-                onClick={onSyncNewer}
-                disabled={syncingNewer}
-                className="w-full mt-2 px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
-              >
-                {syncingNewer ? 'Syncing Newer...' : 'Sync Newer'}
-              </button>
-              <button
-                onClick={onSyncNewer5x}
-                disabled={syncingNewer}
-                className="w-full mt-2 px-4 py-2 text-sm bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-gray-400"
-              >
-                {syncingNewer ? 'Syncing Newer 5x...' : 'Sync Newer 5x'}
-              </button>
-              <button
-                onClick={onSyncOlder}
-                disabled={syncingOlder}
-                className="w-full mt-2 px-4 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
-              >
-                {syncingOlder ? 'Syncing Older...' : 'Sync Older'}
-              </button>
-              <button
-                onClick={onDelete}
-                disabled={deleting}
-                className="w-full mt-2 px-4 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600 disabled:bg-gray-400"
-              >
-                {deleting ? 'Deleting...' : 'Delete All Posts'}
-              </button>
-              <button
-                onClick={onDestroy}
-                disabled={destroying}
-                className="w-full mt-2 px-4 py-2 text-sm bg-red-700 text-white rounded hover:bg-red-800 disabled:bg-gray-400"
-              >
-                {destroying ? 'Destroying...' : 'Destroy Database'}
-              </button>
+            <div className="flex flex-col space-y-2">
+              <AsyncButton
+                callback={onMarkSeen}
+                loadingText="Marking Seen..."
+                defaultText="Mark Seen"
+                color="yellow"
+              />
+              <AsyncButton
+                callback={onSyncNewer}
+                loadingText="Syncing Newer..."
+                defaultText="Sync Newer"
+                color="blue"
+              />
+              <AsyncButton
+                callback={onSyncNewer5x}
+                loadingText="Syncing Newer 5x..."
+                defaultText="Sync Newer 5x"
+                color="purple"
+              />
+              <AsyncButton
+                callback={onSyncOlder}
+                loadingText="Syncing Older..."
+                defaultText="Sync Older"
+                color="green"
+              />
+              <AsyncButton
+                callback={onDelete}
+                loadingText="Deleting..."
+                defaultText="Delete All Posts"
+                color="red"
+              />
+              <AsyncButton
+                callback={onDestroy}
+                loadingText="Destroying..."
+                defaultText="Destroy Database"
+                color="red"
+              />
               <Link
                 href="/muted-words"
                 className="w-full mt-2 px-4 py-2 text-sm text-blue-500 hover:text-blue-600 rounded transition-all duration-200 text-center block"

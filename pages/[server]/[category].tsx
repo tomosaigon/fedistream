@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useRef } from 'react';
 import PostList from '../../components/PostList';
+import AsyncButton from '../../components/AsyncButton';
 import { getServerBySlug, servers } from '../../config/servers';
 import Link from 'next/link';
 import { Toaster, toast, ToastOptions, ToastPosition } from 'react-hot-toast';
@@ -30,14 +31,9 @@ export default function CategoryPage() {
 
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [counts, setCounts] = useState(null);
-  const [syncingNewer, setSyncingNewer] = useState(false);
-  const [syncingOlder, setSyncingOlder] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [destroying, setDestroying] = useState(false);
   const latestFetchId = useRef(0);
 
   const [filterSettings, setFilterSettings] = useState({
@@ -102,9 +98,6 @@ export default function CategoryPage() {
   };
 
   const loadMore = async () => {
-    if (loadingMore || !hasMore) return;
-
-    setLoadingMore(true);
     try {
       const res = await fetch(
         `/api/timeline?server=${server}&category=${bucket}&offset=${posts.length}&limit=${POSTS_PER_PAGE}`
@@ -117,8 +110,6 @@ export default function CategoryPage() {
       setPosts(prev => [...prev, ...newPosts]);
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoadingMore(false);
     }
   };
 
@@ -130,7 +121,6 @@ export default function CategoryPage() {
   const handleSyncNewer = async () => {
     const fetchId = ++latestFetchId.current;
 
-    setSyncingNewer(true);
     try {
       const syncRes = await fetch(`/api/timeline-sync?server=${server}`, { method: 'POST' });
       const syncData = await syncRes.json();
@@ -145,15 +135,12 @@ export default function CategoryPage() {
     } catch (error) {
       console.error(error);
       toast.error('Failed to load newer posts', toastOptions);
-    } finally {
-      setSyncingNewer(false);
     }
   };
 
   const handleSyncNewer5x = async () => {
     const fetchId = ++latestFetchId.current;
   
-    setSyncingNewer(true);
     try {
       let totalNewPosts = 0;
   
@@ -189,13 +176,10 @@ export default function CategoryPage() {
     } catch (error) {
       console.error(error);
       toast.error('Failed to load newer posts in 5x mode', toastOptions);
-    } finally {
-      setSyncingNewer(false);
     }
   };
 
   const handleSyncOlder = async () => {
-    setSyncingOlder(true);
     try {
       const syncRes = await fetch(`/api/timeline-sync?server=${server}&older=true`, { method: 'POST' });
       const syncData = await syncRes.json();
@@ -209,8 +193,6 @@ export default function CategoryPage() {
     } catch (error) {
       console.error(error);
       toast.error('Failed to load older posts', toastOptions);
-    } finally {
-      setSyncingOlder(false);
     }
   };
 
@@ -219,7 +201,6 @@ export default function CategoryPage() {
       return;
     }
     
-    setDeleting(true);
     try {
       const deleteRes = await fetch(`/api/timeline-sync?server=${server}&delete=true`, {
         method: 'POST'
@@ -244,8 +225,6 @@ export default function CategoryPage() {
       } else {
         alert('Failed to delete posts: An unknown error occurred.');
       }
-    } finally {
-      setDeleting(false);
     }
   };
 
@@ -254,7 +233,6 @@ export default function CategoryPage() {
       return;
     }
     
-    setDestroying(true);
     try {
       const destroyRes = await fetch(`/api/timeline-sync?delete=true`, {
         method: 'POST'
@@ -279,8 +257,6 @@ export default function CategoryPage() {
       } else {
         alert('Failed to destroy database: An unknown error occurred.');
       }
-    } finally {
-      setDestroying(false);
     }
   };
 
@@ -336,10 +312,6 @@ export default function CategoryPage() {
           onSyncOlder={handleSyncOlder}
           onDelete={handleDelete}
           onDestroy={handleDestroy}
-          syncingNewer={syncingNewer}
-          syncingOlder={syncingOlder}
-          deleting={deleting}
-          destroying={destroying}
         />
         <div className="p-0 sm:p-8">
           {/* Back link and title */}
@@ -378,13 +350,12 @@ export default function CategoryPage() {
                     Mark Seen
                   </button>
                   {hasMore && (
-                    <button
-                      onClick={loadMore}
-                      disabled={loadingMore}
-                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-                    >
-                      {loadingMore ? 'Loading...' : `Load More (${totalCount - posts.length} remaining)`}
-                    </button>
+                    <AsyncButton
+                      callback={loadMore}
+                      loadingText="Loading..."
+                      defaultText={`Load More (${totalCount - posts.length} remaining)`}
+                      color="blue"
+                    />
                   )}
                 </div>
             </>
