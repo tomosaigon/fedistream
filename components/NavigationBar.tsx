@@ -19,14 +19,14 @@ interface NavigationBarProps {
   };
   updateFilterSettings: (newSettings: Partial<NavigationBarProps['filterSettings']>) => void;
   onMarkSeen: () => void;
-  onLoadNewer: () => void;
-  onLoadNewer5x: () => void;
-  onLoadOlder: () => void;
+  onSyncNewer: () => void;
+  onSyncNewer5x: () => void;
+  onSyncOlder: () => void;
   onDelete: () => void;
   onDestroy: () => void;
 
-  loadingNewer: boolean;
-  loadingOlder: boolean;
+  syncingNewer: boolean;
+  syncingOlder: boolean;
   deleting: boolean;
   destroying: boolean;
 }
@@ -39,13 +39,13 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
   filterSettings,
   updateFilterSettings,
   onMarkSeen,
-  onLoadNewer,
-  onLoadNewer5x,
-  onLoadOlder,
+  onSyncNewer,
+  onSyncNewer5x,
+  onSyncOlder,
   onDelete,
   onDestroy,
-  loadingNewer,
-  loadingOlder,
+  syncingNewer,
+  syncingOlder,
   deleting,
   destroying,
 }) => {
@@ -78,18 +78,18 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
               Seen
             </button>
             <button
-              onClick={onLoadNewer}
-              disabled={loadingNewer}
+              onClick={onSyncNewer}
+              disabled={syncingNewer}
               className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
             >
-              {loadingNewer ? 'Loading Newer...' : 'Newer'}
+              {syncingNewer ? 'Syncing Newer...' : 'Newer'}
             </button>
             <button
-              onClick={onLoadNewer5x}
-              disabled={loadingNewer}
+              onClick={onSyncNewer5x}
+              disabled={syncingNewer}
               className="px-4 py-2 text-sm bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-gray-400"
             >
-              {loadingNewer ? 'Loading Newer 5x...' : 'Newer×5'}
+              {syncingNewer ? 'Syncing Newer 5x...' : 'Newer×5'}
             </button>
           </div>
             
@@ -120,7 +120,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                 />
               )}
             </svg>
-            <span className="ml-2">Menu /  {getCategoryBySlug(category).label}</span>
+            <span className="ml-2">Menu / {getCategoryBySlug(category).label}</span>
           </button>
         </div>
 
@@ -136,25 +136,25 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                 Mark Seen
               </button>
               <button
-                onClick={onLoadNewer}
-                disabled={loadingNewer}
+                onClick={onSyncNewer}
+                disabled={syncingNewer}
                 className="w-full mt-2 px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
               >
-                {loadingNewer ? 'Loading Newer...' : 'Load Newer'}
+                {syncingNewer ? 'Syncing Newer...' : 'Sync Newer'}
               </button>
               <button
-                onClick={onLoadNewer5x}
-                disabled={loadingNewer}
+                onClick={onSyncNewer5x}
+                disabled={syncingNewer}
                 className="w-full mt-2 px-4 py-2 text-sm bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-gray-400"
               >
-                {loadingNewer ? 'Loading Newer 5x...' : 'Newer 5x'}
+                {syncingNewer ? 'Syncing Newer 5x...' : 'Sync Newer 5x'}
               </button>
               <button
-                onClick={onLoadOlder}
-                disabled={loadingOlder}
+                onClick={onSyncOlder}
+                disabled={syncingOlder}
                 className="w-full mt-2 px-4 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
               >
-                {loadingOlder ? 'Loading Older...' : 'Load Older'}
+                {syncingOlder ? 'Syncing Older...' : 'Sync Older'}
               </button>
               <button
                 onClick={onDelete}

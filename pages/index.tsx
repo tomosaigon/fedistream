@@ -17,8 +17,8 @@ export default function Home() {
   const router = useRouter();
   const [counts, setCounts] = useState<Counts | null>(null);
   const [loading, setLoading] = useState(true);
-  const [loadingOlder, setLoadingOlder] = useState(false);
-  const [loadingNewer, setLoadingNewer] = useState(false);
+  const [syncingOlder, setSyncingOlder] = useState(false);
+  const [syncingNewer, setSyncingNewer] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [destroying, setDestroying] = useState(false);
   
@@ -44,8 +44,8 @@ export default function Home() {
     router.push(`/?server=${event.target.value}`);
   };
 
-  const handleLoadOlder = async () => {
-    setLoadingOlder(true);
+  const handleSyncOlder = async () => {
+    setSyncingOlder(true);
     try {
       const syncRes = await fetch(`/api/timeline-sync?server=${serverSlug}&older=true`, { 
         method: 'POST' 
@@ -53,7 +53,7 @@ export default function Home() {
       const syncData = await syncRes.json();
       
       if (syncData.newPosts > 0) {
-        toast.success(`Loaded ${syncData.newPosts} older posts (${syncData.firstPost.created_at} - ${syncData.lastPost.created_at})`);
+        toast.success(`Synced ${syncData.newPosts} older posts (${syncData.firstPost.created_at} - ${syncData.lastPost.created_at})`);
       } else {
         toast('No older posts found');
       }
@@ -65,12 +65,12 @@ export default function Home() {
       console.error(error);
       toast.error('Failed to load older posts');
     } finally {
-      setLoadingOlder(false);
+      setSyncingOlder(false);
     }
   };
 
-  const handleLoadNewer = async () => {
-    setLoadingNewer(true);
+  const handleSyncNewer = async () => {
+    setSyncingNewer(true);
     try {
       const syncRes = await fetch(`/api/timeline-sync?server=${serverSlug}`, { 
         method: 'POST' 
@@ -78,7 +78,7 @@ export default function Home() {
       const syncData = await syncRes.json();
       
       if (syncData.newPosts > 0) {
-        toast.success(`Loaded ${syncData.newPosts} newer posts (${syncData.firstPost.created_at} - ${syncData.lastPost.created_at})`);
+        toast.success(`Synced ${syncData.newPosts} newer posts (${syncData.firstPost.created_at} - ${syncData.lastPost.created_at})`);
       } else {
         toast('No new posts found');
       }
@@ -90,7 +90,7 @@ export default function Home() {
       console.error(error);
       toast.error('Failed to load newer posts');
     } finally {
-      setLoadingNewer(false);
+      setSyncingNewer(false);
     }
   };
 
@@ -187,18 +187,18 @@ export default function Home() {
       {/* Server selection and refresh buttons */}
       <div className="flex gap-2 mb-4">
         <button
-          onClick={handleLoadNewer}
-          disabled={loadingNewer}
+          onClick={handleSyncNewer}
+          disabled={syncingNewer}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
         >
-          {loadingNewer ? 'Loading...' : 'Load Newer'}
+          {syncingNewer ? 'Syncing...' : 'Sync Newer'}
         </button>
         <button
-          onClick={handleLoadOlder}
-          disabled={loadingOlder}
+          onClick={handleSyncOlder}
+          disabled={syncingOlder}
           className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
         >
-          {loadingOlder ? 'Loading...' : 'Load Older'}
+          {syncingOlder ? 'Syncing...' : 'Sync Older'}
         </button>
       </div>
 

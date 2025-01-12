@@ -34,8 +34,8 @@ export default function CategoryPage() {
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [counts, setCounts] = useState(null);
-  const [loadingNewer, setLoadingNewer] = useState(false);
-  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [syncingNewer, setSyncingNewer] = useState(false);
+  const [syncingOlder, setSyncingOlder] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [destroying, setDestroying] = useState(false);
   const latestFetchId = useRef(0);
@@ -126,17 +126,17 @@ export default function CategoryPage() {
     router.push(`/${newServer}/${category}`);
   };
 
-  // Load newer/older handlers
-  const handleLoadNewer = async () => {
+  // Sync newer/older handlers
+  const handleSyncNewer = async () => {
     const fetchId = ++latestFetchId.current;
 
-    setLoadingNewer(true);
+    setSyncingNewer(true);
     try {
       const syncRes = await fetch(`/api/timeline-sync?server=${server}`, { method: 'POST' });
       const syncData = await syncRes.json();
       
       if (syncData.newPosts > 0) {
-        toast.success(`Loaded ${syncData.newPosts} newer posts`, toastOptions);
+        toast.success(`Synced ${syncData.newPosts} newer posts`, toastOptions);
         if (fetchId !== latestFetchId.current) return;
         refreshPosts(); // Reload posts if new content
       } else {
@@ -146,14 +146,14 @@ export default function CategoryPage() {
       console.error(error);
       toast.error('Failed to load newer posts', toastOptions);
     } finally {
-      setLoadingNewer(false);
+      setSyncingNewer(false);
     }
   };
 
-  const handleLoadNewer5x = async () => {
+  const handleSyncNewer5x = async () => {
     const fetchId = ++latestFetchId.current;
   
-    setLoadingNewer(true);
+    setSyncingNewer(true);
     try {
       let totalNewPosts = 0;
   
@@ -163,7 +163,7 @@ export default function CategoryPage() {
   
         if (syncData.newPosts > 0) {
           totalNewPosts += syncData.newPosts;
-          toast.success(`Batch ${i + 1}: Loaded ${syncData.newPosts} newer posts`, toastOptions);
+          toast.success(`Batch ${i + 1}: Synced ${syncData.newPosts} newer posts`, toastOptions);
   
           // if (fetchId !== latestFetchId.current) return;
           // refreshPosts();
@@ -180,7 +180,7 @@ export default function CategoryPage() {
       }
   
       if (totalNewPosts > 0) {
-        toast.success(`Loaded a total of ${totalNewPosts} newer posts`, toastOptions);
+        toast.success(`Synced a total of ${totalNewPosts} newer posts`, toastOptions);
         if (fetchId !== latestFetchId.current) return;
         refreshPosts();
       } else {
@@ -190,18 +190,18 @@ export default function CategoryPage() {
       console.error(error);
       toast.error('Failed to load newer posts in 5x mode', toastOptions);
     } finally {
-      setLoadingNewer(false);
+      setSyncingNewer(false);
     }
   };
 
-  const handleLoadOlder = async () => {
-    setLoadingOlder(true);
+  const handleSyncOlder = async () => {
+    setSyncingOlder(true);
     try {
       const syncRes = await fetch(`/api/timeline-sync?server=${server}&older=true`, { method: 'POST' });
       const syncData = await syncRes.json();
       
       if (syncData.newPosts > 0) {
-        toast.success(`Loaded ${syncData.newPosts} older posts`, toastOptions);
+        toast.success(`Synced ${syncData.newPosts} older posts`, toastOptions);
         // refreshPosts(); // DONT Reload posts automatically
       } else {
         toast('No older posts found', toastOptions);
@@ -210,7 +210,7 @@ export default function CategoryPage() {
       console.error(error);
       toast.error('Failed to load older posts', toastOptions);
     } finally {
-      setLoadingOlder(false);
+      setSyncingOlder(false);
     }
   };
 
@@ -331,13 +331,13 @@ export default function CategoryPage() {
           filterSettings={filterSettings}
           updateFilterSettings={updateFilterSettings}
           onMarkSeen={handleMarkSeen}
-          onLoadNewer={handleLoadNewer}
-          onLoadNewer5x={handleLoadNewer5x}
-          onLoadOlder={handleLoadOlder}
+          onSyncNewer={handleSyncNewer}
+          onSyncNewer5x={handleSyncNewer5x}
+          onSyncOlder={handleSyncOlder}
           onDelete={handleDelete}
           onDestroy={handleDestroy}
-          loadingNewer={loadingNewer}
-          loadingOlder={loadingOlder}
+          syncingNewer={syncingNewer}
+          syncingOlder={syncingOlder}
           deleting={deleting}
           destroying={destroying}
         />
