@@ -14,5 +14,14 @@ export default {
       },
     },
   },
+  safelist: [
+    {
+      pattern: /bg-(blue|yellow|amber|red|green|purple)-(300|400|500|600)/,
+    },
+    {
+      pattern: /hover:bg-(blue|yellow|amber|red|green|purple)-(600)/,
+    },
+    'disabled:bg-gray-400',
+  ],
   plugins: [],
 } satisfies Config;
