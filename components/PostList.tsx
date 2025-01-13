@@ -5,6 +5,7 @@ import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils
 import useMutedWords from '../hooks/useMutedWords';
 import { ImageModal } from './ImageModal';
 import axios from 'axios';
+import AsyncButton from './AsyncButton';
 
 interface PostListProps {
   posts: Post[];
@@ -511,62 +512,53 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
                   </p>
                 )}
                 <div className="flex flex-row sm:flex-col gap-1 sm:gap-2">
-                  <button
-                    onClick={() => handleFavorite(post.url)}
-                    className="w-full px-3 py-1 bg-yellow-300 text-white rounded hover:bg-yellow-500 flex items-center justify-center space-x-2"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                    </svg>
-                    <span>fav</span>
-                  </button>
+                  <AsyncButton
+                          callback={() => handleFavorite(post.url)}
+                          defaultText={<>
+                          <svg
+                            className="w-5 h-5"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                          </svg>
+                          <span>fav</span>
+                          </>
+                          }
+                          color={'yellow'}
+                        />
                   {(['spam', 'bitter', 'cookie', 'phlog'] as const).map((tag) => {
                     const hasTag = post.account_tags?.some(t => t.tag === tag);
                     const count = getAccountTagCount(post, tag);
-                    
+
+                    const color = tag === 'spam' ? 'red' :
+                      tag === 'bitter' ? 'amber' :
+                        tag === 'phlog' ? 'yellow' : 'green';
+
                     return hasTag ? (
                       <div key={tag} className="flex gap-1">
-                        <button
-                          onClick={() => handleAdminAction(tag, post.account_id, post.account_username)}
-                          className={
-                            tag === 'spam' ? 'flex-1 px-2 py-1 bg-red-500 text-white rounded-l hover:bg-red-600' :
-                            tag === 'bitter' ? 'flex-1 px-2 py-1 bg-amber-500 text-white rounded-l hover:bg-amber-600' :
-                            tag === 'phlog' ? 'flex-1 px-2 py-1 bg-yellow-500 text-white rounded-l hover:bg-yellow-600' :
-                            'flex-1 px-2 py-1 bg-green-500 text-white rounded-l hover:bg-green-600'
-                          }
-                        >
-                          {tag}({count})
-                        </button>
-                        <button
-                          onClick={() => handleClearTag(post.account_id, post.account_username, tag)}
-                          className={
-                            tag === 'spam' ? 'px-2 py-1 bg-red-500 text-white rounded-r hover:bg-red-600' :
-                            tag === 'bitter' ? 'px-2 py-1 bg-amber-500 text-white rounded-r hover:bg-amber-600' :
-                            tag === 'phlog' ? 'px-2 py-1 bg-yellow-500 text-white rounded-r hover:bg-yellow-600' :
-                            'px-2 py-1 bg-green-500 text-white rounded-r hover:bg-green-600'
-                          }
-                        >
-                          ×
-                        </button>
+                        <AsyncButton
+                          callback={() => handleAdminAction(tag, post.account_id, post.account_username)}
+                          loadingText={`${tag}ing...`}
+                          defaultText={`${tag}(${count})`}
+                          color={color}
+                        />
+                        <AsyncButton
+                          callback={() => handleClearTag(post.account_id, post.account_username, tag)}
+                          loadingText={`Clearing ${tag}...`}
+                          defaultText="×"
+                          color={color}
+                        />
                       </div>
                     ) : (
-                      <button
+                      <AsyncButton
                         key={tag}
-                        onClick={() => handleAdminAction(tag, post.account_id, post.account_username)}
-                        className={
-                          tag === 'spam' ? 'w-full px-3 py-1 bg-red-200 text-white rounded hover:bg-red-600' :
-                          tag === 'bitter' ? 'w-full px-3 py-1 bg-amber-200 text-white rounded hover:bg-amber-600' :
-                          tag === 'phlog' ? 'w-full px-3 py-1 bg-yellow-300 text-white rounded hover:bg-yellow-600' :
-                          'w-full px-3 py-1 bg-green-300 text-white rounded hover:bg-green-600'
-                        }
-                      >
-                        {tag}
-                      </button>
+                        callback={() => handleAdminAction(tag, post.account_id, post.account_username)}
+                        loadingText={`${tag}ing...`}
+                        defaultText={tag}
+                        color={color}
+                      />
                     );
                   })}
                 </div>

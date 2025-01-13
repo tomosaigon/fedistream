@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { JSX, useState } from "react";
 
 interface AsyncButtonProps {
   callback: () => Promise<void>;
-  loadingText: string;
-  defaultText: string;
-  color: 'blue' | 'yellow' | 'red' | 'green' | 'purple';
+  loadingText?: string;
+  defaultText: string | JSX.Element;
+  color: 'blue' | 'yellow' | 'amber' | 'red' | 'green' | 'purple';
 }
 
 const AsyncButton: React.FC<AsyncButtonProps> = ({
@@ -15,7 +15,7 @@ const AsyncButton: React.FC<AsyncButtonProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
 
-  const baseClass = `bg-${color}-500`;
+  const baseClass = `bg-${color}-400`;
   const hoverClass = `hover:bg-${color}-600`;
   const disabledClass = `disabled:bg-gray-400`;
 
@@ -26,7 +26,7 @@ const AsyncButton: React.FC<AsyncButtonProps> = ({
     try {
       await callback();
     } catch (error) {
-      console.error(error); // Optional: Handle error feedback
+      // console.error(error);
     } finally {
       setLoading(false);
     }
@@ -35,10 +35,10 @@ const AsyncButton: React.FC<AsyncButtonProps> = ({
   return (
     <button
       onClick={handleClick}
-      disabled={loading} // Only disable while loading
-      className={`px-4 py-2 text-sm text-white rounded ${baseClass} ${hoverClass} ${disabledClass}`}
+      disabled={loading}
+      className={`px-2 py-2 text-sm text-white rounded flex items-center justify-center ${baseClass} ${hoverClass} ${disabledClass}`}
     >
-      {loading ? loadingText : defaultText}
+      {loading && loadingText ? loadingText : defaultText}
     </button>
   );
 };
