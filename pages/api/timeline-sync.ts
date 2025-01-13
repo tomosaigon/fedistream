@@ -2,7 +2,8 @@ import axios from 'axios';
 import { getServerBySlug } from '../../config/servers';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { dbManager } from '../../db';
-import { Poll, Post } from '../../db/database';
+// import { Poll, Post } from '../../db/database';
+import { mastodonStatusToPost, MastodonStatus } from '../../db/mastodonStatus';
 
 // https://docs.joinmastodon.org/methods/timelines/
 // local
@@ -65,69 +66,7 @@ async function fetchTimelinePage(baseUrl: string, options?: {
   return response.data;
 }
 
-interface MastodonAccount {
-  id: string;
-  username: string;
-  acct: string;
-  display_name: string;
-  url: string;
-  avatar: string;
-  bot: boolean;
-}
 
-// aka Status
-interface MastodonPost {
-  id: string;
-  created_at: string;
-  content: string;
-  language: string;
-  in_reply_to_id: string | null;
-  uri: string;
-  url: string;
-  account: MastodonAccount;
-  media_attachments: any[];
-  visibility: string;
-  favourites_count: number;
-  reblogs_count: number;
-  replies_count: number;
-  card: any | null;
-  poll: Poll | null;
-  // reblogged_id: string | null;
-  reblog: MastodonPost | null;
-  was_reblogged: number;
-}
-
-function mastodonPostToPost(mastodonPost: MastodonPost, serverSlug: string): Post {
-  return {
-    ...mastodonPost,
-    seen: 0,
-    account_id: mastodonPost.account.id,
-    account_username: mastodonPost.account.username,
-    account_acct: mastodonPost.account.acct,
-    account_display_name: mastodonPost.account.display_name,
-    account_url: mastodonPost.account.url,
-    account_avatar: mastodonPost.account.avatar,
-    account_bot: mastodonPost.account.bot,
-    server_slug: serverSlug,
-    bucket: '',
-    account_tags: [],
-    poll: mastodonPost.poll ? mastodonPost.poll : null,
-    parent_id: mastodonPost.reblog ? mastodonPost.reblog.id : null,
-    reblog: mastodonPost.reblog ? mastodonPostToPost(mastodonPost.reblog, serverSlug) : null,
-    // reblogged_at: mastodonPost.reblog ? mastodonPost.reblog.created_at : null,
-    // reblog: mastodonPost.reblog ? mastodonPostToPost(mastodonPost.reblog, serverSlug) : null,
-    // reblogged_id: mastodonPost.reblog,
-    // poll: mastodonPost.poll ? {
-    //   id: mastodonPost.poll.id,
-    //   options: mastodonPost.poll.options.map(option => ({
-    //     label: option.label,
-    //     votes: option.votes,
-    //   })),
-    //   votes_count: mastodonPost.poll.votes_count,
-    //   expires_at: mastodonPost.poll.expires_at,
-    // } : null,
-  };
-}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -200,16 +139,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Store new posts in database
-    newPosts.forEach((post: MastodonPost) => {
+    newPosts.forEach((post: MastodonStatus) => {
       post.was_reblogged = 0;
       // console.log('Inserting post:', post);
       if (post.reblog) {
         post.reblog.was_reblogged = 1;
         // console.log('Reblogged post:', post.reblog);
-        dbManager.insertPost(mastodonPostToPost(post.reblog, server as string));
+        dbManager.insertPost(mastodonStatusToPost(post.reblog, server as string));
 
       }
-      dbManager.insertPost(mastodonPostToPost(post, server as string));
+      dbManager.insertPost(mastodonStatusToPost(post, server as string));
     });
 
     const firstPost = newPosts[0];

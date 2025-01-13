@@ -4,6 +4,7 @@ import { Post, MediaAttachment } from '../db/database';
 import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils/nonStopWords';
 import useMutedWords from '../hooks/useMutedWords';
 import { ImageModal } from './ImageModal';
+import RepliesModal from './RepliesModal';
 import axios from 'axios';
 import AsyncButton from './AsyncButton';
 
@@ -23,6 +24,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
   const [posts, setPosts] = useState(initialPosts);
   const [activeImage, setActiveImage] = useState<MediaAttachment | null>(null);
   const [activePost, setActivePost] = useState<Post | null>(null);
+  const [activeRepliesPost, setActiveRepliesPost] = useState<Post | null>(null);
 
   useEffect(() => {
     setPosts(initialPosts);
@@ -141,6 +143,12 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
     } catch (error) {
       console.error('Error clearing tag:', error);
       toast.error('Failed to clear tag');
+    }
+  };
+
+  const handleRepliesClick = (post: Post) => {
+    if (post.replies_count > 0) {
+      setActiveRepliesPost(post);
     }
   };
 
@@ -453,7 +461,10 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
 
                 {/* Post Footer */}
                 <div className="px-4 py-3 border-t border-gray-100 flex items-center space-x-6 text-gray-500">
-                  <div className="flex items-center space-x-2">
+                  <div
+                    className="flex items-center space-x-2 cursor-pointer"
+                    onClick={() => handleRepliesClick(post)}
+                  >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
@@ -516,21 +527,21 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
                 )}
                 <div className="flex flex-row sm:flex-col gap-1 sm:gap-2">
                   <AsyncButton
-                          callback={() => handleFavorite(post.url)}
-                          defaultText={<>
-                          <svg
-                            className="w-5 h-5"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                          </svg>
-                          <span>fav</span>
-                          </>
-                          }
-                          color={'yellow'}
-                        />
+                    callback={() => handleFavorite(post.url)}
+                    defaultText={<>
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                      </svg>
+                      <span>fav</span>
+                    </>
+                    }
+                    color={'yellow'}
+                  />
                   {(['spam', 'bitter', 'cookie', 'phlog'] as const).map((tag) => {
                     const hasTag = post.account_tags?.some(t => t.tag === tag);
                     const count = getAccountTagCount(post, tag);
@@ -539,30 +550,24 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
                       tag === 'bitter' ? 'amber' :
                         tag === 'phlog' ? 'yellow' : 'green';
 
-                    return hasTag ? (
-                      <div key={tag} className="flex gap-1">
+                    return (
+                      <div key={tag} className="flex flex-row sm:flex-col gap-1 sm:gap-2">
                         <AsyncButton
                           callback={() => handleAdminAction(tag, post.account_id, post.account_username)}
-                          loadingText={`${tag}ing...`}
-                          defaultText={`${tag}(${count})`}
+                          defaultText={hasTag ? `${tag}(${count})` : tag}
                           color={color}
                         />
-                        <AsyncButton
-                          callback={() => handleClearTag(post.account_id, post.account_username, tag)}
-                          loadingText={`Clearing ${tag}...`}
-                          defaultText="×"
-                          color={color}
-                        />
+                        {hasTag ? (
+                          <AsyncButton
+                            callback={() => handleClearTag(post.account_id, post.account_username, tag)}
+                            loadingText={`Clearing ${tag}...`}
+                            defaultText="×"
+                            color={color}
+                          />
+                        ) : null}
+
                       </div>
-                    ) : (
-                      <AsyncButton
-                        key={tag}
-                        callback={() => handleAdminAction(tag, post.account_id, post.account_username)}
-                        loadingText={`${tag}ing...`}
-                        defaultText={tag}
-                        color={color}
-                      />
-                    );
+                    )
                   })}
                 </div>
               </div>
@@ -578,6 +583,15 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
           onClose={() => {
             setActiveImage(null);
             setActivePost(null);
+          }}
+        />
+      )}
+
+      {activeRepliesPost && (
+        <RepliesModal
+          post={activeRepliesPost}
+          onClose={() => {
+            setActiveRepliesPost(null);
           }}
         />
       )}
