@@ -10,6 +10,7 @@ export enum Bucket {
   fromBots = 'fromBots',
   regular = 'regular',
   reblogs = 'reblogs',
+  questions = 'questions',
 }
 
 export function determineBucket(post: Post): Bucket {
@@ -34,6 +35,7 @@ export function determineBucket(post: Post): Bucket {
   if (isNetworkMentionPost(post.content)) return Bucket.networkMentions;
   if (post.content.includes('<a href="')) return Bucket.withLinks;
   if (post.in_reply_to_id) return Bucket.asReplies;
+  if (containsQuestion(post.content)) return Bucket.questions;
   return Bucket.regular;
 }
 
@@ -47,4 +49,10 @@ function isNetworkMentionPost(content: string): boolean {
   // Check for mention format
   const links = content.match(/<a[^>]*>.*?<\/a>/g) || [];
   return links.some(link => link.includes('class="u-url mention"'));
+}
+
+function containsQuestion(content: string): boolean {
+  // Remove HTML tags and check for a question mark
+  const textContent = content.replace(/<[^>]*>/g, ''); // Strip out HTML tags
+  return textContent.includes('?');
 }

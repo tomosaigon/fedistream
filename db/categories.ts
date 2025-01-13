@@ -2,6 +2,7 @@ import { Bucket } from './bucket';
 
 export const CATEGORY_MAP = [
   { slug: 'regular', bucket: Bucket.regular, label: 'Regular' },
+  { slug: 'questions', bucket: Bucket.questions, label: 'Questions' },
   { slug: 'with-images', bucket: Bucket.withImages, label: 'Images' },
   { slug: 'replies', bucket: Bucket.asReplies, label: 'Replies' },
   { slug: 'network-mentions', bucket: Bucket.networkMentions, label: 'Mentions' },
