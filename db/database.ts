@@ -498,6 +498,7 @@ export interface PostCard {
 }
 
 export interface MediaAttachment {
+  description: string | undefined;
   type: string;
   url?: string;
   preview_url?: string;

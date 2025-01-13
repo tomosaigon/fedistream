@@ -172,11 +172,14 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
           >
             <img
               src={media.preview_url}
-              alt=""
+              alt={media.description}
               className={`w-full rounded-lg hover:opacity-90 transition-opacity ${
                 mediaAttachments.length === 1 ? 'h-auto' : 'h-40 sm:h-48'
               } object-cover`}
             />
+            <span className="text-xs px-1 rounded">
+              {media.description}
+            </span>
           </div>
         )
       ))}
@@ -385,7 +388,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
                           <div className="flex-shrink-0 w-48">
                             <img
                               src={post.card.image}
-                              alt=""
+                              alt={post.card.description}
                               className="w-full h-32 object-cover"
                             />
                           </div>
