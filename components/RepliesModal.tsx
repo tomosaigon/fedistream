@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Post } from '../db/database';
+import { getServerBySlug } from '../config/servers';
 import toast from 'react-hot-toast';
 import { mastodonStatusToPost, MastodonStatus } from '../db/mastodonStatus';
 
@@ -16,23 +17,12 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
   useEffect(() => {
     const fetchReplies = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
-        const serverUrl = localStorage.getItem('serverUrl');
-
-        if (!token || !serverUrl) {
-          console.error('Access token or server URL not found');
-          toast.error('Access token or server URL is missing');
-          return;
-        }
+        const serverUrl = getServerBySlug(post.server_slug)?.baseUrl;
 
         const repliesApiUrl = `${serverUrl}/api/v1/statuses/${post.id}/context`;
-        const response = await axios.get(repliesApiUrl, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(repliesApiUrl);
 
-        setReplies(response.data.descendants.map((reply: MastodonStatus) => mastodonStatusToPost(reply, serverUrl)));
+        setReplies(response.data.descendants.map((reply: MastodonStatus) => mastodonStatusToPost(reply, post.server_slug)));
       } catch (error) {
         console.error('Failed to fetch replies:', error);
         toast.error('Failed to fetch replies');

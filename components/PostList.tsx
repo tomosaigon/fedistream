@@ -147,9 +147,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
   };
 
   const handleRepliesClick = (post: Post) => {
-    if (post.replies_count > 0) {
-      setActiveRepliesPost(post);
-    }
+    setActiveRepliesPost(post);
   };
 
   const renderMediaAttachments = (post: Post, mediaAttachments: MediaAttachment[]) => (
