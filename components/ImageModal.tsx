@@ -1,6 +1,7 @@
 // components/ImageModal.tsx
 import { Post, MediaAttachment } from '../db/database';
 import { useEffect } from 'react';
+import { XMarkIcon } from '@heroicons/react/24/solid';
 
 interface ImageModalProps {
   media: MediaAttachment;
@@ -28,12 +29,10 @@ export const ImageModal: React.FC<ImageModalProps> = ({ media, post, onClose }) 
       >
         {/* Close button */}
         <button
-          className="absolute top-2 right-2 text-white/80 hover:text-white"
+          className="absolute top-2 right-2"
           onClick={onClose}
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <XMarkIcon className="w-8 h-8" />
         </button>
 
         {/* Image */}
