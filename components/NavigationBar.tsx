@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { servers } from '../config/servers';
 import { CATEGORY_MAP, getCategoryBySlug } from '../db/categories';
 import AsyncButton from './AsyncButton';
+import { formatDateTime } from '@/utils/format';
 
 export interface ServerStats {
   totalPosts: number;
@@ -184,8 +185,8 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                   <p><strong>Server Stats:</strong></p>
                   <p>Total Posts: {serverStats.totalPosts}</p>
                   <p>Seen Posts: {serverStats.seenPosts}</p>
-                  <p>Oldest Post: {serverStats.oldestPostDate || 'N/A'}</p>
-                  <p>Latest Post: {serverStats.latestPostDate || 'N/A'}</p>
+                  <p>Oldest Post: {serverStats.oldestPostDate ? formatDateTime(serverStats.oldestPostDate) : 'N/A'}</p>
+                  <p>Latest Post: {serverStats.latestPostDate ? formatDateTime(serverStats.latestPostDate) : 'N/A'}</p>
                 </div>
               )}
             </div>

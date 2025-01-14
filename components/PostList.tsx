@@ -7,6 +7,7 @@ import { ImageModal } from './ImageModal';
 import RepliesModal from './RepliesModal';
 import axios from 'axios';
 import AsyncButton from './AsyncButton';
+import { formatDateTime } from '@/utils/format';
 
 interface PostListProps {
   posts: Post[];
@@ -277,18 +278,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-500 hover:underline"
-                      >
-                        {new Date(reblogger.created_at).toLocaleDateString(undefined, {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}{" "}
-                        at{" "}
-                        {new Date(reblogger.created_at).toLocaleTimeString(undefined, {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </a>
+                      >{formatDateTime(reblogger.created_at)}</a>
                     </span>
                   </div>
                 )}
@@ -344,27 +334,9 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-sm text-gray-500 hover:underline"
-                        >
-                          {new Date(post.created_at).toLocaleString(undefined, {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit'
-                          })}
-                        </a>
+                        >{formatDateTime(post.created_at)}</a>
                       ) : (
-                        <div className="text-sm text-gray-500">
-                          {new Date(post.created_at).toLocaleString(undefined, {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit'
-                          })}
-                        </div>
+                        <div className="text-sm text-gray-500">{formatDateTime(post.created_at)}</div>
                       )}
                     </div>
                   </div>

@@ -4,6 +4,7 @@ import { Post } from '../db/database';
 import { getServerBySlug } from '../config/servers';
 import toast from 'react-hot-toast';
 import { mastodonStatusToPost, MastodonStatus } from '../db/mastodonStatus';
+import { formatDateTime } from '@/utils/format';
 
 
 interface RepliesModalProps {
@@ -90,7 +91,7 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
                       </span>
                     </div>
                     <span className="text-xs text-gray-400">
-                      {new Date(reply.created_at).toLocaleString()}
+                      {formatDateTime(reply.created_at)}
                     </span>
                   </div>
 
