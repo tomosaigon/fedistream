@@ -7,6 +7,13 @@ import { ImageModal } from './ImageModal';
 import RepliesModal from './RepliesModal';
 import axios from 'axios';
 import AsyncButton from './AsyncButton';
+import {
+  ChatBubbleOvalLeftEllipsisIcon,
+  ArrowsRightLeftIcon,
+  StarIcon,
+  ShareIcon,
+  ArrowPathIcon,
+} from '@heroicons/react/24/solid';
 import { formatDateTime } from '@/utils/format';
 
 interface PostListProps {
@@ -250,19 +257,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
                 {/* Reblog Header */}
                 {reblogger && (
                   <div className="flex items-center space-x-2 text-sm sm:text-base text-gray-500 italic p-4">
-                    <svg
-                      className="w-5 h-5 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                      />
-                    </svg>
+                    <ArrowPathIcon className="w-5 h-5 text-gray-400" />
                     <span>
                       <a
                         href={reblogger.account_url}
@@ -435,33 +430,22 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
                     className="flex items-center space-x-2 cursor-pointer"
                     onClick={() => handleRepliesClick(post)}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
+                    <ChatBubbleOvalLeftEllipsisIcon className="w-5 h-5" />
                     <span className="text-sm">{post.replies_count || 0}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
+                    <ArrowsRightLeftIcon className="w-5 h-5" />
                     <span className="text-sm">{post.reblogs_count || 0}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <svg
+                    <StarIcon
                       onClick={() => handleFavorite(post.url)}
                       className="w-5 h-5 cursor-pointer hover:text-yellow-500 transition-colors"
-                      fill="currentColor"
-                      stroke="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                    </svg>
+                    />
                     <span className="text-sm">{post.favourites_count || 0}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
+                    <ShareIcon className="w-5 h-5" />
                   </div>
                 </div>
 
@@ -499,14 +483,9 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
                   <AsyncButton
                     callback={() => handleFavorite(post.url)}
                     defaultText={<>
-                      <svg
-                        className="w-5 h-5"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                      </svg>
+                      <StarIcon
+                        className="w-5 h-5 cursor-pointer hover:text-yellow-500 transition-colors"
+                      />
                       <span>fav</span>
                     </>
                     }

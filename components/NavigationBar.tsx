@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { servers } from '../config/servers';
 import { CATEGORY_MAP, getCategoryBySlug } from '../db/categories';
 import AsyncButton from './AsyncButton';
+import BucketIcon from './BucketIcon';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 import { formatDateTime } from '@/utils/format';
 
 export interface ServerStats {
@@ -96,32 +98,15 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 
           {/* Toggle Menu Button */}
           <button
-            className="px-2 py-1 text-gray-500 hover:text-gray-700"
+            className="flex items-center space-x-1 text-gray-500 hover:text-gray-700"
             onClick={toggleMenu}
           >
-            <svg
-              className="w-6 h-6 inline-block"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              {menuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              )}
-            </svg>
-            <span className="ml-2">Menu / {getCategoryBySlug(category).label}</span>
+            {menuOpen ? (
+              <XMarkIcon className="w-6 h-6" />
+            ) : (
+              <Bars3Icon className="w-6 h-6" />
+            )}
+            <span className="text-lg">Menu / {getCategoryBySlug(category).label}</span>
           </button>
         </div>
 
@@ -204,6 +189,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                       : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                   }`}
                 >
+                  <BucketIcon bucket={bucket} className="w-6 h-6 pb-1 mr-1 inline-block" />
                   {label}
                   <span className="ml-2 text-sm text-gray-500">
                     ({counts?.[bucket] ?? 0})
