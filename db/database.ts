@@ -308,7 +308,7 @@ export class DatabaseManager {
           LEFT JOIN posts rp ON p.parent_id = rp.id
           LEFT JOIN account_tags at ON p.account_id = at.user_id
           WHERE 
-            p.server_slug = ? AND p.seen = 0 AND rp.seen = 0
+            p.server_slug = ? AND p.seen = 0 AND (rp.seen IS NULL or rp.seen = 0)
             AND (
               (p.parent_id IS NOT NULL AND rp.bucket = ?)
               OR (p.parent_id IS NULL AND p.bucket = ?)
