@@ -4,8 +4,16 @@ import { servers } from '../config/servers';
 import { CATEGORY_MAP, getCategoryBySlug } from '../db/categories';
 import AsyncButton from './AsyncButton';
 
+export interface ServerStats {
+  totalPosts: number;
+  seenPosts: number;
+  oldestPostDate: string | null;
+  latestPostDate: string | null;
+}
+
 interface NavigationBarProps {
   server: string;
+  serverStats?: ServerStats | null;
   onServerChange: (newServer: string) => void;
 
   category: string;
@@ -30,6 +38,7 @@ interface NavigationBarProps {
 
 const NavigationBar: React.FC<NavigationBarProps> = ({
   server,
+  serverStats,
   onServerChange,
   category,
   counts,
@@ -168,6 +177,17 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
               >
                 Mastodon API Credentials
               </Link>
+
+              {/* Server Stats */}
+              {serverStats && (
+                <div className="mt-4 p-4 border-t border-gray-300 text-sm text-gray-600">
+                  <p><strong>Server Stats:</strong></p>
+                  <p>Total Posts: {serverStats.totalPosts}</p>
+                  <p>Seen Posts: {serverStats.seenPosts}</p>
+                  <p>Oldest Post: {serverStats.oldestPostDate || 'N/A'}</p>
+                  <p>Latest Post: {serverStats.latestPostDate || 'N/A'}</p>
+                </div>
+              )}
             </div>
 
             {/* Right Column: Categories and Filters */}

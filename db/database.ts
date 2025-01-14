@@ -209,6 +209,40 @@ export class DatabaseManager {
     return result;
   }
 
+  public getServerStats(serverSlug: string): {
+    totalPosts: number;
+    seenPosts: number;
+    oldestPostDate: string | null;
+    latestPostDate: string | null;
+  } {
+    try {
+      const stats = this.db.prepare(`
+        SELECT 
+          COUNT(*) AS totalPosts,
+          SUM(CASE WHEN seen = 1 THEN 1 ELSE 0 END) AS seenPosts,
+          MIN(created_at) AS oldestPostDate,
+          MAX(created_at) AS latestPostDate
+        FROM posts
+        WHERE server_slug = ?
+      `).get(serverSlug) as {
+        totalPosts: number;
+        seenPosts: number;
+        oldestPostDate: string | null;
+        latestPostDate: string | null;
+      };
+  
+      return stats;
+    } catch (error) {
+      console.error('Error in getServerStats:', error);
+      return {
+        totalPosts: 0,
+        seenPosts: 0,
+        oldestPostDate: null,
+        latestPostDate: null,
+      };
+    }
+  }
+  
   public getLatestPostId(serverSlug: string): string | undefined {
     const result = this.db.prepare(`
       SELECT id 

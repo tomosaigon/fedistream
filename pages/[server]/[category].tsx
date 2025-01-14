@@ -5,7 +5,7 @@ import AsyncButton from '../../components/AsyncButton';
 import { getServerBySlug, servers } from '../../config/servers';
 import Link from 'next/link';
 import { Toaster, toast, ToastOptions, ToastPosition } from 'react-hot-toast';
-import NavigationBar from '../../components/NavigationBar';
+import NavigationBar, { ServerStats } from '../../components/NavigationBar';
 import { getCategoryBySlug } from '../../db/categories';
 
 
@@ -34,6 +34,7 @@ export default function CategoryPage() {
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [counts, setCounts] = useState(null);
+  const [serverStats, setServerStats] = useState<ServerStats | null>(null);
   const latestFetchId = useRef(0);
 
   const [filterSettings, setFilterSettings] = useState({
@@ -61,6 +62,22 @@ export default function CategoryPage() {
 
   const { bucket, label: bucketLabel } = getCategoryBySlug((category ? category : 'regular') as string);
   const serverConfig = server ? getServerBySlug(server as string) : servers[0];
+
+  useEffect(() => {
+    if (!server) return;
+    fetchServerStats();
+  }, [server]);
+
+  const fetchServerStats = async () => {
+    try {
+      const res = await fetch(`/api/server-stats?server=${server}`);
+      const stats: ServerStats = await res.json();
+      setServerStats(stats);
+    } catch (err) {
+      console.error('Failed to fetch server stats:', err);
+      setServerStats(null);
+    }
+  };
 
   useEffect(() => {
     if (!server || !category) return;
@@ -130,6 +147,7 @@ export default function CategoryPage() {
         toast.success(`Synced ${syncData.newPosts} newer posts`, toastOptions);
         if (fetchId !== latestFetchId.current) return;
         refreshPosts(); // Reload posts if new content
+        fetchServerStats(); // Reload server stats
       } else {
         toast('No new posts found', toastOptions);
       }
@@ -171,6 +189,7 @@ export default function CategoryPage() {
         toast.success(`Synced a total of ${totalNewPosts} newer posts`, toastOptions);
         if (fetchId !== latestFetchId.current) return;
         refreshPosts();
+        fetchServerStats(); // Reload server stats
       } else {
         toast('No new posts found after 5x', toastOptions);
       }
@@ -187,6 +206,7 @@ export default function CategoryPage() {
       
       if (syncData.newPosts > 0) {
         toast.success(`Synced ${syncData.newPosts} older posts`, toastOptions);
+        fetchServerStats(); // Reload server stats
         // refreshPosts(); // DONT Reload posts automatically
       } else {
         toast('No older posts found', toastOptions);
@@ -302,6 +322,7 @@ export default function CategoryPage() {
       <main className="flex-1 w-full">
         <NavigationBar
           server={server as string}
+          serverStats={serverStats}
           onServerChange={handleServerChange}
           category={category ? (category as string) : 'regular'}
           counts={counts}
