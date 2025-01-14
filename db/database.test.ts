@@ -54,6 +54,7 @@ const testPost2: Post = {
   account_url: 'https://example.com/user124',
   account_avatar: 'https://example.com/avatar2.png',
   media_attachments: [{
+    description: 'Image attachment',
     type: 'image',
     url: 'https://example.com/image.png'
   }],
@@ -247,8 +248,9 @@ describe('DatabaseManager Tests', () => {
   });
 
   test('Get category counts', () => {
-    // dbManager.insertPost(testPost1);
-    // dbManager.insertPost(testPost2);
+    dbManager.insertPost(testPost1);
+    dbManager.insertPost(testPost2);
+    dbManager.insertPost(testPost2);
     dbManager.insertPost(testPost3);
     dbManager.insertPost(testPost4);
     dbManager.insertPost(testPost5);
@@ -265,6 +267,7 @@ describe('DatabaseManager Tests', () => {
       hashtags: 1,
       withLinks: 1,
       fromBots: 1,
+      questions: 0,
       regular: 1,
     });
   });
