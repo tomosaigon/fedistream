@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Post, MediaAttachment } from '../db/database';
 import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils/nonStopWords';
+import { getServerBySlug, servers } from '../config/servers';
 import useMutedWords from '../hooks/useMutedWords';
 import { ImageModal } from './ImageModal';
 import RepliesModal from './RepliesModal';
@@ -13,11 +14,13 @@ import {
   StarIcon,
   ShareIcon,
   ArrowPathIcon,
+  UserPlusIcon,
 } from '@heroicons/react/24/solid';
 import { formatDateTime } from '@/utils/format';
 
 interface PostListProps {
   posts: Post[];
+  server: string;
   filterSettings: {
     showSpam: boolean;
     showBitter: boolean;
@@ -27,16 +30,97 @@ interface PostListProps {
   };
 }
 
-const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings }) => {
+const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filterSettings }) => {
   const { mutedWords, addMutedWord } = useMutedWords();
   const [posts, setPosts] = useState(initialPosts);
   const [activeImage, setActiveImage] = useState<MediaAttachment | null>(null);
   const [activePost, setActivePost] = useState<Post | null>(null);
   const [activeRepliesPost, setActiveRepliesPost] = useState<Post | null>(null);
+  const serverConfig = server ? getServerBySlug(server as string) : servers[0];
+
 
   useEffect(() => {
     setPosts(initialPosts);
   }, [initialPosts]);
+
+  const handleFollow = async (acct: string) => {
+    const token = localStorage.getItem('accessToken');
+    const serverUrl = localStorage.getItem('serverUrl');
+
+    if (!token || !serverUrl) {
+      console.error('Access token or server URL not found');
+      toast.error('Access token or server URL is missing');
+      return;
+    }
+
+    // Convert acct to full WebFinger identifier if it doesn't already include a domain
+    // And it isn't the same server that the home controller is on.
+    if (!acct.includes('@') && serverConfig?.baseUrl !== serverUrl) {
+      if (!serverConfig) {
+        console.error('Server config not found');
+        toast.error('Server config not found');
+        return;
+      }
+      const url = new URL(serverConfig?.baseUrl);
+      let serverDomain = url.hostname;
+      // XXX: Special case for mastodon.bsd.cafe
+      if (serverDomain === 'mastodon.bsd.cafe') {
+        serverDomain = 'bsd.cafe';
+      }
+      acct = `${acct}@${serverDomain}`;
+    }
+
+    try {
+      // Resolve the account to get its local ID on the target server
+      const resolveAccountUrl = `${serverUrl}/api/v1/accounts/lookup`;
+      // const resolveAccountUrl = `${serverUrl}/api/v1/accounts/verify_credentials`;
+      const resolveResponse = await axios.get(resolveAccountUrl, {
+        params: { acct },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const accountId = resolveResponse.data.id;
+
+      if (!accountId) {
+        console.error('Failed to resolve account ID');
+        toast.error('Unable to resolve the account to follow');
+        return;
+      }
+
+      const followApiUrl = `${serverUrl}/api/v1/accounts/${accountId}/follow`;
+
+      try {
+        const followResponse = await axios.post(
+          followApiUrl,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log('Successfully followed the user', followResponse.data);
+        toast.success('Successfully followed the user');
+      } catch (error: any) {
+        if (error.response && error.response.status === 401) {
+          // Handle Unauthorized error
+          console.error('Unauthorized: Access token might be invalid or expired');
+          toast.error('Unauthorized: Access token might be invalid or expired');
+        } else {
+          // Handle other errors
+          console.error('Error following the user:', error);
+          toast.error('Failed to follow the user');
+        }
+      }
+      // TODO: Update local state if needed to reflect the follow status
+    } catch (error) {
+      console.error('Error following the user:', error);
+      toast.error('Failed to follow the user');
+    }
+  };
 
   const handleFavorite = async (postUrl: string) => {
     const token = localStorage.getItem('accessToken');
@@ -490,6 +574,16 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, filterSettings
                     </>
                     }
                     color={'yellow'}
+                  />
+                  <AsyncButton
+                    callback={() => handleFollow(post.account_acct)}
+                    defaultText={
+                      <>
+                        <UserPlusIcon className="w-5 h-5 cursor-pointer hover:text-green-500 transition-colors" />
+                        <span>Follow</span>
+                      </>
+                    }
+                    color={'green'}
                   />
                   {(['spam', 'bitter', 'cookie', 'phlog'] as const).map((tag) => {
                     const hasTag = post.account_tags?.some(t => t.tag === tag);

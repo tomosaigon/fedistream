@@ -362,7 +362,8 @@ export default function CategoryPage() {
             <>
               <PostList
                 posts={posts}
-                filterSettings={filterSettings}
+                  server={server as string}
+                  filterSettings={filterSettings}
               />
                 <div className="flex justify-center items-center space-x-4 py-4">
                   <button
