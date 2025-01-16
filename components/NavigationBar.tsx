@@ -172,13 +172,27 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 
               {/* Server Stats */}
               {serverStats && (
-                <div className="mt-4 p-4 border-t border-gray-300 text-sm text-gray-600">
-                  <p><strong>Server Stats:</strong></p>
-                  <p>Total Posts: {serverStats.totalPosts}</p>
-                  <p>Seen Posts: {serverStats.seenPosts}</p>
-                  <p>Oldest Post: {serverStats.oldestPostDate ? formatDateTime(serverStats.oldestPostDate) : 'N/A'}</p>
-                  <p>Latest Post: {serverStats.latestPostDate ? formatDateTime(serverStats.latestPostDate) : 'N/A'}</p>
+                <div className="mt-4 p-4 border rounded shadow-sm bg-gray-50">
+                <h3 className="text-lg font-semibold mb-2">Server Stats</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center">
+                    <span className="text-blue-500 text-2xl font-bold">{serverStats?.totalPosts || 0}</span>
+                    <span className="ml-2 text-gray-600">Total Posts</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-green-500 text-2xl font-bold">{serverStats?.seenPosts || 0}</span>
+                    <span className="ml-2 text-gray-600">Seen Posts</span>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-gray-500 text-sm">
+                      <strong>Oldest Post:</strong> {serverStats?.oldestPostDate ? formatDateTime(serverStats.oldestPostDate) : 'N/A'}
+                    </p>
+                    <p className="text-gray-500 text-sm">
+                      <strong>Latest Post:</strong> {serverStats?.latestPostDate ? formatDateTime(serverStats.latestPostDate) : 'N/A'}
+                    </p>
+                  </div>
                 </div>
+              </div>
               )}
             </div>
 
