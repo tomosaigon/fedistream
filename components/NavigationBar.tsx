@@ -112,9 +112,9 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 
         {/* Dropdown Menu */}
         <div className={`${menuOpen ? 'block' : 'hidden'} w-full mt-2`}>
-          <div className="grid grid-cols-2 gap-4 px-4 py-3">
+          <div className="grid grid-cols-5 gap-4 px-4 py-3">
             {/* Left Column: Database Functions */}
-            <div className="flex flex-col space-y-2">
+            <div className="col-span-2 flex flex-col space-y-2">
               <AsyncButton
                 callback={onMarkSeen}
                 loadingText="Marking Seen..."
@@ -158,6 +158,12 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                 Muted Words
               </Link>
               <Link
+                href="/reasons"
+                className="w-full mt-2 px-4 py-2 text-sm text-blue-500 hover:text-blue-600 rounded transition-all duration-200 text-center block"
+              >
+                Reasons
+              </Link>
+              <Link
                 href="/credentials"
                 className="w-full mt-2 px-4 py-2 text-sm text-blue-500 hover:text-blue-600 rounded transition-all duration-200 text-center block"
               >
@@ -177,7 +183,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
             </div>
 
             {/* Right Column: Categories and Filters */}
-            <div>
+            <div className="col-span-3">
               {CATEGORY_MAP.map(({ slug, bucket, label }) => (
                 <Link
                   key={slug}
