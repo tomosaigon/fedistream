@@ -8,7 +8,9 @@ const CredentialsPage = () => {
   const [accessToken, setAccessToken] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [credentials, setCredentials] = useState<{ id: number; server_url: string; access_token: string; created_at: string }[]>([]);
+  const [credentials, setCredentials] = useState<
+    { id: number; server_url: string; access_token: string; created_at: string }[]
+  >([]);
   const [visibleTokens, setVisibleTokens] = useState<{ [key: number]: boolean }>({});
 
   const handleServerChange = async (slug: string) => {
@@ -57,6 +59,17 @@ const CredentialsPage = () => {
   const handleUseToken = (server_url: string, token: string) => {
     localStorage.setItem('serverUrl', server_url);
     localStorage.setItem('accessToken', token);
+    setSuccessMessage('Credentials set in localStorage!');
+  };
+
+  const handleRemoveCredential = async (serverUrl: string, id: number) => {
+    try {
+      await axios.delete('/api/credentials', { data: { serverUrl, id } });
+      setSuccessMessage('Credential removed successfully!');
+      fetchCredentials(customServerUrl);
+    } catch (err) {
+      setErrorMessage('Failed to remove credential. Please try again.');
+    }
   };
 
   useEffect(() => {
@@ -169,6 +182,14 @@ const CredentialsPage = () => {
                   className="mt-2 px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600"
                 >
                   Use this Token
+                </button>
+
+                {/* Remove Credential Button */}
+                <button
+                  onClick={() => handleRemoveCredential(server_url, id)}
+                  className="mt-2 ml-2 px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600"
+                >
+                  Remove
                 </button>
               </li>
             ))}

@@ -22,9 +22,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      if (dbManager.credentialExists(serverUrl)) {
-        return res.status(409).json({ error: `Credential for server "${serverUrl}" already exists` });
-      }
+      // if (dbManager.credentialExists(serverUrl)) {
+        // return res.status(409).json({ error: `Credential for server "${serverUrl}" already exists` });
+      // }
 
       const wasInserted = dbManager.insertCredential(serverUrl, accessToken);
       if (wasInserted) {
@@ -35,6 +35,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } catch (error) {
       console.error('Error saving credential:', error);
       return res.status(500).json({ error: 'Failed to save credential' });
+    }
+  }
+
+  if (req.method === 'DELETE') {
+    const { serverUrl, id } = req.body;
+
+    if (!serverUrl || !id || typeof serverUrl !== 'string' || typeof id !== 'number') {
+      return res.status(400).json({ error: 'Missing or invalid "serverUrl" or "id" fields' });
+    }
+
+    try {
+      const wasDeleted = dbManager.removeCredential(serverUrl, id);
+      if (wasDeleted) {
+        return res.status(200).json({ message: 'Credential deleted successfully' });
+      } else {
+        return res.status(404).json({ error: 'Credential not found' });
+      }
+    } catch (error) {
+      console.error('Error deleting credential:', error);
+      return res.status(500).json({ error: 'Failed to delete credential' });
     }
   }
 

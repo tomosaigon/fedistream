@@ -168,6 +168,15 @@ export class DatabaseManager {
     return !!stmt.get(serverUrl);
   }
 
+  public removeCredential(serverUrl: string, id: number): boolean {
+    const stmt = this.db.prepare(`
+        DELETE FROM credentials
+        WHERE server_url = ? AND id = ?
+    `);
+    const result = stmt.run(serverUrl, id);
+    return result.changes > 0;
+  }
+
   public insertPost(post: Post) {
     const stmt = this.db.prepare(`
       INSERT INTO posts (
