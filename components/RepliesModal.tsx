@@ -22,8 +22,11 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
 
         const repliesApiUrl = `${serverUrl}/api/v1/statuses/${post.id}/context`;
         const response = await axios.get(repliesApiUrl);
-
-        setReplies(response.data.descendants.map((reply: MastodonStatus) => mastodonStatusToPost(reply, post.server_slug)));
+        setReplies(
+          response.data.descendants.map((reply: MastodonStatus) =>
+            mastodonStatusToPost(reply, post.server_slug)
+          )
+        );
       } catch (error) {
         console.error('Failed to fetch replies:', error);
         toast.error('Failed to fetch replies');
@@ -34,17 +37,27 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
   }, [post]);
 
   return (
-    <div className="fixed inset-0 z-50  bg-black/50 flex items-center justify-center"
+    <div
+      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center"
       onClick={(e) => {
-        // Check if the click is outside the modal content
+        // Check if the click is outside the modal
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}>
-      <div className="relative bg-white w-full max-w-2xl mx-auto p-6 rounded-lg shadow-lg max-h-screen overflow-y-auto">
-
-        {/* Close Button */}
-        <div className="absolute top-0 right-0 mt-2 mr-2">
+      <div className="relative bg-white w-full max-w-2xl mx-auto rounded-lg shadow-lg max-h-screen overflow-hidden">
+        {/* Sticky Header */}
+        <div className="sticky top-0 bg-white z-10 border-b px-6 py-4 flex justify-between items-center">
+          {/* Original Post Snippet */}
+          <div className="flex items-center space-x-4 overflow-hidden truncate">
+            <div
+              className="text-gray-700 text-sm truncate"
+              dangerouslySetInnerHTML={{
+                __html: post.content.slice(0, 50) + (post.content.length > 50 ? '...' : ''),
+              }}
+            />
+          </div>
+          {/* Close Button */}
           <button
             className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none"
             onClick={onClose}
@@ -52,16 +65,46 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
             ✕
           </button>
         </div>
-        {/* Modal Header */}
-        <h2 className="text-xl font-semibold mb-4">Replies</h2>
 
-        {/* Original Post */}
-        <div className="p-4 mb-4 border border-gray-300 rounded bg-gray-100">
-          <div dangerouslySetInnerHTML={{ __html: post.content }} className="prose max-w-none" />
-        </div>
+        {/* Scrollable Content */}
+        <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(100vh-100px)]">
+          <div
+            className={`flex items-start space-x-3 p-4 rounded border border-gray-200 bg-white`}
+          >
+            <img
+              src={post.account_avatar || ''}
+              alt={post.account_display_name || 'Avatar'}
+              className="w-10 h-10 rounded-full"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm flex justify-between items-center">
+                <div>
+                  <span className="font-medium text-gray-800">
+                    {post.account_display_name || 'Anonymous'}
+                  </span>
+                  <span className="text-gray-500 ml-1">
+                    @{post.account_acct || post.account_username}
+                  </span>
+                </div>
+                <span className="text-xs text-gray-400">
+                  <a
+                    href={post.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline"
+                  >
+                    {formatDateTime(post.created_at)}
+                  </a>
+                </span>
+              </div>
+              <div
+                dangerouslySetInnerHTML={{ __html: post.content }}
+                className="prose max-w-none mt-2 text-gray-700"
+              />
+            </div>
+          </div>
 
-        {/* Replies List */}
-        <div className="space-y-4">
+          {/* Replies */}
           {replies.map((reply) => {
             const isAuthor = reply.account_username === post.account_username;
             return (
@@ -72,15 +115,12 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
                   : 'border border-gray-200 bg-white'
                   }`}
               >
-                {/* Avatar */}
                 <img
                   src={reply.account_avatar || ''}
                   alt={reply.account_display_name || 'Avatar'}
                   className="w-10 h-10 rounded-full"
                 />
-
                 <div className="flex-1 min-w-0">
-                  {/* Display Name and Username */}
                   <div className="text-sm flex justify-between items-center">
                     <div>
                       <span className="font-medium text-gray-800">
@@ -91,12 +131,16 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
                       </span>
                     </div>
                     <span className="text-xs text-gray-400">
-                      {formatDateTime(reply.created_at)}
+                      <a
+                        href={reply.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline"
+                      >
+                        {formatDateTime(reply.created_at)}
+                      </a>
                     </span>
                   </div>
-
-
-                  {/* Reply Content */}
                   <div
                     dangerouslySetInnerHTML={{ __html: reply.content }}
                     className="prose max-w-none mt-2 text-gray-700"
@@ -105,12 +149,12 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
               </div>
             );
           })}
+
+          {replies.length === 0 && (
+            <div className="text-center text-gray-500 mt-4">No replies yet.</div>
+          )}
         </div>
 
-        {/* No Replies Message */}
-        {replies.length === 0 && (
-          <div className="text-center text-gray-500 mt-4">No replies yet.</div>
-        )}
       </div>
     </div>
   );
