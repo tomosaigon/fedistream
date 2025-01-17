@@ -592,7 +592,7 @@ interface SQLitePostWithReblog extends SQLitePost {
 
 // Account tags come from JOIN with account_tags table
 export interface Post extends Omit<SQLitePost, 'media_attachments' | 'card' | 'poll'> {
-  media_attachments: MediaAttachment[]; // Transform media_attachments to array of objects
+  media_attachments: IMediaAttachment[]; // Transform media_attachments to array of objects
   card: PostCard | null; // Transform card to PostCard type
   poll: Poll | null; // Transform poll to Poll type
   account_tags: AccountTag[]; // Join account_tags to include associated tags
@@ -607,7 +607,7 @@ export interface PostCard {
   author_name?: string;
 }
 
-export interface MediaAttachment {
+export interface IMediaAttachment {
   description: string | undefined;
   type: string;
   url?: string;

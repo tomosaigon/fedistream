@@ -1,10 +1,10 @@
 // components/ImageModal.tsx
-import { Post, MediaAttachment } from '../db/database';
+import { Post, IMediaAttachment } from '../db/database';
 import { useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/solid';
 
 interface ImageModalProps {
-  media: MediaAttachment;
+  media: IMediaAttachment;
   post: Post;
   onClose: () => void;
 }

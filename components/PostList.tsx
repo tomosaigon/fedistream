@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import useReasons from '../hooks/useReasons';
-import { Post, MediaAttachment } from '../db/database';
+import { Post, IMediaAttachment } from '../db/database';
 import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils/nonStopWords';
 import { getServerBySlug, servers } from '../config/servers';
 import useMutedWords from '../hooks/useMutedWords';
 import { ImageModal } from './ImageModal';
+import MediaAttachment from './MediaAttachment';
 import RepliesModal from './RepliesModal';
 import axios from 'axios';
 import AsyncButton from './AsyncButton';
@@ -32,7 +33,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
   const { reasons } = useReasons();
   const { mutedWords, addMutedWord } = useMutedWords();
   const [posts, setPosts] = useState(initialPosts);
-  const [activeImage, setActiveImage] = useState<MediaAttachment | null>(null);
+  const [activeImage, setActiveImage] = useState<IMediaAttachment | null>(null);
   const [activePost, setActivePost] = useState<Post | null>(null);
   const [activeRepliesPost, setActiveRepliesPost] = useState<Post | null>(null);
   const serverConfig = server ? getServerBySlug(server as string) : servers[0];
@@ -241,47 +242,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
     setActiveRepliesPost(post);
   };
 
-  const renderMediaAttachments = (post: Post, mediaAttachments: MediaAttachment[]) => (
-    <div className={`grid gap-2 p-3 sm:p-4 ${
-      mediaAttachments.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
-    }`}>
-      {mediaAttachments.map((media, index) => (
-        media.type === 'video' ? (
-          <div key={index} className="relative pt-[56.25%]">
-            <video 
-              className="absolute inset-0 w-full h-full rounded-lg"
-              controls
-              preload="metadata"
-              poster={media.preview_url}
-            >
-              <source src={media.url} type="video/mp4" />
-              Your browser does not support video playback.
-            </video>
-          </div>
-        ) : media.type === 'image' && media.url && media.preview_url && (
-          <div 
-            key={index}
-            onClick={() => {
-              setActiveImage(media);
-              setActivePost(post);
-            }}
-            className="cursor-zoom-in"
-          >
-            <img
-              src={media.preview_url}
-              alt={media.description}
-              className={`w-full rounded-lg hover:opacity-90 transition-opacity ${
-                mediaAttachments.length === 1 ? 'h-auto' : 'h-40 sm:h-48'
-              } object-cover`}
-            />
-            <span className="text-xs px-1 rounded">
-              {media.description}
-            </span>
-          </div>
-        )
-      ))}
-    </div>
-  );
+  
   console.log('reasons', reasons);
 
   return (
@@ -505,8 +466,14 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                   )}
                 </div>
 
-                {/* Media Attachments */}
-                {post.media_attachments.length > 0 && renderMediaAttachments(post, post.media_attachments)}
+                {post.media_attachments.length > 0 && (
+                  <MediaAttachment
+                    post={post}
+                    mediaAttachments={post.media_attachments}
+                    setActiveImage={setActiveImage}
+                    setActivePost={setActivePost}
+                  />
+                )}
 
                 {/* Post Footer */}
                 <div className="px-4 py-3 border-t border-gray-100 flex items-center space-x-6 text-gray-500">
