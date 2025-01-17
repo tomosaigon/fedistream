@@ -12,6 +12,7 @@ export class DatabaseManager {
 
     this.tableMappings = {
       posts: () => this.createPostsTable(),
+      reasons: () => this.createReasonsTable(),
       account_tags: () => this.createAccountTagsTable(),
       muted_words: () => this.createMutedWordsTable(),
       credentials: () => this.createCredentialsTable()
@@ -85,6 +86,18 @@ export class DatabaseManager {
     `);
   }
 
+  private createReasonsTable() {
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS reasons (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        reason TEXT NOT NULL UNIQUE,
+        active INTEGER DEFAULT 1,
+        filter INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+  }
+
   private createAccountTagsTable() {
     this.db.exec(`
       CREATE TABLE account_tags (
@@ -120,6 +133,60 @@ export class DatabaseManager {
     `);
   }
 
+  public fetchAllReasons(): { id: number; reason: string; active: number; filter: number; created_at: string }[] {
+    const stmt = this.db.prepare("SELECT * FROM reasons ORDER BY created_at ASC");
+    return stmt.all() as { id: number; reason: string; active: number; filter: number; created_at: string }[];
+  }
+  
+  public addReason(reason: string, active: number = 1, filter: number = 0): boolean {
+    const result = this.db
+      .prepare("INSERT OR IGNORE INTO reasons (reason, active, filter) VALUES (?, ?, ?)")
+      .run(reason, active, filter);
+    return result.changes > 0;
+  }
+  
+  public deleteReason(reason: string): boolean {
+    const result = this.db.prepare("DELETE FROM reasons WHERE reason = ?").run(reason);
+    return result.changes > 0;
+  }
+  
+  public updateReason(reason: string, updates: { newReason?: string; active?: number; filter?: number }): boolean {
+    const { newReason, active, filter } = updates;
+  
+    // Build the SQL update query dynamically
+    const setClause: string[] = [];
+    const params: (string | number)[] = [];
+  
+    if (newReason) {
+      setClause.push('reason = ?');
+      params.push(newReason);
+    }
+    if (active !== undefined) {
+      setClause.push('active = ?');
+      params.push(active);
+    }
+    if (filter !== undefined) {
+      setClause.push('filter = ?');
+      params.push(filter);
+    }
+  
+    if (setClause.length === 0) {
+      return false; // No updates to apply
+    }
+  
+    // Include the "WHERE" clause to ensure we only update the correct record
+    const query = `
+      UPDATE reasons
+      SET ${setClause.join(', ')}
+      WHERE reason = ?
+    `;
+    
+    params.push(reason); // Add the original reason for the WHERE clause
+  
+    const result = this.db.prepare(query).run(...params);
+    return result.changes > 0;
+  }
+  
   public fetchMutedWords(): Set<string> {
     const rows = this.db.prepare("SELECT word FROM muted_words").all() as { word: string }[];
     return new Set(rows.map(row => row.word));

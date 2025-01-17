@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import useReasons from '../hooks/useReasons';
 import { Post, MediaAttachment } from '../db/database';
 import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils/nonStopWords';
 import { getServerBySlug, servers } from '../config/servers';
@@ -31,6 +32,7 @@ interface PostListProps {
 }
 
 const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filterSettings }) => {
+  const { reasons } = useReasons();
   const { mutedWords, addMutedWord } = useMutedWords();
   const [posts, setPosts] = useState(initialPosts);
   const [activeImage, setActiveImage] = useState<MediaAttachment | null>(null);
@@ -172,7 +174,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
     }
   };
   
-  const handleAdminAction = async (action: string, userId: string, username: string) => {
+  const handleTag = async (reason: string, userId: string, username: string) => {
     try {
       const res = await fetch('/api/tag-account', {
         method: 'POST',
@@ -182,7 +184,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
         body: JSON.stringify({
           userId,
           username,
-          tag: action
+          tag: reason
         })
       });
 
@@ -283,18 +285,19 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
       ))}
     </div>
   );
+  console.log('reasons', reasons);
 
   return (
     <div className="w-full sm:max-w-4xl mx-0 sm:mx-auto p-0">
       <div className="space-y-1 sm:space-y-4">
         {posts.map((post) => {
-          if (
-            (!filterSettings.showSpam && post.account_tags.some(tag => tag.tag === 'spam')) ||
-            (!filterSettings.showBitter && post.account_tags.some(tag => tag.tag === 'bitter')) ||
-            (!filterSettings.showPhlog && post.account_tags.some(tag => tag.tag === 'phlog'))
-          ) {
-            return null;
-          }
+          const shouldFilter = reasons.some(
+            (reason) =>
+              reason.filter === 1 &&
+              post.account_tags.some((tag) => tag.tag === reason.reason)
+          );
+
+          if (shouldFilter) return null;
           
           const nonStopWords = getNonStopWords(post.content);
 
@@ -322,7 +325,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
           //   : JSON.parse(post.media_attachments as string)) as MediaAttachment[];
 
           return (
-            <div key={post.id} className="flex flex-col sm:flex-row bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden max-w-full">
+            <div key={post.id} className="flex flex-col bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden max-w-full">
 
               <article className={`flex-grow min-w-0 ${
                 containsMutedWord(nonStopWords, mutedWords) ? 'bg-blue-50 opacity-10 hover:opacity-75'
@@ -557,21 +560,22 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
               </article>
 
               {/* Admin section - full width on mobile, side panel on desktop */}
-              <div className="w-full sm:w-48 border-t sm:border-t-0 sm:border-l p-3 sm:p-4 bg-gray-50">
+              <div className="w-full border-t sm:border-t-0 sm:border-l p-2 sm:p-4 bg-gray-50">
                 {containsMutedWord(nonStopWords, mutedWords) && (
                   <p className="text-red-500 text-xs sm:text-sm m-2">
                     Contains muted words: {getMutedWordsFound(nonStopWords, mutedWords).join(', ')}
                   </p>
                 )}
-                <div className="flex flex-row sm:flex-col gap-1 sm:gap-2">
+                <div className="flex flex-row gap-1 sm:gap-2 max-h-32 sm:max-h-64 overflow-y-auto relative">
                   <AsyncButton
                     callback={() => handleFavorite(post.url)}
-                    defaultText={<>
-                      <StarIcon
-                        className="w-5 h-5 cursor-pointer hover:text-yellow-500 transition-colors"
-                      />
-                      <span>fav</span>
-                    </>
+                    defaultText={
+                      <>
+                        <StarIcon
+                          className="w-5 h-5 cursor-pointer hover:text-yellow-500 transition-colors"
+                        />
+                        <span>fav</span>
+                      </>
                     }
                     color={'yellow'}
                   />
@@ -585,18 +589,15 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                     }
                     color={'green'}
                   />
-                  {(['spam', 'bitter', 'cookie', 'phlog'] as const).map((tag) => {
+                  {reasons.filter(reason => reason.active === 1).map(({ reason: tag, filter }) => {
                     const hasTag = post.account_tags?.some(t => t.tag === tag);
                     const count = getAccountTagCount(post, tag);
-
-                    const color = tag === 'spam' ? 'red' :
-                      tag === 'bitter' ? 'amber' :
-                        tag === 'phlog' ? 'yellow' : 'green';
+                    const color = filter === 1 ? 'red' : 'green';
 
                     return (
-                      <div key={tag} className="flex flex-row sm:flex-col gap-1 sm:gap-2">
+                      <div key={tag} className="flex flex-row sm:flex-col gap-0 sm:gap-1">
                         <AsyncButton
-                          callback={() => handleAdminAction(tag, post.account_id, post.account_username)}
+                          callback={() => handleTag(tag, post.account_id, post.account_username)}
                           defaultText={hasTag ? `${tag}(${count})` : tag}
                           color={color}
                         />
@@ -614,6 +615,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                   })}
                 </div>
               </div>
+
             </div>
           );
         })}
