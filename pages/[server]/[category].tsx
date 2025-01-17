@@ -38,9 +38,6 @@ export default function CategoryPage() {
   const latestFetchId = useRef(0);
 
   const [filterSettings, setFilterSettings] = useState({
-    showSpam: true,
-    showBitter: true,
-    showPhlog: true,
     showNonStopWords: true,
     highlightThreshold: null as number | null,
   });

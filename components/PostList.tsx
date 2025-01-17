@@ -23,9 +23,6 @@ interface PostListProps {
   posts: Post[];
   server: string;
   filterSettings: {
-    showSpam: boolean;
-    showBitter: boolean;
-    showPhlog: boolean;
     showNonStopWords: boolean;
     highlightThreshold: number | null;
   };

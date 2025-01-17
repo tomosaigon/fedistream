@@ -24,9 +24,6 @@ interface NavigationBarProps {
   counts: Record<string, number> | null;
 
   filterSettings: {
-    showSpam: boolean;
-    showBitter: boolean;
-    showPhlog: boolean;
     showNonStopWords: boolean;
     highlightThreshold: number | null;
   };
@@ -217,33 +214,6 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                 </Link>
               ))}
               <div className="px-4 py-3">
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={filterSettings.showSpam}
-                    onChange={() => updateFilterSettings({ showSpam: !filterSettings.showSpam })}
-                    className="form-checkbox"
-                  />
-                  <span>Show Spam</span>
-                </label>
-                <label className="flex items-center space-x-2 mt-2">
-                  <input
-                    type="checkbox"
-                    checked={filterSettings.showBitter}
-                    onChange={() => updateFilterSettings({ showBitter: !filterSettings.showBitter })}
-                    className="form-checkbox"
-                  />
-                  <span>Show Bitter</span>
-                </label>
-                <label className="flex items-center space-x-2 mt-2">
-                  <input
-                    type="checkbox"
-                    checked={filterSettings.showPhlog}
-                    onChange={() => updateFilterSettings({ showPhlog: !filterSettings.showPhlog })}
-                    className="form-checkbox"
-                  />
-                  <span>Show Phlog (Images)</span>
-                </label>
                 <label className="flex items-center space-x-2 mt-2">
                   <input
                     type="checkbox"
