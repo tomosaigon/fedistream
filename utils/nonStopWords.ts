@@ -110,7 +110,9 @@ function extractVisibleTextFromHTML(htmlString: string) {
  * @returns An array of non-stop words found in the visible text.
  */
 export const getNonStopWords = (htmlString: string): string[] => {
-  const textContent = extractVisibleTextFromHTML(htmlString)
+  const textContent = extractVisibleTextFromHTML(htmlString
+    .replace(/<a href=".*" class="u-url mention">@<span>.*<\/span><\/a>/g, ' ') // Matches, hides mentions
+  )
     // Matches URLs starting with http:// or https://
     .replace(/https?:\/\/[^\s]+/g, ' ');
   console.log(textContent);
