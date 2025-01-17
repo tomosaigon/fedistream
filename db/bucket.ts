@@ -46,9 +46,12 @@ function isHashtagPost(content: string): boolean {
 }
 
 function isNetworkMentionPost(content: string): boolean {
-  // Check for mention format
-  const links = content.match(/<a[^>]*>.*?<\/a>/g) || [];
-  return links.some(link => link.includes('class="u-url mention"'));
+  // const links = content.match(/<a[^>]*>.*?<\/a>/g) || [];
+  // return links.some(link => link.includes('class="u-url mention"'));
+  
+  // only apply to cases where the mention is at the beginning of the post.
+  const textContent = content.replace(/<[^>]*>/g, ''); // Strip out HTML tags
+  return textContent.startsWith('@');
 }
 
 function containsQuestion(content: string): boolean {
