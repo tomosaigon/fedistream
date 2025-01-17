@@ -13,6 +13,7 @@ import { Post, IMediaAttachment } from '../db/database';
 import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils/nonStopWords';
 import { getServerBySlug, servers } from '../config/servers';
 import useMutedWords from '../hooks/useMutedWords';
+import { useMastodonAccount } from '../hooks/useMastodonAccount';  
 import useReasons from '../hooks/useReasons';
 import { useTags } from '../hooks/useTags';
 import { ImageModal } from './ImageModal';
@@ -42,140 +43,11 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
   const [activePost, setActivePost] = useState<Post | null>(null);
   const [activeRepliesPost, setActiveRepliesPost] = useState<Post | null>(null);
   const serverConfig = server ? getServerBySlug(server as string) : servers[0];
-
+  const { handleFollow, handleFavorite } = useMastodonAccount(serverConfig);
 
   useEffect(() => {
     setPosts(initialPosts);
   }, [initialPosts]);
-
-  const handleFollow = async (acct: string) => {
-    const token = localStorage.getItem('accessToken');
-    const serverUrl = localStorage.getItem('serverUrl');
-
-    if (!token || !serverUrl) {
-      console.error('Access token or server URL not found');
-      toast.error('Access token or server URL is missing');
-      return;
-    }
-
-    // Convert acct to full WebFinger identifier if it doesn't already include a domain
-    // And it isn't the same server that the home controller is on.
-    if (!acct.includes('@') && serverConfig?.baseUrl !== serverUrl) {
-      if (!serverConfig) {
-        console.error('Server config not found');
-        toast.error('Server config not found');
-        return;
-      }
-      const url = new URL(serverConfig?.baseUrl);
-      let serverDomain = url.hostname;
-      // XXX: Special case for mastodon.bsd.cafe
-      if (serverDomain === 'mastodon.bsd.cafe') {
-        serverDomain = 'bsd.cafe';
-      }
-      acct = `${acct}@${serverDomain}`;
-    }
-
-    try {
-      // Resolve the account to get its local ID on the target server
-      const resolveAccountUrl = `${serverUrl}/api/v1/accounts/lookup`;
-      // const resolveAccountUrl = `${serverUrl}/api/v1/accounts/verify_credentials`;
-      const resolveResponse = await axios.get(resolveAccountUrl, {
-        params: { acct },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const accountId = resolveResponse.data.id;
-
-      if (!accountId) {
-        console.error('Failed to resolve account ID');
-        toast.error('Unable to resolve the account to follow');
-        return;
-      }
-
-      const followApiUrl = `${serverUrl}/api/v1/accounts/${accountId}/follow`;
-
-      try {
-        const followResponse = await axios.post(
-          followApiUrl,
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        console.log('Successfully followed the user', followResponse.data);
-        toast.success('Successfully followed the user');
-      } catch (error: any) {
-        if (error.response && error.response.status === 401) {
-          // Handle Unauthorized error
-          console.error('Unauthorized: Access token might be invalid or expired');
-          toast.error('Unauthorized: Access token might be invalid or expired');
-        } else {
-          // Handle other errors
-          console.error('Error following the user:', error);
-          toast.error('Failed to follow the user');
-        }
-      }
-      // TODO: Update local state if needed to reflect the follow status
-    } catch (error) {
-      console.error('Error following the user:', error);
-      toast.error('Failed to follow the user');
-    }
-  };
-
-  const handleFavorite = async (postUrl: string) => {
-    const token = localStorage.getItem('accessToken');
-    const serverUrl = localStorage.getItem('serverUrl');
-  
-    if (!token || !serverUrl) {
-      console.error('Access token or server URL not found');
-      toast.error('Access token or server URL is missing');
-      return;
-    }
-  
-    try {
-      // Step 1: Search for the post using its URL on own Mastodon server
-      const searchApiUrl = `${serverUrl}/api/v2/search`;
-      const searchResponse = await axios.get(searchApiUrl, {
-        params: {
-          q: postUrl,
-          resolve: true, // Resolve remote posts
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      // Step 2: Extract the post ID from the search results
-      const status = searchResponse.data.statuses?.[0];
-      if (!status) {
-        console.error('Post not found on your server.');
-        toast.error('Post not found on your server.');
-        return;
-      }
-  
-      const postId = status.id;
-  
-      // Step 3: Favorite the post on own server
-      const favoriteApiUrl = `${serverUrl}/api/v1/statuses/${postId}/favourite`;
-      const favoriteResponse = await axios.post(favoriteApiUrl, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      console.log('Post favorited successfully', favoriteResponse.data);
-      toast.success('Post favorited successfully');
-      // TODO: Update local state to reflect the updated favorites count
-    } catch (error) {
-      console.error('Error favoriting the post:', error);
-      toast.error('Failed to favorite the post');
-    }
-  };
 
   const updateAccountTags = (
     userId: string,
