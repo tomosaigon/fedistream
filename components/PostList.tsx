@@ -1,16 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
-import useReasons from '../hooks/useReasons';
-import { Post, IMediaAttachment } from '../db/database';
-import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils/nonStopWords';
-import { getServerBySlug, servers } from '../config/servers';
-import useMutedWords from '../hooks/useMutedWords';
-import { ImageModal } from './ImageModal';
-import MediaAttachment from './MediaAttachment';
-import PostPoll from "./PostPoll";
-import RepliesModal from './RepliesModal';
 import axios from 'axios';
-import AsyncButton from './AsyncButton';
 import {
   ChatBubbleOvalLeftEllipsisIcon,
   ArrowsRightLeftIcon,
@@ -19,6 +7,21 @@ import {
   ArrowPathIcon,
   UserPlusIcon,
 } from '@heroicons/react/24/solid';
+import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
+import { Post, IMediaAttachment } from '../db/database';
+import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils/nonStopWords';
+import { getServerBySlug, servers } from '../config/servers';
+import useMutedWords from '../hooks/useMutedWords';
+import useReasons from '../hooks/useReasons';
+import { useTags } from '../hooks/useTags';
+import { ImageModal } from './ImageModal';
+import MediaAttachment from './MediaAttachment';
+import PostCard from './PostCard';
+import PostPoll from "./PostPoll";
+import RepliesModal from './RepliesModal';
+import AsyncButton from './AsyncButton';
+
 import { formatDateTime } from '@/utils/format';
 
 interface PostListProps {
@@ -33,6 +36,7 @@ interface PostListProps {
 const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filterSettings }) => {
   const { reasons } = useReasons();
   const { mutedWords, addMutedWord } = useMutedWords();
+  const { handleTag, handleClearTag, getAccountTagCount } = useTags();
   const [posts, setPosts] = useState(initialPosts);
   const [activeImage, setActiveImage] = useState<IMediaAttachment | null>(null);
   const [activePost, setActivePost] = useState<Post | null>(null);
@@ -172,84 +176,30 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
       toast.error('Failed to favorite the post');
     }
   };
-  
-  const handleTag = async (reason: string, userId: string, username: string) => {
-    try {
-      const res = await fetch('/api/tag-account', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          username,
-          tag: reason
-        })
-      });
 
-      const data = await res.json();
-      
-      if (res.ok) {
-        toast.success(data.message);
-        setPosts(currentPosts => 
-          currentPosts.map(post => 
-            post.account_id === userId 
-              ? { ...post, account_tags: data.tags }
-              : post
-          )
-        );
-      } else {
-        throw new Error(data.error);
-      }
-    } catch (error) {
-      console.error('Error tagging account:', error);
-      toast.error('Failed to tag account');
-    }
-  };
-
-  const getAccountTagCount = (post: Post, tag: string) => {
-    return post.account_tags?.find(t => t.tag === tag)?.count || 0;
-  };
-
-  const handleClearTag = async (userId: string, username: string, tag: string) => {
-    try {
-      const res = await fetch('/api/tag-account', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, username, tag })
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        toast.success(data.message);
-        // Update local post tags
-        setPosts(currentPosts => 
-          currentPosts.map(post => 
-            post.account_id === userId 
-              ? { ...post, account_tags: data.tags }
-              : post
-          )
-        );
-      } else {
-        throw new Error(data.error);
-      }
-    } catch (error) {
-      console.error('Error clearing tag:', error);
-      toast.error('Failed to clear tag');
-    }
-  };
+  const updateAccountTags = (
+    userId: string,
+    data: any
+  ) => {
+    toast.success(data.message);
+    setPosts(currentPosts =>
+      currentPosts.map(post =>
+        post.account_id === userId
+          ? { ...post, account_tags: data.tags }
+          : post
+      )
+    );
+  }
 
   const handleRepliesClick = (post: Post) => {
     setActiveRepliesPost(post);
   };
 
-  
-  console.log('reasons', reasons);
-
   return (
     <div className="w-full sm:max-w-4xl mx-0 sm:mx-auto p-0">
       <div className="space-y-1 sm:space-y-4">
         {posts.map((post) => {
+          // console.log('Post:', post.account_tags);
           const shouldFilter = reasons.some(
             (reason) =>
               reason.filter === 1 &&
@@ -276,12 +226,6 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
               </div>
             )
           }
-          // Debug logging
-          // console.log('Post ID:', post.id, '+', (new Date(posts[0].created_at).getTime() - new Date(post.created_at).getTime())/(3600*1000), 'hours');
-          // console.log('Content', post.content.substring(0, 80), 'Card title:', post.card?.title);
-          // const mediaAttachments = (Array.isArray(post.media_attachments) 
-          //   ? post.media_attachments 
-          //   : JSON.parse(post.media_attachments as string)) as MediaAttachment[];
 
           return (
             <div key={post.id} className="flex flex-col bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden max-w-full">
@@ -394,40 +338,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                     dangerouslySetInnerHTML={{ __html: post.content }}
                   />
 
-                  {/* Card */}
-                  {post.card && post.card.url && (
-                    <a
-                      href={post.card.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-4 block border rounded-lg overflow-hidden hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex">
-                        {post.card.image && (
-                          <div className="flex-shrink-0 w-48">
-                            <img
-                              src={post.card.image}
-                              alt={post.card.description}
-                              className="w-full h-32 object-cover"
-                            />
-                          </div>
-                        )}
-                        <div className="p-4 flex-grow">
-                          <h3 className="font-semibold text-lg line-clamp-2">
-                            {post.card.title || 'No title'}
-                          </h3>
-                          <p className="text-gray-600 text-sm mt-1 line-clamp-2">
-                            {post.card.description || 'No description'}
-                          </p>
-                          {post.card.author_name && (
-                            <p className="text-gray-500 text-sm mt-2">
-                              By {post.card.author_name}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </a>
-                  )}
+                  {post.card && <PostCard card={post.card} />}
 
                   {post.poll && <PostPoll poll={post.poll} />}
                 </div>
@@ -521,19 +432,25 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                   />
                   {reasons.filter(reason => reason.active === 1).map(({ reason: tag, filter }) => {
                     const hasTag = post.account_tags?.some(t => t.tag === tag);
-                    const count = getAccountTagCount(post, tag);
+                    const count = getAccountTagCount(post.account_tags, tag);
                     const color = filter === 1 ? 'red' : 'green';
 
                     return (
                       <div key={tag} className="flex flex-row sm:flex-col gap-0 sm:gap-1">
                         <AsyncButton
-                          callback={() => handleTag(tag, post.account_id, post.account_username)}
+                          callback={async () => {
+                            const data = await handleTag(tag, post.account_id, post.account_username);
+                            updateAccountTags(post.account_id, data);
+                          }}
                           defaultText={hasTag ? `${tag}(${count})` : tag}
                           color={color}
                         />
                         {hasTag ? (
                           <AsyncButton
-                            callback={() => handleClearTag(post.account_id, post.account_username, tag)}
+                            callback={async () => {
+                              const data = await handleClearTag(post.account_id, post.account_username, tag);
+                              updateAccountTags(post.account_id, data);
+                            }}
                             loadingText={`Clearing ${tag}...`}
                             defaultText="×"
                             color={color}
