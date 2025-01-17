@@ -7,6 +7,7 @@ import { getServerBySlug, servers } from '../config/servers';
 import useMutedWords from '../hooks/useMutedWords';
 import { ImageModal } from './ImageModal';
 import MediaAttachment from './MediaAttachment';
+import PostPoll from "./PostPoll";
 import RepliesModal from './RepliesModal';
 import axios from 'axios';
 import AsyncButton from './AsyncButton';
@@ -428,42 +429,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                     </a>
                   )}
 
-                  {/* Poll */}
-                  {post.poll && (
-                    <div className="mt-4 border-t pt-4">
-                      <h4 className="font-semibold text-lg mb-2">Poll</h4>
-                      <ul className="space-y-2">
-                        {(() => {
-                          const poll = post.poll!; // Assert `post.poll` is not null here
-                          return poll.options.map((option, index) => {
-                            const percentage = poll.votes_count
-                              ? Math.round((option.votes_count / poll.votes_count) * 100)
-                              : 0;
-                            return (
-                              <li key={index}>
-                                <div className="flex justify-between mb-1 text-sm">
-                                  <span className="flex items-center gap-1">
-                                    <span>{option.title}</span>
-                                  </span>
-                                  <span className="text-gray-500">{percentage}%</span>
-                                </div>
-                                <div className="relative w-full h-2 bg-gray-300 rounded-full">
-                                  <div
-                                    className="absolute h-full bg-blue-500 rounded-full"
-                                    style={{ width: `${percentage}%` }}
-                                  />
-                                </div>
-                              </li>
-                            );
-                          });
-                        })()}
-                      </ul>
-                      <div className="text-gray-500 text-sm mt-3 flex justify-between">
-                        <span>{post.poll.voters_count || '0'} people</span>
-                        <span>{post.poll.expired ? "Closed" : "Active"}</span>
-                      </div>
-                    </div>
-                  )}
+                  {post.poll && <PostPoll poll={post.poll} />}
                 </div>
 
                 {post.media_attachments.length > 0 && (

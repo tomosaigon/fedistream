@@ -30,6 +30,7 @@ export function determineBucket(post: Post): Bucket {
   if (post.parent_id) return Bucket.reblogs;
   if (post.account_bot) return Bucket.fromBots;
   if (post.language && post.language !== 'en') return Bucket.nonEnglish; // assume unspecified language is English
+  if (post.poll) return Bucket.questions;
   if (mediaAttachments?.length > 0) return Bucket.withImages;
   if (isHashtagPost(post.content)) return Bucket.hashtags;
   if (isNetworkMentionPost(post.content)) return Bucket.networkMentions;
