@@ -9,6 +9,15 @@ export type Server = {
   created_at: string;
 };
 
+export const initialServer: Server = {
+  id: 0,
+  uri: '',
+  slug: '',
+  name: '',
+  enabled: true,
+  created_at: '',
+};
+
 interface ServersContextType {
   servers: Server[];
   loading: boolean;

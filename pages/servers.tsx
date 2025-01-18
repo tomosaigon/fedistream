@@ -1,25 +1,25 @@
 import { useState } from 'react';
-import { useServers } from '@/context/ServersContext';
+import { initialServer, Server, useServers } from '@/context/ServersContext';
 import { useModifyServers } from '@/hooks/useModifyServers';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 
 const ManageServers = () => {
   const { servers, loading, refreshServers } = useServers();
   const { addServer, updateServer, removeServer } = useModifyServers();
-  const [newServer, setNewServer] = useState({ uri: '', slug: '', name: '', enabled: true });
+  const [newServer, setNewServer] = useState<Server>({ ...initialServer });
   const [editingServerId, setEditingServerId] = useState<number | null>(null);
-  const [editedServer, setEditedServer] = useState({ uri: '', slug: '', name: '', enabled: true });
+  const [editedServer, setEditedServer] = useState<Server>({ ...initialServer });
 
   const handleAdd = async () => {
     const { uri, slug, name, enabled } = newServer;
     if (uri.trim() && slug.trim() && name.trim()) {
       await addServer(uri.trim(), slug.trim(), name.trim(), enabled);
-      setNewServer({ uri: '', slug: '', name: '', enabled: true });
+      setNewServer({ ...initialServer });
       refreshServers();
     }
   };
 
-  const handleEdit = (id: number, server: typeof newServer) => {
+  const handleEdit = (id: number, server: Server) => {
     setEditingServerId(id);
     setEditedServer(server);
   };
@@ -163,7 +163,7 @@ const ManageServers = () => {
                     </td>
                     <td className="px-4 py-2 border-b text-center space-x-2">
                       <button
-                        onClick={() => handleEdit(id, { uri, slug, name, enabled })}
+                        onClick={() => handleEdit(id, { ...initialServer, uri, slug, name, enabled })}
                         className="mb-1 px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
                       >
                         Edit
