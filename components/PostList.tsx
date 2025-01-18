@@ -11,7 +11,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Post, IMediaAttachment } from '../db/database';
 import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils/nonStopWords';
-import { getServerBySlug, servers } from '../config/servers';
+import { useServers } from '../context/ServersContext';
 import useMutedWords from '../hooks/useMutedWords';
 import { useMastodonAccount } from '../hooks/useMastodonAccount';  
 import useReasons from '../hooks/useReasons';
@@ -42,8 +42,8 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
   const [activeImage, setActiveImage] = useState<IMediaAttachment | null>(null);
   const [activePost, setActivePost] = useState<Post | null>(null);
   const [activeRepliesPost, setActiveRepliesPost] = useState<Post | null>(null);
-  const serverConfig = server ? getServerBySlug(server as string) : servers[0];
-  const { handleFollow, handleFavorite } = useMastodonAccount(serverConfig);
+  const { getServerBySlug} = useServers();
+  const { handleFollow, handleFavorite } = useMastodonAccount({ baseUrl: getServerBySlug(server)?.uri??'' }); // XXX
 
   useEffect(() => {
     setPosts(initialPosts);
@@ -63,10 +63,6 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
     );
   }
 
-  const handleRepliesClick = (post: Post) => {
-    setActiveRepliesPost(post);
-  };
-
   return (
     <div className="w-full sm:max-w-4xl mx-0 sm:mx-auto p-0">
       <div className="space-y-1 sm:space-y-4">
@@ -79,16 +75,14 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
           );
 
           if (shouldFilter) return null;
-          
-          const nonStopWords = getNonStopWords(post.content);
 
           let reblogger = null;
-
           if (post.reblog) {
             reblogger = { ...post };
             post = post.reblog;
           }
 
+          const nonStopWords = getNonStopWords(post.content);
           const isMuted = containsMutedWord(nonStopWords, mutedWords);
           if (isMuted) {
             // TODO - Add way to reveal the muted post
@@ -228,7 +222,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                 <div className="px-4 py-3 border-t border-gray-100 flex items-center space-x-6 text-gray-500">
                   <div
                     className="flex items-center space-x-2 cursor-pointer"
-                    onClick={() => handleRepliesClick(post)}
+                    onClick={() => setActiveRepliesPost(post)}
                   >
                     <ChatBubbleOvalLeftEllipsisIcon className="w-5 h-5" />
                     <span className="text-sm">{post.replies_count || 0}</span>

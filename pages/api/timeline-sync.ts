@@ -1,8 +1,6 @@
 import axios from 'axios';
-import { getServerBySlug } from '../../config/servers';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { dbManager } from '../../db';
-// import { Poll, Post } from '../../db/database';
 import { mastodonStatusToPost, MastodonStatus } from '../../db/mastodonStatus';
 
 // https://docs.joinmastodon.org/methods/timelines/
@@ -34,6 +32,7 @@ async function fetchTimelinePage(baseUrl: string, options?: {
   };
 
   // Fetch the access token if we are fetching the home timeline
+  // TODO client can pass in access token
   let token = '';
   if (options?.home) {
     // Get the access token using the baseUrl
@@ -79,13 +78,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // For non-delete operations, require server parameter
   if (deleteFlag === 'true') {
     if (server) {
-      const serverConfig = getServerBySlug(server as string);
-      if (!serverConfig) {
-        return res.status(404).json({ error: 'Server not found' });
-      }
       dbManager.resetDatabase(server as string);
       return res.status(200).json({ 
-        message: `Database reset for server: ${serverConfig.slug}` 
+        message: `Database reset for server: ${server}` 
       });
     } else {
       dbManager.resetDatabase();
@@ -99,30 +94,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Server slug is required' });
   }
 
-  const serverConfig = getServerBySlug(server as string);
-  if (!serverConfig) {
-    return res.status(404).json({ error: 'Server not found' });
-  }
-
   try {
-    console.log('Refreshing posts for server:', serverConfig.slug);
+    console.log('Refreshing posts for server:', server);
     let newPosts = [];
 
     // Check if the server is $HOME
-    const isHomeServer = serverConfig.slug === '$HOME';
+    const isHomeServer = server === '$HOME';
 
     // Set home option to true if the server is $HOME
     const fetchOptions = isHomeServer ? { home: true } : {};
+
+    // XXX mock
+    const baseUrl = server === 'test-server' ? 'https://example.com' : dbManager.fetchAllMastodonServers().find((s) => s.slug === server)?.uri;
+    if (!baseUrl) {
+      return res.status(404).json({ error: 'Server not found'});
+    }
 
     if (older === 'true') {
       const oldestPostId = dbManager.getOldestPostId(server as string);
       console.log('Oldest post ID:', oldestPostId);
       
       if (oldestPostId) {
-        const posts = await fetchTimelinePage(serverConfig.baseUrl, { maxId: oldestPostId, ...fetchOptions });
+        const posts = await fetchTimelinePage(baseUrl, { maxId: oldestPostId, ...fetchOptions });
         newPosts = posts;
       } else {
-        const posts = await fetchTimelinePage(serverConfig.baseUrl, fetchOptions);
+        const posts = await fetchTimelinePage(baseUrl, fetchOptions);
         newPosts = posts;
       }
     } else {
@@ -130,10 +126,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('Latest post ID:', latestPostId);
 
       if (latestPostId) {
-        const posts = await fetchTimelinePage(serverConfig.baseUrl, { minId: latestPostId, ...fetchOptions });
+        const posts = await fetchTimelinePage(baseUrl, { minId: latestPostId, ...fetchOptions });
         newPosts = posts;
       } else {
-        const posts = await fetchTimelinePage(serverConfig.baseUrl, fetchOptions);
+        const posts = await fetchTimelinePage(baseUrl, fetchOptions);
         newPosts = posts;
       }
     }

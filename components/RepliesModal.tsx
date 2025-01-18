@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Post } from '../db/database';
-import { getServerBySlug } from '../config/servers';
+import { useServers } from '../context/ServersContext';
 import toast from 'react-hot-toast';
 import { mastodonStatusToPost, MastodonStatus } from '../db/mastodonStatus';
 import { formatDateTime } from '@/utils/format';
@@ -13,12 +13,16 @@ interface RepliesModalProps {
 }
 
 const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
+  const { getServerBySlug } = useServers();
   const [replies, setReplies] = useState<Post[]>([]);
 
   useEffect(() => {
     const fetchReplies = async () => {
       try {
-        const serverUrl = getServerBySlug(post.server_slug)?.baseUrl;
+        const serverUrl = getServerBySlug(post.server_slug)?.uri;
+        if (!serverUrl) {
+          throw new Error('Server URL not found');
+        }
 
         const repliesApiUrl = `${serverUrl}/api/v1/statuses/${post.id}/context`;
         const response = await axios.get(repliesApiUrl);

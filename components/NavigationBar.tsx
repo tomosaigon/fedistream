@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { servers } from '../config/servers';
+import { useServers } from '@/context/ServersContext';
 import { CATEGORY_MAP, getCategoryBySlug } from '../db/categories';
 import AsyncButton from './AsyncButton';
 import BucketIcon from './BucketIcon';
@@ -51,6 +51,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
   onDelete,
   onDestroy,
 }) => {
+  const { servers } = useServers();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
@@ -65,7 +66,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
             onChange={(e) => onServerChange(e.target.value)}
             className="w-64 sm:w-40 px-2 sm:px-3 py-2 text-sm border rounded"
           >
-            {servers.map((srv) => (
+            {servers.filter((srv) => srv.enabled).map((srv) => (
               <option key={srv.slug} value={srv.slug}>
                 {srv.name}
               </option>
@@ -165,6 +166,12 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                 className="w-full mt-2 px-4 py-2 text-sm text-blue-500 hover:text-blue-600 rounded transition-all duration-200 text-center block"
               >
                 Mastodon API Credentials
+              </Link>
+              <Link
+                href="/servers"
+                className="w-full mt-2 px-4 py-2 text-sm text-blue-500 hover:text-blue-600 rounded transition-all duration-200 text-center block"
+              >
+                Configure Servers
               </Link>
 
               {/* Server Stats */}

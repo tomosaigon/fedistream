@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { dbManager } from '../../db';
-import { getServerBySlug } from '../../config/servers';
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -13,11 +12,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(400).json({
       error: 'server, seenFrom, seenTo, and bucket are required for marking posts as seen',
     });
-  }
-
-  const serverConfig = getServerBySlug(server as string);
-  if (!serverConfig) {
-    return res.status(404).json({ error: 'Server not found' });
   }
 
   try {

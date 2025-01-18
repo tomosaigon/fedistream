@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { servers, MastodonServer } from '../config/servers';
+import { Server, useServers } from '@/context/ServersContext';
 import axios from 'axios';
 
 const CredentialsPage = () => {
-  const [selectedServer, setSelectedServer] = useState<MastodonServer | undefined>(servers[0]);
-  const [customServerUrl, setCustomServerUrl] = useState(servers[0]?.baseUrl || '');
+  const { servers } = useServers();
+
+  const [selectedServer, setSelectedServer] = useState<Server | undefined>(servers[0]);
+  const [customServerUrl, setCustomServerUrl] = useState(servers[0]?.uri || '');
   const [accessToken, setAccessToken] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -16,12 +18,12 @@ const CredentialsPage = () => {
   const handleServerChange = async (slug: string) => {
     const server = servers.find(s => s.slug === slug);
     setSelectedServer(server);
-    setCustomServerUrl(server?.baseUrl || '');
+    setCustomServerUrl(server?.uri || '');
     setAccessToken('');
     setSuccessMessage('');
     setErrorMessage('');
     setVisibleTokens({});
-    fetchCredentials(server?.baseUrl || '');
+    fetchCredentials(server?.uri || '');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

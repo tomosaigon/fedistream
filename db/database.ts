@@ -11,6 +11,7 @@ export class DatabaseManager {
     this.db = new Database(dbPath);
 
     this.tableMappings = {
+      mastodon_servers: () => this.createMastodonServersTable(),
       posts: () => this.createPostsTable(),
       reasons: () => this.createReasonsTable(),
       account_tags: () => this.createAccountTagsTable(),
@@ -45,6 +46,19 @@ export class DatabaseManager {
       });
       this.ensureTablesExist();
     }
+  }
+
+  private createMastodonServersTable() {
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS mastodon_servers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        uri TEXT NOT NULL,
+        slug TEXT NOT NULL,
+        name TEXT NOT NULL,
+        enabled INTEGER NOT NULL DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
   }
 
   private createPostsTable() {
@@ -131,6 +145,64 @@ export class DatabaseManager {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
     `);
+  }
+
+  public fetchAllMastodonServers(): {
+    id: number;
+    uri: string;
+    slug: string;
+    name: string;
+    enabled: boolean;
+    created_at: string;
+  }[] {
+    const stmt = this.db.prepare("SELECT * FROM mastodon_servers ORDER BY created_at DESC");
+    return stmt.all() as {
+      id: number;
+      uri: string;
+      slug: string;
+      name: string;
+      enabled: boolean;
+      created_at: string;
+    }[];
+  }
+
+  public insertMastodonServer(
+    uri: string,
+    slug: string,
+    name: string,
+    enabled: boolean = true
+  ): boolean {
+    const stmt = this.db.prepare(`
+      INSERT INTO mastodon_servers (uri, slug, name, enabled)
+      VALUES (?, ?, ?, ?)
+    `);
+    const result = stmt.run(uri, slug, name, enabled ? 1 : 0);
+    return result.changes > 0;
+  }
+
+  public updateMastodonServer(
+    id: number,
+    uri: string,
+    slug: string,
+    name: string,
+    enabled: boolean
+  ): boolean {
+    const stmt = this.db.prepare(`
+      UPDATE mastodon_servers
+      SET uri = ?, slug = ?, name = ?, enabled = ?
+      WHERE id = ?
+    `);
+    const result = stmt.run(uri, slug, name, enabled ? 1 : 0, id);
+    return result.changes > 0;
+  }
+
+  public deleteMastodonServer(id: number): boolean {
+    const stmt = this.db.prepare(`
+      DELETE FROM mastodon_servers
+      WHERE id = ?
+    `);
+    const result = stmt.run(id);
+    return result.changes > 0;
   }
 
   public fetchAllReasons(): { id: number; reason: string; active: number; filter: number; created_at: string }[] {

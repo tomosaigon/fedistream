@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import { getServerBySlug } from '../../config/servers';
+// import { getServerBySlug } from '../../config/servers';
 
 // Set up in-memory database
 process.env.DATABASE_FILE = ':memory:';
@@ -25,10 +25,10 @@ describe('Timeline Sync Tests', () => {
     mockAxios.reset();
     // dbManager.resetDatabase();
     
-    (getServerBySlug as jest.Mock).mockReturnValue({
-      slug: 'test-server',
-      baseUrl: 'https://example.com'
-    });
+    // (getServerBySlug as jest.Mock).mockReturnValue({
+    //   slug: 'test-server',
+    //   baseUrl: 'https://example.com'
+    // });
 
     // Configure mock to return different responses based on URL
     mockAxios.onGet(/.*\/api\/v1\/timelines\/public.*/).reply((config) => {

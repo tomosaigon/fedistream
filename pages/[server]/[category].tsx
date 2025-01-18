@@ -1,10 +1,10 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useRef } from 'react';
+import { Toaster, toast, ToastOptions, ToastPosition } from 'react-hot-toast';
+import { useServers } from '@/context/ServersContext';
 import PostList from '../../components/PostList';
 import AsyncButton from '../../components/AsyncButton';
-import { getServerBySlug, servers } from '../../config/servers';
 import Link from 'next/link';
-import { Toaster, toast, ToastOptions, ToastPosition } from 'react-hot-toast';
 import NavigationBar, { ServerStats } from '../../components/NavigationBar';
 import { getCategoryBySlug } from '../../db/categories';
 
@@ -28,6 +28,7 @@ const FILTER_SETTINGS_KEY = 'filterSettings';
 export default function CategoryPage() {
   const router = useRouter();
   const { server, category } = router.query;
+  const { getServerBySlug } = useServers();
 
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +59,6 @@ export default function CategoryPage() {
   }, []);
 
   const { bucket, label: bucketLabel } = getCategoryBySlug((category ? category : 'regular') as string);
-  const serverConfig = server ? getServerBySlug(server as string) : servers[0];
 
   useEffect(() => {
     if (!server) return;
@@ -310,10 +310,6 @@ export default function CategoryPage() {
     }
   };
 
-  if (!serverConfig) {
-    return <div className="p-4">Server not found</div>;
-  }
-
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1 w-full">
@@ -349,7 +345,7 @@ export default function CategoryPage() {
                 </span>
               </h1>
               <p className="text-gray-600 text-base">
-                From {serverConfig.name}
+                From {server ? getServerBySlug(server as string)?.name : 'Unknown server'}
               </p>
             </div>
           </div>

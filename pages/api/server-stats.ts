@@ -1,5 +1,4 @@
 import { DatabaseManager } from '../../db/database';
-import { getServerBySlug } from '../../config/servers';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 const dbManager = new DatabaseManager();
@@ -9,11 +8,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (!server) {
     return res.status(400).json({ error: 'Server slug is required' });
-  }
-
-  const serverConfig = getServerBySlug(server as string);
-  if (!serverConfig) {
-    return res.status(404).json({ error: 'Server not found' });
   }
 
   try {
