@@ -41,3 +41,4 @@ yarn-error.log*
 next-env.d.ts
 mastodon.db
 config/servers.ts
+.vscode/settings.json
