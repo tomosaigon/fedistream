@@ -20,7 +20,7 @@ const sendResponse = (res: NextApiResponse, status: number, message: string, dat
   res.status(status).json(data ? { message, data } : { message });
 };
 
-const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
+const handleGet = async (_req: NextApiRequest, res: NextApiResponse) => {
   const reasons: Reason[] = dbManager.getAllReasons();
   sendResponse(res, 200, 'Reasons fetched successfully', reasons);
 };

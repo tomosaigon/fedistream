@@ -26,7 +26,7 @@ const sendResponse = (res: NextApiResponse, status: number, message: string, dat
   res.status(status).json(data ? { message, data } : { message });
 };
 
-const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
+const handleGet = async (_req: NextApiRequest, res: NextApiResponse) => {
   const servers: Server[] = dbManager.getAllServers();
   sendResponse(res, 200, 'Servers fetched successfully', servers);
 };
