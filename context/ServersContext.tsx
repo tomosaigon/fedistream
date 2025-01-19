@@ -1,33 +1,28 @@
-import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Server } from '@/db/database';
 
-export type Server = {
-  id: number;
-  uri: string;
-  slug: string;
-  name: string;
-  enabled: boolean;
-  created_at: string;
-};
+export type { Server } from '@/db/database';
 
-export const initialServer: Server = {
-  id: 0,
-  uri: '',
-  slug: '',
-  name: '',
-  enabled: true,
-  created_at: '',
+const fetchServers = async (): Promise<Server[]> => {
+  const response = await fetch('/api/servers');
+  if (!response.ok) {
+    throw new Error('Failed to fetch servers');
+  }
+  const data = await response.json();
+  return data.data;
 };
 
 interface ServersContextType {
   servers: Server[];
-  loading: boolean;
-  refreshServers: () => Promise<void>;
+  isLoading: boolean;
+  error: unknown;
   getServerBySlug: (slug: string) => Server | undefined;
 }
 
 const ServersContext = createContext<ServersContextType | undefined>(undefined);
 
-export const useServers = () => {
+export const useServers = (): ServersContextType => {
   const context = useContext(ServersContext);
   if (!context) {
     throw new Error('useServers must be used within a ServersProvider');
@@ -40,38 +35,17 @@ interface ServersProviderProps {
 }
 
 export const ServersProvider = ({ children }: ServersProviderProps) => {
-  const [servers, setServers] = useState<Server[]>([]);
-  const [loading, setLoading] = useState(false);
+  const SERVERS_QUERY_KEY = ['servers'];
+  const { data: servers = [], isLoading, error } = useQuery<Server[]>({
+    queryKey: SERVERS_QUERY_KEY,
+    queryFn: fetchServers,
+  });
 
-  const refreshServers = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('/api/servers');
-      if (!response.ok) {
-        throw new Error('Failed to fetch servers');
-      }
-      const data = await response.json();
-      const formattedServers = (data.servers || []).map((server: any) => ({
-        ...server,
-      }));
-      setServers(formattedServers);
-    } catch (error) {
-      console.error('Error fetching servers:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getServerBySlug = (slug: string): Server | undefined => {
-    return servers.find(server => server.slug === slug);
-  };
-
-  useEffect(() => {
-    refreshServers();
-  }, []);
+  const getServerBySlug = (slug: string): Server | undefined =>
+    servers.find(server => server.slug === slug);
 
   return (
-    <ServersContext.Provider value={{ servers, loading, refreshServers, getServerBySlug }}>
+    <ServersContext.Provider value={{ servers, isLoading, error, getServerBySlug }}>
       {children}
     </ServersContext.Provider>
   );

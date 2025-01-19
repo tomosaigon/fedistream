@@ -7,7 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'GET') {
         // Handle fetching all muted words
         try {
-            const mutedWords = dbManager.fetchMutedWords();
+            const mutedWords = dbManager.getMutedWords();
             return res.status(200).json({ mutedWords: Array.from(mutedWords) });
         } catch (error) {
             console.error('Error fetching muted words:', error);

@@ -105,7 +105,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const fetchOptions = isHomeServer ? { home: true } : {};
 
     // XXX mock
-    const baseUrl = server === 'test-server' ? 'https://example.com' : dbManager.fetchAllMastodonServers().find((s) => s.slug === server)?.uri;
+    const baseUrl = server === 'test-server' ? 'https://example.com' : dbManager.getAllServers().find((s) => s.slug === server)?.uri;
     if (!baseUrl) {
       return res.status(404).json({ error: 'Server not found'});
     }

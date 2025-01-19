@@ -1,41 +1,47 @@
 import { useState } from 'react';
-import { initialServer, Server, useServers } from '@/context/ServersContext';
+import { useServers } from '@/context/ServersContext';
 import { useModifyServers } from '@/hooks/useModifyServers';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 
+const initialServer = {
+  // id: 0,
+  uri: '',
+  slug: '',
+  name: '',
+  enabled: true,
+  // created_at: '',
+};
+
 const ManageServers = () => {
-  const { servers, loading, refreshServers } = useServers();
+  const { servers, isLoading } = useServers();
   const { addServer, updateServer, removeServer } = useModifyServers();
-  const [newServer, setNewServer] = useState<Server>({ ...initialServer });
+
+  const [newServer, setNewServer] = useState({...initialServer});
+
   const [editingServerId, setEditingServerId] = useState<number | null>(null);
-  const [editedServer, setEditedServer] = useState<Server>({ ...initialServer });
+  const [editedServer, setEditedServer] = useState({...initialServer});
 
   const handleAdd = async () => {
     const { uri, slug, name, enabled } = newServer;
     if (uri.trim() && slug.trim() && name.trim()) {
-      await addServer(uri.trim(), slug.trim(), name.trim(), enabled);
-      setNewServer({ ...initialServer });
-      refreshServers();
+      await addServer({ uri: uri.trim(), slug: slug.trim(), name: name.trim(), enabled });
+      setNewServer({ uri: '', slug: '', name: '', enabled: true });
     }
   };
 
-  const handleEdit = (id: number, server: Server) => {
+  const handleEdit = (id: number, server: typeof newServer) => {
     setEditingServerId(id);
     setEditedServer(server);
   };
 
   const handleUpdate = async () => {
     const { uri, slug, name, enabled } = editedServer;
-  
-    if (uri.trim() && slug.trim() && name.trim()) {
-      await updateServer(editingServerId!, {
-        uri: uri.trim(),
-        slug: slug.trim(),
-        name: name.trim(),
-        enabled,
+    if (editingServerId !== null && uri.trim() && slug.trim() && name.trim()) {
+      await updateServer({
+        id: editingServerId,
+        server: { uri: uri.trim(), slug: slug.trim(), name: name.trim(), enabled },
       });
       setEditingServerId(null);
-      refreshServers();
     }
   };
 
@@ -45,14 +51,14 @@ const ManageServers = () => {
 
   const handleRemove = async (id: number) => {
     await removeServer(id);
-    refreshServers();
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-md">
       <h1 className="text-2xl font-bold mb-4">Manage Mastodon Servers</h1>
       <p className="mb-6 text-gray-700">
-        Use this page to manage Mastodon servers, including their base uri, slug, display name, and enabled status.
+        Use this page to manage Mastodon servers, including their base URI, slug, display name, and
+        enabled status.
       </p>
 
       <div className="flex mb-4">
@@ -60,7 +66,7 @@ const ManageServers = () => {
           type="text"
           value={newServer.uri}
           onChange={(e) => setNewServer({ ...newServer, uri: e.target.value })}
-          placeholder="Base uri"
+          placeholder="Base URI"
           className="flex-1 px-4 py-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
         <input
@@ -85,17 +91,27 @@ const ManageServers = () => {
         </button>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <p>Loading servers...</p>
       ) : (
         <table className="min-w-full bg-white border border-gray-200 rounded-md">
           <thead>
             <tr>
-              <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border-b">Base URI</th>
-              <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border-b">Slug</th>
-              <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border-b">Display Name</th>
-              <th className="px-4 py-2 text-center text-sm font-medium text-gray-700 border-b">Enabled</th>
-              <th className="px-4 py-2 text-center text-sm font-medium text-gray-700 border-b">Actions</th>
+              <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border-b">
+                Base URI
+              </th>
+              <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border-b">
+                Slug
+              </th>
+              <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border-b">
+                Display Name
+              </th>
+              <th className="px-4 py-2 text-center text-sm font-medium text-gray-700 border-b">
+                Enabled
+              </th>
+              <th className="px-4 py-2 text-center text-sm font-medium text-gray-700 border-b">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -107,7 +123,9 @@ const ManageServers = () => {
                       <input
                         type="text"
                         value={editedServer.uri}
-                        onChange={(e) => setEditedServer({ ...editedServer, uri: e.target.value })}
+                        onChange={(e) =>
+                          setEditedServer({ ...editedServer, uri: e.target.value })
+                        }
                         className="w-full px-2 py-1 border rounded-md"
                       />
                     </td>
@@ -115,7 +133,9 @@ const ManageServers = () => {
                       <input
                         type="text"
                         value={editedServer.slug}
-                        onChange={(e) => setEditedServer({ ...editedServer, slug: e.target.value })}
+                        onChange={(e) =>
+                          setEditedServer({ ...editedServer, slug: e.target.value })
+                        }
                         className="w-full px-2 py-1 border rounded-md"
                       />
                     </td>
@@ -123,7 +143,9 @@ const ManageServers = () => {
                       <input
                         type="text"
                         value={editedServer.name}
-                        onChange={(e) => setEditedServer({ ...editedServer, name: e.target.value })}
+                        onChange={(e) =>
+                          setEditedServer({ ...editedServer, name: e.target.value })
+                        }
                         className="w-full px-2 py-1 border rounded-md"
                       />
                     </td>
@@ -131,7 +153,9 @@ const ManageServers = () => {
                       <input
                         type="checkbox"
                         checked={editedServer.enabled}
-                        onChange={() => setEditedServer({ ...editedServer, enabled: !editedServer.enabled })}
+                        onChange={() =>
+                          setEditedServer({ ...editedServer, enabled: !editedServer.enabled })
+                        }
                       />
                     </td>
                     <td className="px-4 py-2 border-b text-center space-x-2">
@@ -163,8 +187,8 @@ const ManageServers = () => {
                     </td>
                     <td className="px-4 py-2 border-b text-center space-x-2">
                       <button
-                        onClick={() => handleEdit(id, { ...initialServer, uri, slug, name, enabled })}
-                        className="mb-1 px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                        onClick={() => handleEdit(id, { uri, slug, name, enabled })}
+                        className="px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
                       >
                         Edit
                       </button>

@@ -1,58 +1,66 @@
-import { useServers } from '../context/ServersContext';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Server } from '@/db/database';
+
+const addServerApi = async (server: Omit<Server, 'id' | 'created_at'>) => {
+  const response = await fetch('/api/servers', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(server),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to add server');
+  }
+};
+
+const updateServerApi = async (id: number, server: Partial<Server>) => {
+  const response = await fetch('/api/servers', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, ...server }),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to update server');
+  }
+};
+
+const removeServerApi = async (id: number) => {
+  const response = await fetch('/api/servers', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to delete server');
+  }
+};
 
 export const useModifyServers = () => {
-  const { refreshServers } = useServers();
+  const queryClient = useQueryClient();
+  const SERVERS_QUERY_KEY = ['servers'];
 
-  const addServer = async (uri: string, slug: string, name: string, enabled: boolean) => {
-    try {
-      const response = await fetch('/api/servers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uri, slug, name, enabled }),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to add server');
-      }
-      await refreshServers();
-    } catch (error) {
-      console.error('Error adding server:', error);
-    }
+  const invalidateServers = () => {
+    queryClient.invalidateQueries({ queryKey: SERVERS_QUERY_KEY });
   };
 
-  const updateServer = async (
-    id: number,
-    { uri, slug, name, enabled }: { uri: string; slug: string; name: string; enabled: boolean }
-  ) => {
-    try {
-      const response = await fetch('/api/servers', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, uri, slug, name, enabled }),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to update server');
-      }
-      await refreshServers();
-    } catch (error) {
-      console.error('Error updating server:', error);
-    }
-  };
+  const addServer = useMutation({
+    mutationFn: (server: Omit<Server, 'id' | 'created_at'>) => addServerApi(server),
+    onSuccess: invalidateServers,
+  });
 
-  const removeServer = async (id: number) => {
-    try {
-      const response = await fetch('/api/servers', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to delete server');
-      }
-      await refreshServers();
-    } catch (error) {
-      console.error('Error deleting server:', error);
-    }
-  };
+  const updateServer = useMutation({
+    mutationFn: ({ id, server }: { id: number; server: Partial<Server> }) =>
+      updateServerApi(id, server),
+    onSuccess: invalidateServers,
+  });
 
-  return { addServer, updateServer, removeServer };
+  const removeServer = useMutation({
+    mutationFn: (id: number) => removeServerApi(id),
+    onSuccess: invalidateServers,
+  });
+
+  return {
+    addServer: addServer.mutateAsync,
+    updateServer: updateServer.mutateAsync,
+    removeServer: removeServer.mutateAsync,
+  };
 };

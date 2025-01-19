@@ -147,31 +147,15 @@ export class DatabaseManager {
     `);
   }
 
-  public fetchAllMastodonServers(): {
-    id: number;
-    uri: string;
-    slug: string;
-    name: string;
-    enabled: boolean;
-    created_at: string;
-  }[] {
-    const stmt = this.db.prepare("SELECT * FROM mastodon_servers ORDER BY created_at DESC");
-    return stmt.all() as {
-      id: number;
-      uri: string;
-      slug: string;
-      name: string;
-      enabled: boolean;
-      created_at: string;
-    }[];
+  public getAllServers(): Server[] {
+    const stmt = this.db.prepare(`
+      SELECT * FROM mastodon_servers ORDER BY created_at DESC
+    `);
+    return stmt.all() as Server[];
   }
-
-  public insertMastodonServer(
-    uri: string,
-    slug: string,
-    name: string,
-    enabled: boolean = true
-  ): boolean {
+  
+  public createServer(data: ServerData): boolean {
+    const { uri, slug, name, enabled } = data;
     const stmt = this.db.prepare(`
       INSERT INTO mastodon_servers (uri, slug, name, enabled)
       VALUES (?, ?, ?, ?)
@@ -179,14 +163,9 @@ export class DatabaseManager {
     const result = stmt.run(uri, slug, name, enabled ? 1 : 0);
     return result.changes > 0;
   }
-
-  public updateMastodonServer(
-    id: number,
-    uri: string,
-    slug: string,
-    name: string,
-    enabled: boolean
-  ): boolean {
+  
+  public updateServer(id: number, data: ServerData): boolean {
+    const { uri, slug, name, enabled } = data;
     const stmt = this.db.prepare(`
       UPDATE mastodon_servers
       SET uri = ?, slug = ?, name = ?, enabled = ?
@@ -195,11 +174,10 @@ export class DatabaseManager {
     const result = stmt.run(uri, slug, name, enabled ? 1 : 0, id);
     return result.changes > 0;
   }
-
-  public deleteMastodonServer(id: number): boolean {
+  
+  public deleteServer(id: number): boolean {
     const stmt = this.db.prepare(`
-      DELETE FROM mastodon_servers
-      WHERE id = ?
+      DELETE FROM mastodon_servers WHERE id = ?
     `);
     const result = stmt.run(id);
     return result.changes > 0;
@@ -242,7 +220,7 @@ export class DatabaseManager {
     return result.changes > 0;
   }
   
-  public fetchMutedWords(): Set<string> {
+  public getMutedWords(): Set<string> {
     const rows = this.db.prepare("SELECT word FROM muted_words").all() as { word: string }[];
     return new Set(rows.map(row => row.word));
   }
@@ -687,6 +665,17 @@ export interface Poll {
 export type BucketedPosts = {
   [K in Bucket]: Post[];
 };
+
+export type Server = {
+  id: number;
+  uri: string;
+  slug: string;
+  name: string;
+  enabled: boolean;
+  created_at: string;
+};
+
+export type ServerData = Omit<Server, 'id' | 'created_at'>;
 
 export type Reason = {
   id: number; 
