@@ -14,7 +14,7 @@ import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils
 import { useServers } from '../context/ServersContext';
 import useMutedWords from '../hooks/useMutedWords';
 import { useMastodonAccount } from '../hooks/useMastodonAccount';  
-import useReasons from '../hooks/useReasons';
+import { useReasons } from '../hooks/useReasons';
 import { useTags } from '../hooks/useTags';
 import { ImageModal } from './ImageModal';
 import MediaAttachment from './MediaAttachment';

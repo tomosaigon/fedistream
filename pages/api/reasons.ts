@@ -1,78 +1,83 @@
-import { DatabaseManager } from '../../db/database';
+import { DatabaseManager, Reason, ReasonData } from '../../db/database';
 import { NextApiRequest, NextApiResponse } from 'next';
+
+const ERROR_MESSAGES = {
+  MISSING_FIELDS: 'Missing or invalid fields',
+  METHOD_NOT_ALLOWED: 'Method not allowed',
+  INTERNAL_SERVER_ERROR: 'Internal server error',
+};
 
 const dbManager = new DatabaseManager();
 
+const validateReasonData = (data: any): ReasonData | null => {
+  if (!data || typeof data.reason !== 'string' || data.active === undefined || data.filter === undefined) {
+    return null;
+  }
+  return data as ReasonData;
+};
+
+const sendResponse = (res: NextApiResponse, status: number, message: string, data?: any) => {
+  res.status(status).json(data ? { message, data } : { message });
+};
+
+const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
+  const reasons: Reason[] = dbManager.getAllReasons();
+  sendResponse(res, 200, 'Reasons fetched successfully', reasons);
+};
+
+const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
+  const reasonData = validateReasonData(req.body);
+  if (!reasonData) {
+    return sendResponse(res, 400, ERROR_MESSAGES.MISSING_FIELDS);
+  }
+
+  const wasAdded = dbManager.createReason(reasonData);
+  if (wasAdded) {
+    sendResponse(res, 200, `Reason "${reasonData.reason}" added successfully`);
+  } else {
+    sendResponse(res, 409, `Reason "${reasonData.reason}" already exists`);
+  }
+};
+
+const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { id, ...reasonData } = req.body;
+  if (!id || typeof id !== 'number' || !reasonData.reason || reasonData.active === undefined || reasonData.filter === undefined) {
+    return sendResponse(res, 400, ERROR_MESSAGES.MISSING_FIELDS);
+  }
+
+  const updated = dbManager.updateReasonById(id, reasonData);
+  if (updated) {
+    sendResponse(res, 200, 'Reason updated successfully');
+  } else {
+    sendResponse(res, 404, 'Reason not found');
+  }
+};
+
+const handleDelete = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { id } = req.body;
+  if (!id || typeof id !== 'number') {
+    return sendResponse(res, 400, 'Invalid "id" field');
+  }
+
+  const success = dbManager.deleteReasonById(id);
+  if (success) {
+    sendResponse(res, 200, 'Reason removed successfully');
+  } else {
+    sendResponse(res, 404, 'Reason not found');
+  }
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'GET') {
-    try {
-      const reasons = dbManager.fetchAllReasons();
-      return res.status(200).json({ reasons });
-    } catch (error) {
-      console.error('Error fetching reasons:', error);
-      return res.status(500).json({ error: 'Failed to fetch reasons' });
-    }
+  switch (req.method) {
+    case 'GET':
+      return handleGet(req, res);
+    case 'POST':
+      return handlePost(req, res);
+    case 'PATCH':
+      return handlePatch(req, res);
+    case 'DELETE':
+      return handleDelete(req, res);
+    default:
+      return sendResponse(res, 405, ERROR_MESSAGES.METHOD_NOT_ALLOWED);
   }
-
-  if (req.method === 'POST') {
-    const { reason } = req.body;
-
-    if (!reason || typeof reason !== 'string') {
-      return res.status(400).json({ error: 'Missing or invalid "reason" field' });
-    }
-
-    try {
-      const wasAdded = dbManager.addReason(reason);
-      if (wasAdded) {
-        return res.status(200).json({ message: `Reason "${reason}" added successfully` });
-      } else {
-        return res.status(409).json({ error: `Reason "${reason}" already exists` });
-      }
-    } catch (error) {
-      console.error('Error adding reason:', error);
-      return res.status(500).json({ error: 'Failed to add reason' });
-    }
-  }
-
-  if (req.method === 'PATCH') {
-    const { reason, newReason, active, filter } = req.body;
-
-    if (!reason || typeof reason !== 'string') {
-      return res.status(400).json({ error: 'Missing or invalid "reason" field' });
-    }
-
-    try {
-      const updated = dbManager.updateReason(reason, { newReason, active, filter });
-      if (updated) {
-        return res.status(200).json({ message: 'Reason updated successfully' });
-      } else {
-        return res.status(404).json({ error: 'Reason not found' });
-      }
-    } catch (error) {
-      console.error('Error updating reason:', error);
-      return res.status(500).json({ error: 'Failed to update reason' });
-    }
-  }
-
-  if (req.method === 'DELETE') {
-    const { reason } = req.body;
-
-    if (!reason || typeof reason !== 'string') {
-      return res.status(400).json({ error: 'Missing or invalid "reason" field' });
-    }
-
-    try {
-      const success = dbManager.deleteReason(reason);
-      if (success) {
-        return res.status(200).json({ message: 'Reason removed successfully' });
-      } else {
-        return res.status(404).json({ error: 'Reason not found' });
-      }
-    } catch (error) {
-      console.error('Error deleting reason:', error);
-      return res.status(500).json({ error: 'Failed to delete reason' });
-    }
-  }
-
-  return res.status(405).json({ error: 'Method not allowed' });
 }

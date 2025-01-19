@@ -1,46 +1,46 @@
 import { useState } from 'react';
-import useReasons from '../hooks/useReasons';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
+import { useReasons } from '../hooks/useReasons';
 
 const ManageReasons = () => {
-  const { reasons, loading, refreshReasons, addReason, removeReason, updateReason } = useReasons();
+  const { reasons, addReason, removeReason, updateReason } = useReasons();
   const [newReason, setNewReason] = useState('');
   const [editingReasonId, setEditingReasonId] = useState<number | null>(null);
-  const [editingReason, setEditingReason] = useState('');
   const [editedReason, setEditedReason] = useState('');
   const [editedActive, setEditedActive] = useState(true);
   const [editedFilter, setEditedFilter] = useState(false);
 
   const handleAdd = async () => {
     if (newReason.trim()) {
-      await addReason(newReason.trim());
+      await addReason({
+        reason: newReason.trim(),
+        active: 1,
+        filter: 1,
+      });
       setNewReason('');
-      refreshReasons();
     }
   };
 
-  const handleRemove = async (reason: string) => {
-    await removeReason(reason);
-    refreshReasons();
+  const handleRemove = async (id: number) => {
+    await removeReason(id);
+    // refreshReasons();
   };
 
   const handleEdit = (id: number, reason: string, active: boolean, filter: boolean) => {
     setEditingReasonId(id);
     setEditedReason(reason)
-    setEditingReason(reason);
     setEditedActive(active);
     setEditedFilter(filter);
   };
 
   const handleUpdate = async () => {
-    if (editedReason.trim()) {
-      await updateReason(editingReason, {
-        newReason: editedReason.trim(),
+    if (editingReasonId && editedReason.trim()) {
+      await updateReason({ id: editingReasonId, data: {
+        reason: editedReason.trim(),
         active: editedActive ? 1 : 0,
         filter: editedFilter ? 1 : 0,
-      });
+      }});
       setEditingReasonId(null);
-      refreshReasons();
     }
   };
 
@@ -69,7 +69,7 @@ const ManageReasons = () => {
         </button>
       </div>
 
-      {loading ? (
+      {!reasons ? (
         <p>Loading reasons...</p>
       ) : (
         <table className="min-w-full bg-white border border-gray-200 rounded-md">
@@ -149,7 +149,7 @@ const ManageReasons = () => {
                         Edit
                       </button>
                       <button
-                        onClick={() => handleRemove(reason)}
+                        onClick={() => handleRemove(id)}
                         className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
                       >
                         Remove

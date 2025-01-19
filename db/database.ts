@@ -205,57 +205,40 @@ export class DatabaseManager {
     return result.changes > 0;
   }
 
-  public fetchAllReasons(): { id: number; reason: string; active: number; filter: number; created_at: string }[] {
+  public getAllReasons(): Reason[] {
     const stmt = this.db.prepare("SELECT * FROM reasons ORDER BY created_at ASC");
-    return stmt.all() as { id: number; reason: string; active: number; filter: number; created_at: string }[];
+    return stmt.all() as Reason[];
   }
-  
-  public addReason(reason: string, active: number = 1, filter: number = 0): boolean {
+
+  public createReason(data: ReasonData): boolean {
+    const { reason, active = 1, filter = 0 } = data;
+
     const result = this.db
       .prepare("INSERT OR IGNORE INTO reasons (reason, active, filter) VALUES (?, ?, ?)")
       .run(reason, active, filter);
+    
+    return result.changes > 0;
+  }
+
+  public deleteReasonById(id: number): boolean {
+    const result = this.db.prepare("DELETE FROM reasons WHERE id = ?").run(id);
     return result.changes > 0;
   }
   
-  public deleteReason(reason: string): boolean {
-    const result = this.db.prepare("DELETE FROM reasons WHERE reason = ?").run(reason);
-    return result.changes > 0;
-  }
+  public updateReasonById(id: number, updates: ReasonData): boolean {
+    const { reason, active, filter } = updates;
   
-  public updateReason(reason: string, updates: { newReason?: string; active?: number; filter?: number }): boolean {
-    const { newReason, active, filter } = updates;
-  
-    // Build the SQL update query dynamically
-    const setClause: string[] = [];
-    const params: (string | number)[] = [];
-  
-    if (newReason) {
-      setClause.push('reason = ?');
-      params.push(newReason);
-    }
-    if (active !== undefined) {
-      setClause.push('active = ?');
-      params.push(active);
-    }
-    if (filter !== undefined) {
-      setClause.push('filter = ?');
-      params.push(filter);
+    if (!reason || active === undefined || filter === undefined) {
+      throw new Error('All fields (reason, active, filter) must be provided for an update.');
     }
   
-    if (setClause.length === 0) {
-      return false; // No updates to apply
-    }
-  
-    // Include the "WHERE" clause to ensure we only update the correct record
     const query = `
       UPDATE reasons
-      SET ${setClause.join(', ')}
-      WHERE reason = ?
+      SET reason = ?, active = ?, filter = ?
+      WHERE id = ?
     `;
-    
-    params.push(reason); // Add the original reason for the WHERE clause
   
-    const result = this.db.prepare(query).run(...params);
+    const result = this.db.prepare(query).run(reason, active, filter, id);
     return result.changes > 0;
   }
   
@@ -703,6 +686,20 @@ export interface Poll {
 
 export type BucketedPosts = {
   [K in Bucket]: Post[];
+};
+
+export type Reason = {
+  id: number; 
+  reason: string; 
+  active: number; 
+  filter: number; 
+  created_at: string; 
+};
+
+export type ReasonData = {
+  reason: string; 
+  active?: number; 
+  filter?: number; 
 };
 
 export interface AccountTag {
