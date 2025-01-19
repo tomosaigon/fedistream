@@ -1,56 +1,72 @@
 import { DatabaseManager } from '../../db/database';
 import { NextApiRequest, NextApiResponse } from 'next';
 
+const ERROR_MESSAGES = {
+  MISSING_FIELDS: 'Missing or invalid fields',
+  METHOD_NOT_ALLOWED: 'Method not allowed',
+  INTERNAL_SERVER_ERROR: 'Internal server error',
+};
+
 const dbManager = new DatabaseManager();
 
+const sendResponse = (res: NextApiResponse, status: number, message: string, data?: any) => {
+  res.status(status).json(data ? { message, data } : { message });
+};
+
+const handleGet = async (_req: NextApiRequest, res: NextApiResponse) => {
+  try {
+    const mutedWords: string[] = dbManager.getMutedWords();
+    sendResponse(res, 200, 'Muted words fetched successfully', mutedWords);
+  } catch (error) {
+    console.error('Error fetching muted words:', error);
+    sendResponse(res, 500, ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
+  }
+};
+
+const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { word } = req.body;
+  if (!word || typeof word !== 'string') {
+    return sendResponse(res, 400, ERROR_MESSAGES.MISSING_FIELDS);
+  }
+
+  try {
+    dbManager.createMutedWord(word);
+    sendResponse(res, 201, `Muted word "${word}" added successfully`);
+  } catch (error) {
+    console.error('Error adding muted word:', error);
+    sendResponse(res, 500, ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
+  }
+};
+
+const handleDelete = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { word } = req.body;
+  if (!word || typeof word !== 'string') {
+    return sendResponse(res, 400, ERROR_MESSAGES.MISSING_FIELDS);
+  }
+
+  try {
+    dbManager.deleteMutedWord(word);
+    sendResponse(res, 200, `Muted word "${word}" removed successfully`);
+  } catch (error) {
+    console.error('Error removing muted word:', error);
+    sendResponse(res, 500, ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
+  }
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === 'GET') {
-        // Handle fetching all muted words
-        try {
-            const mutedWords = dbManager.getMutedWords();
-            return res.status(200).json({ mutedWords: Array.from(mutedWords) });
-        } catch (error) {
-            console.error('Error fetching muted words:', error);
-            return res.status(500).json({ error: 'Failed to fetch muted words' });
-        }
+  try {
+    switch (req.method) {
+      case 'GET':
+        return handleGet(req, res);
+      case 'POST':
+        return handlePost(req, res);
+      case 'DELETE':
+        return handleDelete(req, res);
+      default:
+        return sendResponse(res, 405, ERROR_MESSAGES.METHOD_NOT_ALLOWED);
     }
-
-    if (req.method === 'POST') {
-        // Handle adding a new muted word
-        const { word } = req.body;
-
-        if (!word || typeof word !== 'string') {
-            return res.status(400).json({ error: 'Missing or invalid "word" field' });
-        }
-
-        try {
-            const wasAdded = dbManager.addMutedWord(word);
-            if (wasAdded) {
-                return res.status(200).json({ message: `Muted word "${word}" added successfully` });
-            } else {
-                return res.status(409).json({ error: `The word "${word}" is already muted` });
-            }
-        } catch (error) {
-            console.error('Error adding muted word:', error);
-            return res.status(500).json({ error: 'Failed to add muted word' });
-        }
-    }
-
-    if (req.method === 'DELETE') {
-        const { word } = req.body;
-
-        if (!word || typeof word !== 'string') {
-            return res.status(400).json({ error: 'Missing or invalid "word" field' });
-        }
-
-        const success = dbManager.removeMutedWord(word);
-        if (success) {
-            return res.status(200).json({ message: 'Muted word removed successfully' });
-        } else {
-            return res.status(404).json({ error: 'Muted word not found' });
-        }
-    }
-
-    // Method not allowed
-    return res.status(405).json({ error: 'Method not allowed' });
+  } catch (error) {
+    console.error('API error:', error);
+    return sendResponse(res, 500, ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
+  }
 }

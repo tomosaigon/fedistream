@@ -220,19 +220,17 @@ export class DatabaseManager {
     return result.changes > 0;
   }
   
-  public getMutedWords(): Set<string> {
+  public getMutedWords(): string[] {
     const rows = this.db.prepare("SELECT word FROM muted_words").all() as { word: string }[];
-    return new Set(rows.map(row => row.word));
+    return rows.map(row => row.word);
   }
 
-  public addMutedWord(word: string): boolean {
-    const result = this.db.prepare("INSERT OR IGNORE INTO muted_words (word) VALUES (?)").run(word);
-    return result.changes > 0;
+  public createMutedWord(word: string): void {
+      this.db.prepare("INSERT OR IGNORE INTO muted_words (word) VALUES (?)").run(word);
   }
 
-  public removeMutedWord(word: string): boolean {
-    const result = this.db.prepare("DELETE FROM muted_words WHERE word = ?").run(word);
-    return result.changes > 0;
+  public deleteMutedWord(word: string): void {
+      this.db.prepare("DELETE FROM muted_words WHERE word = ?").run(word);
   }
 
   public fetchAllCredentials(): { id: number; server_url: string; access_token: string; created_at: string }[] {

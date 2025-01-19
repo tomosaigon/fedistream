@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 import { Post, IMediaAttachment } from '../db/database';
 import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils/nonStopWords';
 import { useServers } from '../context/ServersContext';
-import useMutedWords from '../hooks/useMutedWords';
+import { useMutedWords } from '../hooks/useMutedWords';
 import { useMastodonAccount } from '../hooks/useMastodonAccount';  
 import { useReasons } from '../hooks/useReasons';
 import { useTags } from '../hooks/useTags';
@@ -36,7 +36,7 @@ interface PostListProps {
 
 const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filterSettings }) => {
   const { reasons } = useReasons();
-  const { mutedWords, addMutedWord } = useMutedWords();
+  const { mutedWords, createMutedWord } = useMutedWords();
   const { handleTag, handleClearTag, getAccountTagCount } = useTags();
   const [posts, setPosts] = useState(initialPosts);
   const [activeImage, setActiveImage] = useState<IMediaAttachment | null>(null);
@@ -251,7 +251,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                       {nonStopWords.map((word) => (
                         <button
                           key={word}
-                          onClick={() => addMutedWord(word)} // Call the function when clicked
+                          onClick={() => createMutedWord(word)} // Call the function when clicked
                           className={`px-2 py-1 rounded text-xs sm:text-sm ${
                             word.startsWith('#')
                               ? 'bg-green-500 text-white hover:bg-red-600' // Styling for hashtags

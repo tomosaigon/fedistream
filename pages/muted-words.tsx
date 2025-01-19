@@ -1,21 +1,19 @@
 import { useState } from 'react';
-import useMutedWords from '../hooks/useMutedWords';
+import { useMutedWords } from '../hooks/useMutedWords';
 
 const ManageMutedWords = () => {
-  const { mutedWords, loading, refreshMutedWords, addMutedWord, removeMutedWord } = useMutedWords();
+  const { mutedWords, isLoading, createMutedWord, deleteMutedWord } = useMutedWords();
   const [newWord, setNewWord] = useState('');
 
   const handleAdd = async () => {
     if (newWord.trim()) {
-      await addMutedWord(newWord.trim());
-      setNewWord('');
-      refreshMutedWords();
+      await createMutedWord(newWord.trim());
+      setNewWord(''); // Reset input after adding
     }
   };
 
   const handleRemove = async (word: string) => {
-    await removeMutedWord(word);
-    refreshMutedWords();
+    await deleteMutedWord(word);
   };
 
   return (
@@ -38,11 +36,11 @@ const ManageMutedWords = () => {
         </button>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <p>Loading muted words...</p>
       ) : (
         <ul className="space-y-2">
-          {Array.from(mutedWords).map((word) => (
+          {mutedWords.map((word) => (
             <li key={word} className="flex items-center justify-between bg-gray-100 p-2 rounded-md">
               <span>{word}</span>
               <button

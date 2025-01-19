@@ -132,21 +132,23 @@ export const getNonStopWords = (htmlString: string): string[] => {
 };
 
 /**
- * Checks if any of the non-stop words are in the set of muted words.
+ * Checks if any of the non-stop words are in the list of muted words.
  * @param nonStopWords - An array of words to check.
- * @param mutedWords - A set of words to mute.
- * @returns True if any non-stop word is in the muted words set; otherwise, false.
+ * @param mutedWords - An array of words to mute.
+ * @returns True if any non-stop word is in the muted words list; otherwise, false.
  */
-export const containsMutedWord = (nonStopWords: string[], mutedWords: Set<string>): boolean => {
-  return nonStopWords.some(word => mutedWords.has(word));
+export const containsMutedWord = (nonStopWords: string[], mutedWords: string[]): boolean => {
+  const mutedWordsSet = new Set(mutedWords); // Convert to set for O(1) lookups
+  return nonStopWords.some(word => mutedWordsSet.has(word));
 };
 
 /**
  * Returns a list of muted words found in the non-stop words array.
  * @param nonStopWords - An array of words to check.
- * @param mutedWords - A set of words to mute.
+ * @param mutedWords - An array of words to mute.
  * @returns An array of muted words found in the non-stop words array.
  */
-export const getMutedWordsFound = (nonStopWords: string[], mutedWords: Set<string>): string[] => {
-  return nonStopWords.filter(word => mutedWords.has(word));
+export const getMutedWordsFound = (nonStopWords: string[], mutedWords: string[]): string[] => {
+  const mutedWordsSet = new Set(mutedWords); // Convert to set for O(1) lookups
+  return nonStopWords.filter(word => mutedWordsSet.has(word));
 };
