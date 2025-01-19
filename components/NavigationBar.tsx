@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 import { useServers } from '@/context/ServersContext';
 import { CATEGORY_MAP, getCategoryBySlug } from '../db/categories';
 import AsyncButton from './AsyncButton';
 import BucketIcon from './BucketIcon';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 import { formatDateTime } from '@/utils/format';
 
 export interface ServerStats {
