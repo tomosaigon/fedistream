@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -7,128 +7,97 @@ interface ServerConfig {
 }
 
 export const useMastodonAccount = (serverConfig?: ServerConfig) => {
-  const [loading, setLoading] = useState(false);
+  const handleFollowMutation = useMutation({
+    mutationFn: async (acct: string) => {
+      const token = localStorage.getItem('accessToken');
+      const serverUrl = localStorage.getItem('serverUrl');
 
-  const handleFollow = async (acct: string) => {
-    const token = localStorage.getItem('accessToken');
-    const serverUrl = localStorage.getItem('serverUrl');
-
-    if (!token || !serverUrl) {
-      console.error('Access token or server URL not found');
-      toast.error('Access token or server URL is missing');
-      return;
-    }
-
-    if (!acct.includes('@') && serverConfig?.baseUrl !== serverUrl) {
-      if (!serverConfig) {
-        console.error('Server config not found');
-        toast.error('Server config not found');
-        return;
+      if (!token || !serverUrl) {
+        toast.error('Access token or server URL is missing');
+        throw new Error('Access token or server URL not found');
       }
-      const url = new URL(serverConfig?.baseUrl);
-      let serverDomain = url.hostname;
 
-      if (serverDomain === 'mastodon.bsd.cafe') {
-        serverDomain = 'bsd.cafe';
+      // Handle baseUrl adjustment for accounts without @
+      if (!acct.includes('@') && serverConfig?.baseUrl !== serverUrl) {
+        if (!serverConfig) {
+          toast.error('Server config not found');
+          throw new Error('Server config not found');
+        }
+
+        const url = new URL(serverConfig.baseUrl);
+        let serverDomain = url.hostname;
+
+        // Special handling for specific domains
+        if (serverDomain === 'mastodon.bsd.cafe') {
+          serverDomain = 'bsd.cafe';
+        }
+
+        acct = `${acct}@${serverDomain}`;
       }
-      acct = `${acct}@${serverDomain}`;
-    }
-
-    try {
-      setLoading(true);
 
       const resolveAccountUrl = `${serverUrl}/api/v1/accounts/lookup`;
       const resolveResponse = await axios.get(resolveAccountUrl, {
         params: { acct },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const accountId = resolveResponse.data.id;
-
       if (!accountId) {
-        console.error('Failed to resolve account ID');
         toast.error('Unable to resolve the account to follow');
-        return;
+        throw new Error('Failed to resolve account ID');
       }
 
       const followApiUrl = `${serverUrl}/api/v1/accounts/${accountId}/follow`;
+      await axios.post(followApiUrl, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      const followResponse = await axios.post(
-        followApiUrl,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      console.log('Successfully followed the user', followResponse.data);
       toast.success('Successfully followed the user');
-    } catch (error: any) {
-      if (error.response && error.response.status === 401) {
-        console.error('Unauthorized: Access token might be invalid or expired');
-        toast.error('Unauthorized: Access token might be invalid or expired');
-      } else {
-        console.error('Error following the user:', error);
-        toast.error('Failed to follow the user');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to follow the user');
+    },
+  });
+
+  const handleFavoriteMutation = useMutation({
+    mutationFn: async (postUrl: string) => {
+      const token = localStorage.getItem('accessToken');
+      const serverUrl = localStorage.getItem('serverUrl');
+
+      if (!token || !serverUrl) {
+        toast.error('Access token or server URL is missing');
+        throw new Error('Access token or server URL not found');
       }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleFavorite = async (postUrl: string) => {
-    const token = localStorage.getItem('accessToken');
-    const serverUrl = localStorage.getItem('serverUrl');
-
-    if (!token || !serverUrl) {
-      console.error('Access token or server URL not found');
-      toast.error('Access token or server URL is missing');
-      return;
-    }
-
-    try {
-      setLoading(true);
 
       const searchApiUrl = `${serverUrl}/api/v2/search`;
       const searchResponse = await axios.get(searchApiUrl, {
-        params: {
-          q: postUrl,
-          resolve: true,
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        params: { q: postUrl, resolve: true },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const status = searchResponse.data.statuses?.[0];
       if (!status) {
-        console.error('Post not found on your server.');
         toast.error('Post not found on your server.');
-        return;
+        throw new Error('Post not found');
       }
 
       const postId = status.id;
       const favoriteApiUrl = `${serverUrl}/api/v1/statuses/${postId}/favourite`;
-
-      const favoriteResponse = await axios.post(favoriteApiUrl, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      await axios.post(favoriteApiUrl, {}, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log('Post favorited successfully', favoriteResponse.data);
       toast.success('Post favorited successfully');
-    } catch (error) {
-      console.error('Error favoriting the post:', error);
-      toast.error('Failed to favorite the post');
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to favorite the post');
+    },
+  });
 
-  return { handleFollow, handleFavorite, loading };
+  return {
+    handleFollow: handleFollowMutation.mutateAsync,
+    handleFavorite: handleFavoriteMutation.mutateAsync,
+    isFollowing: handleFollowMutation.isPending,
+    isFavoriting: handleFavoriteMutation.isPending,
+  };
 };
