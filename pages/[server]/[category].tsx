@@ -4,6 +4,7 @@ import { Toaster, toast, ToastOptions, ToastPosition } from 'react-hot-toast';
 import { useServers } from '@/context/ServersContext';
 import { useServerStats } from '@/hooks/useServerStats';
 import { useTimeline } from '@/hooks/useTimeline';
+import { useSyncPosts } from '@/hooks/useSyncPosts';
 import PostList from '../../components/PostList';
 import AsyncButton from '../../components/AsyncButton';
 import Link from 'next/link';
@@ -72,84 +73,52 @@ export default function CategoryPage() {
     router.push(`/${newServer}/${category}`);
   };
 
-  // Sync newer/older handlers
-  const handleSyncNewer = async () => {
-    const fetchId = ++latestFetchId.current;
-
+  const { mutateAsync: syncPosts } = useSyncPosts({
+    server: server as string,
+    invalidateTimeline,
+    invalidateServerStats,
+  });
+  
+  const handleSync = async (older: boolean, batchCount = 1) => {
+    let totalNewPosts = 0;
     try {
-      const syncRes = await fetch(`/api/timeline-sync?server=${server}`, { method: 'POST' });
-      const syncData = await syncRes.json();
-      
-      if (syncData.newPosts > 0) {
-        toast.success(`Synced ${syncData.newPosts} newer posts`, toastOptions);
-        if (fetchId !== latestFetchId.current) return;
-        invalidateTimeline(); // Reload posts if new content
-        invalidateServerStats(); // Reload server stats
-      } else {
-        toast('No new posts found', toastOptions);
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to load newer posts', toastOptions);
-    }
-  };
-
-  const handleSyncNewer5x = async () => {
-    const fetchId = ++latestFetchId.current;
-  
-    try {
-      let totalNewPosts = 0;
-  
-      for (let i = 0; i < 5; i++) {
-        const syncRes = await fetch(`/api/timeline-sync?server=${server}`, { method: 'POST' });
-        const syncData = await syncRes.json();
-  
-        if (syncData.newPosts > 0) {
-          totalNewPosts += syncData.newPosts;
-          toast.success(`Batch ${i + 1}: Synced ${syncData.newPosts} newer posts`, toastOptions);
+      for (let i = 0; i < batchCount; i++) {
+        const newPosts = await syncPosts({ older });
+        if (newPosts > 0) {
+          totalNewPosts += newPosts;
+          toast.success(batchCount > 1 && `Batch ${i + 1}: ` + `Synced ${newPosts} ${older ? 'older' : 'newer'} posts`);
         } else {
-          toast(`Batch ${i + 1}: No new posts found`, toastOptions);
-          break; // Stop if no new posts in the current batch
+          toast(batchCount > 1 && `Batch ${i + 1}: ` + `No ${older ? 'older' : 'newer'} posts found`);
+          break;
         }
   
-        // Stop the loop if fewer than the limit were returned
-        if (syncData.newPosts < 40) {
-          toast(`Stopped after batch ${i + 1} as fewer than 40 posts were returned`, toastOptions);
+        if (batchCount > 1 && newPosts < 40) {
+          toast(`Stopped after batch ${i + 1} as fewer than 40 posts were returned`);
           break;
         }
       }
   
       if (totalNewPosts > 0) {
-        toast.success(`Synced a total of ${totalNewPosts} newer posts`, toastOptions);
-        if (fetchId !== latestFetchId.current) return;
-        // refreshPosts();
-        invalidateTimeline(); // Reload posts if new content
-        invalidateServerStats(); // Reload server stats
+        toast.success(`Synced a total of ${totalNewPosts} ${older ? 'older' : 'newer'} posts`);
       } else {
-        toast('No new posts found after 5x', toastOptions);
+        toast(`No ${older ? 'older' : 'newer'} posts found after ${batchCount} batch${batchCount > 1 ? 'es' : ''}`);
       }
     } catch (error) {
       console.error(error);
-      toast.error('Failed to load newer posts in 5x mode', toastOptions);
+      toast.error(`Failed to sync ${older ? 'older' : 'newer'} posts`);
     }
   };
 
+  const handleSyncNewer = async () => {
+    await handleSync(false, 1);
+  };
+  
   const handleSyncOlder = async () => {
-    try {
-      const syncRes = await fetch(`/api/timeline-sync?server=${server}&older=true`, { method: 'POST' });
-      const syncData = await syncRes.json();
-      
-      if (syncData.newPosts > 0) {
-        toast.success(`Synced ${syncData.newPosts} older posts`, toastOptions);
-        invalidateServerStats(); // Reload server stats
-        // refreshPosts(); // DONT Reload posts automatically
-      } else {
-        toast('No older posts found', toastOptions);
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to load older posts', toastOptions);
-    }
+    await handleSync(true, 1);
+  };
+  
+  const handleSyncNewer5x = async () => {
+    await handleSync(false, 5);
   };
 
   const handleDelete = async () => {
