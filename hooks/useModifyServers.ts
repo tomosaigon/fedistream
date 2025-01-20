@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Server } from '@/db/database';
+import { toast } from 'react-hot-toast';
 
 const addServerApi = async (server: Omit<Server, 'id' | 'created_at'>) => {
   const response = await fetch('/api/servers', {
@@ -44,18 +45,36 @@ export const useModifyServers = () => {
 
   const addServer = useMutation({
     mutationFn: (server: Omit<Server, 'id' | 'created_at'>) => addServerApi(server),
-    onSuccess: invalidateServers,
+    onSuccess: () => {
+      toast.success('Server added successfully!');
+      invalidateServers();
+    },
+    onError: (error) => {
+      toast.error(`Failed to add server: ${error.message}`);
+    },
   });
 
   const updateServer = useMutation({
     mutationFn: ({ id, server }: { id: number; server: Partial<Server> }) =>
       updateServerApi(id, server),
-    onSuccess: invalidateServers,
+    onSuccess: () => {
+      toast.success('Server updated successfully!');
+      invalidateServers();
+    },
+    onError: (error) => {
+      toast.error(`Failed to update server: ${error.message}`);
+    },
   });
 
   const removeServer = useMutation({
     mutationFn: (id: number) => removeServerApi(id),
-    onSuccess: invalidateServers,
+    onSuccess: () => {
+      toast.success('Server removed successfully!');
+      invalidateServers();
+    },
+    onError: (error) => {
+      toast.error(`Failed to remove server: ${error.message}`);
+    },
   });
 
   return {

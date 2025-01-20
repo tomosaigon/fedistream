@@ -1,9 +1,18 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import '../styles/globals.css';
+import { Toaster, ToastOptions, ToastPosition } from 'react-hot-toast';
 import type { AppProps } from 'next/app';
+import '../styles/globals.css';
 import { ServersProvider } from '../context/ServersContext';
 
 const queryClient = new QueryClient();
+
+const toastOptions: ToastOptions = {
+  duration: 2000,
+  position: 'bottom-right' as ToastPosition,
+  style: {
+    cursor: 'pointer'
+  },
+};
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -13,7 +22,8 @@ function MyApp({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
         </ServersProvider>
       </QueryClientProvider>
-    </div>
+      <Toaster toastOptions={toastOptions} />
+      </div>
   );
 }
 

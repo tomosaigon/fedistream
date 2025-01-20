@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-hot-toast';
 import { Reason, ReasonData } from '@/db/database';
 
 const fetchReasons = async (): Promise<Reason[]> => {
@@ -45,7 +46,7 @@ const removeReasonApi = async (id: number) => {
 
 export const useReasons = () => {
   const queryClient = useQueryClient();
-  const REASONS_QUERY_KEY = ['reasons']; // as const;
+  const REASONS_QUERY_KEY = ['reasons'];
 
   const invalidateReasons = () => {
     queryClient.invalidateQueries({ queryKey: REASONS_QUERY_KEY });
@@ -53,23 +54,44 @@ export const useReasons = () => {
 
   const { data: reasons = [], isLoading, error } = useQuery<Reason[]>({
     queryKey: REASONS_QUERY_KEY,
-    queryFn: fetchReasons
+    queryFn: fetchReasons,
   });
+
+  if (error) {
+    toast.error(`Error fetching reasons: ${(error as Error).message}`);
+  }
 
   const addReason = useMutation({
     mutationFn: (data: ReasonData) => addReasonApi(data),
-    onSuccess: invalidateReasons,
+    onSuccess: () => {
+      toast.success('Reason added successfully!');
+      invalidateReasons();
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to add reason: ${error.message}`);
+    },
   });
 
   const updateReason = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: ReasonData }) =>
-      updateReasonApi(id, data),
-    onSuccess: invalidateReasons,
+    mutationFn: ({ id, data }: { id: number; data: ReasonData }) => updateReasonApi(id, data),
+    onSuccess: () => {
+      toast.success('Reason updated successfully!');
+      invalidateReasons();
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to update reason: ${error.message}`);
+    },
   });
 
   const removeReason = useMutation({
     mutationFn: (id: number) => removeReasonApi(id),
-    onSuccess: invalidateReasons,
+    onSuccess: () => {
+      toast.success('Reason removed successfully!');
+      invalidateReasons();
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to remove reason: ${error.message}`);
+    },
   });
 
   return {

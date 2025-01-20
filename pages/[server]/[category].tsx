@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useRef } from 'react';
-import { Toaster, toast, ToastOptions, ToastPosition } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { useServers } from '@/context/ServersContext';
 import { useServerStats } from '@/hooks/useServerStats';
 import { useTimeline } from '@/hooks/useTimeline';
@@ -10,15 +10,6 @@ import AsyncButton from '../../components/AsyncButton';
 import Link from 'next/link';
 import NavigationBar from '../../components/NavigationBar';
 import { getCategoryBySlug } from '../../db/categories';
-
-
-const toastOptions: ToastOptions = {
-  duration: 2000,
-  position: 'bottom-right' as ToastPosition,
-  style: {
-    cursor: 'pointer'
-  },
-};
 
 const POSTS_PER_PAGE = 25;
 const FILTER_SETTINGS_KEY = 'filterSettings';
@@ -86,9 +77,9 @@ export default function CategoryPage() {
         const newPosts = await syncPosts({ older });
         if (newPosts > 0) {
           totalNewPosts += newPosts;
-          toast.success(batchCount > 1 && `Batch ${i + 1}: ` + `Synced ${newPosts} ${older ? 'older' : 'newer'} posts`);
+          toast.success(`${batchCount > 1 ? `Batch ${i + 1}: ` : ''}Synced ${newPosts} ${older ? 'older' : 'newer'} posts`);
         } else {
-          toast(batchCount > 1 && `Batch ${i + 1}: ` + `No ${older ? 'older' : 'newer'} posts found`);
+          toast(`${batchCount > 1 ? `Batch ${i + 1}: ` : ''}No ${older ? 'older' : 'newer'} posts found`);
           break;
         }
   
@@ -98,10 +89,12 @@ export default function CategoryPage() {
         }
       }
   
-      if (totalNewPosts > 0) {
-        toast.success(`Synced a total of ${totalNewPosts} ${older ? 'older' : 'newer'} posts`);
-      } else {
-        toast(`No ${older ? 'older' : 'newer'} posts found after ${batchCount} batch${batchCount > 1 ? 'es' : ''}`);
+      if (batchCount > 1) {
+        if (totalNewPosts > 0) {
+          toast.success(`Synced a total of ${totalNewPosts} ${older ? 'older' : 'newer'} posts`);
+        } else {
+          toast(`No ${older ? 'older' : 'newer'} posts found after ${batchCount} batch${batchCount > 1 ? 'es' : ''}`);
+        }
       }
     } catch (error) {
       console.error(error);
@@ -173,7 +166,7 @@ export default function CategoryPage() {
 
   const handleMarkSeen = async () => {
     if (posts.length === 0) {
-      toast.error('No posts to mark as seen', toastOptions);
+      toast.error('No posts to mark as seen');
       return;
     }
   
@@ -191,14 +184,14 @@ export default function CategoryPage() {
       }
   
       const data = await res.json();
-      toast.success(`Marked ${data.updatedCount} posts as seen`, toastOptions);
+      toast.success(`Marked ${data.updatedCount} posts as seen`);
   
       if (fetchId !== latestFetchId.current) return;
   
       invalidateTimeline(); // Reload posts if new content
     } catch (error) {
       console.error(error);
-      toast.error('Failed to mark posts as seen', toastOptions);
+      toast.error('Failed to mark posts as seen');
     }
   };
 
@@ -270,7 +263,6 @@ export default function CategoryPage() {
           )}
         </div>
       </main>
-      <Toaster/>
     </div>
   );
 }
