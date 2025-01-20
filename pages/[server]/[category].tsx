@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Toaster, toast, ToastOptions, ToastPosition } from 'react-hot-toast';
 import { useServers } from '@/context/ServersContext';
 import { useServerStats } from '@/hooks/useServerStats';
+import { useTimeline } from '@/hooks/useTimeline';
 import PostList from '../../components/PostList';
 import AsyncButton from '../../components/AsyncButton';
 import Link from 'next/link';
@@ -18,11 +19,6 @@ const toastOptions: ToastOptions = {
   },
 };
 
-interface TimelineResponse {
-  buckets: Record<string, any[]>;
-  counts: Record<string, number>;
-}
-
 const POSTS_PER_PAGE = 25;
 const FILTER_SETTINGS_KEY = 'filterSettings';
 
@@ -31,12 +27,23 @@ export default function CategoryPage() {
   const { server, category } = router.query;
   const { getServerBySlug } = useServers();
   const { data: serverStats, invalidateServerStats } = useServerStats(server as string);
+  const {
+    countsQuery: { data: countsData },
+    postsQuery: { data: postsData, fetchNextPage, hasNextPage },
+    invalidateTimeline,
+  } = useTimeline({
+    server: server as string,
+    category: category as string,
+    postsPerPage: POSTS_PER_PAGE,
+  });
 
-  const [posts, setPosts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
-  const [counts, setCounts] = useState(null);
+  const posts = postsData?.pages.flatMap((page) => page.buckets[(category ? category : 'regular') as string] || []) || [];
+  const totalCount = countsData?.counts[(category ? category : 'regular') as string] || 0;
+
+  const handleLoadMore = async () => {
+    await fetchNextPage();
+  };
+
   const latestFetchId = useRef(0);
 
   const [filterSettings, setFilterSettings] = useState({
@@ -61,58 +68,6 @@ export default function CategoryPage() {
 
   const { bucket, label: bucketLabel } = getCategoryBySlug((category ? category : 'regular') as string);
 
-  useEffect(() => {
-    if (!server || !category) return;
-    refreshPosts();
-  }, [server, category, filterSettings]);
-
-  const refreshPosts = async () => {
-    const fetchId = ++latestFetchId.current;
-
-    setLoading(true);
-    setPosts([]);
-    
-    try {
-      const postsRes = await fetch(`/api/timeline?server=${server}&category=${bucket}&offset=0&limit=${POSTS_PER_PAGE}`);
-      const postsData: TimelineResponse = await postsRes.json();
-      const categoryPosts = postsData.buckets[bucket] || [];
-      
-      // Get updated counts
-      const countsRes = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
-      const countsData = await countsRes.json();
-
-      if (fetchId !== latestFetchId.current) return;
-      
-      setTotalCount(countsData.counts[bucket] || 0);
-      setHasMore(categoryPosts.length < countsData.counts[bucket]);
-      setCounts(countsData.counts);
-
-      setPosts(categoryPosts);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      if (fetchId === latestFetchId.current) {
-        setLoading(false);
-      }
-    }
-  };
-
-  const loadMore = async () => {
-    try {
-      const res = await fetch(
-        `/api/timeline?server=${server}&category=${bucket}&offset=${posts.length}&limit=${POSTS_PER_PAGE}`
-      );
-      const data: TimelineResponse = await res.json();
-      const newPosts = data.buckets[bucket] || [];
-
-      setHasMore(posts.length + newPosts.length < totalCount);
-
-      setPosts(prev => [...prev, ...newPosts]);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const handleServerChange = (newServer: string) => {
     router.push(`/${newServer}/${category}`);
   };
@@ -128,7 +83,7 @@ export default function CategoryPage() {
       if (syncData.newPosts > 0) {
         toast.success(`Synced ${syncData.newPosts} newer posts`, toastOptions);
         if (fetchId !== latestFetchId.current) return;
-        refreshPosts(); // Reload posts if new content
+        invalidateTimeline(); // Reload posts if new content
         invalidateServerStats(); // Reload server stats
       } else {
         toast('No new posts found', toastOptions);
@@ -152,9 +107,6 @@ export default function CategoryPage() {
         if (syncData.newPosts > 0) {
           totalNewPosts += syncData.newPosts;
           toast.success(`Batch ${i + 1}: Synced ${syncData.newPosts} newer posts`, toastOptions);
-  
-          // if (fetchId !== latestFetchId.current) return;
-          // refreshPosts();
         } else {
           toast(`Batch ${i + 1}: No new posts found`, toastOptions);
           break; // Stop if no new posts in the current batch
@@ -170,7 +122,8 @@ export default function CategoryPage() {
       if (totalNewPosts > 0) {
         toast.success(`Synced a total of ${totalNewPosts} newer posts`, toastOptions);
         if (fetchId !== latestFetchId.current) return;
-        refreshPosts();
+        // refreshPosts();
+        invalidateTimeline(); // Reload posts if new content
         invalidateServerStats(); // Reload server stats
       } else {
         toast('No new posts found after 5x', toastOptions);
@@ -212,15 +165,8 @@ export default function CategoryPage() {
       if (!deleteRes.ok) {
         throw new Error(`Delete failed: ${deleteRes.statusText}`);
       }
-      
-      // Only refresh counts after successful deletion
-      const res = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
-      if (!res.ok) {
-        throw new Error(`Failed to fetch counts: ${res.statusText}`);
-      }
-      
-      const data = await res.json();
-      setCounts(data.counts);
+
+      invalidateTimeline(); // Reload posts if new content
     } catch (error) {
       console.error(error);
       if (error instanceof Error) {
@@ -245,14 +191,7 @@ export default function CategoryPage() {
         throw new Error(`Destroy failed: ${destroyRes.statusText}`);
       }
       
-      // Only refresh counts after successful destruction
-      const res = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
-      if (!res.ok) {
-        throw new Error(`Failed to fetch counts: ${res.statusText}`);
-      }
-      
-      const data = await res.json();
-      setCounts(data.counts);
+      invalidateTimeline(); // Reload posts if new content
     } catch (error) {
       console.error(error);
       if (error instanceof Error) {
@@ -287,8 +226,7 @@ export default function CategoryPage() {
   
       if (fetchId !== latestFetchId.current) return;
   
-      // Refresh the page to reflect the updated state
-      refreshPosts();
+      invalidateTimeline(); // Reload posts if new content
     } catch (error) {
       console.error(error);
       toast.error('Failed to mark posts as seen', toastOptions);
@@ -303,7 +241,7 @@ export default function CategoryPage() {
           serverStats={serverStats}
           onServerChange={handleServerChange}
           category={category ? (category as string) : 'regular'}
-          counts={counts}
+          counts={countsData?.counts}
           filterSettings={filterSettings}
           updateFilterSettings={updateFilterSettings}
           onMarkSeen={handleMarkSeen}
@@ -334,7 +272,7 @@ export default function CategoryPage() {
               </p>
             </div>
           </div>
-          {loading ? (
+          {!postsData ? (
             <div className="p-4">Loading...</div>
           ) : (
             <>
@@ -350,9 +288,9 @@ export default function CategoryPage() {
                   >
                     Mark Seen
                   </button>
-                  {hasMore && (
+                  {hasNextPage && (
                     <AsyncButton
-                      callback={loadMore}
+                      callback={handleLoadMore}
                       loadingText="Loading..."
                       defaultText={`Load More (${totalCount - posts.length} remaining)`}
                       color="blue"
