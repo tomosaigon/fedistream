@@ -1,71 +1,101 @@
-import { useCallback } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-hot-toast';
+import { AccountTag } from '@/db/database';
 
-type Tag = {
+interface TagResponse {
+  message: string;
+  tags: AccountTag[];
+}
+
+type TagPayload = {
   tag: string;
-  count: number;
+  userId: string;
+  username: string;
 };
 
 type UseTagsReturn = {
-  handleTag: (reason: string, userId: string, username: string) => Promise<Tag[] | null>;
-  handleClearTag: (userId: string, username: string, tag: string) => Promise<Tag[] | null>;
-  getAccountTagCount: (tags: Tag[], tag: string) => number;
+  handleTag: (tag: string, userId: string, username: string) => Promise<AccountTag[] | null>;
+  handleClearTag: (userId: string, username: string, tag: string) => Promise<AccountTag[] | null>;
+  getAccountTagCount: (tags: AccountTag[], tag: string) => number;
 };
 
 export const useTags = (): UseTagsReturn => {
-  // Handles adding a tag to an account
-  const handleTag = useCallback(async (reason: string, userId: string, username: string): Promise<Tag[] | null> => {
-    try {
+  const queryClient = useQueryClient();
+  const TAGS_QUERY_KEY = ['tags'];
+
+  const handleTagMutation = useMutation<TagResponse, Error, TagPayload>({
+    mutationFn: async (payload) => {
       const res = await fetch('/api/tag-account', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          username,
-          tag: reason,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        return data;
-      } else {
+      if (!res.ok) {
+        const data = await res.json();
         throw new Error(data.error);
       }
-    } catch (error) {
-      console.error('Error tagging account:', error);
-      return null;
-    }
-  }, []);
 
-  // Handles clearing a tag from an account
-  const handleClearTag = useCallback(async (userId: string, username: string, tag: string): Promise<Tag[] | null> => {
-    try {
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast.success(data.message);
+      queryClient.setQueryData(TAGS_QUERY_KEY, data.tags);
+    },
+    onError: (error) => {
+      console.error('Error tagging account:', error);
+      toast.error('Failed to tag account.');
+    },
+  });
+
+  // Mutation for clearing a tag
+  const handleClearTagMutation = useMutation<TagResponse, Error, TagPayload>({
+    mutationFn: async (payload) => {
       const res = await fetch('/api/tag-account', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, username, tag }),
+        body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        return data;
-      } else {
+      if (!res.ok) {
+        const data = await res.json();
         throw new Error(data.error);
       }
-    } catch (error) {
+
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast.success(data.message);
+      queryClient.setQueryData(TAGS_QUERY_KEY, data.tags);
+    },
+    onError: (error) => {
       console.error('Error clearing tag:', error);
+      toast.error('Failed to clear tag.');
+    },
+  });
+
+  const handleTag = async (tag: string, userId: string, username: string): Promise<AccountTag[] | null> => {
+    try {
+      const { tags } = await handleTagMutation.mutateAsync({ tag, userId, username });
+      return tags;
+    } catch {
       return null;
     }
-  }, []);
+  };
 
-  // Gets the count for a specific tag on a post
-  const getAccountTagCount = useCallback((tags: Tag[], tag: string): number => {
+  const handleClearTag = async (userId: string, username: string, tag: string): Promise<AccountTag[] | null> => {
+    try {
+      const { tags } = await handleClearTagMutation.mutateAsync({ tag, userId, username });
+      return tags;
+    } catch {
+      return null;
+    }
+  };
+
+  // Utility function
+  const getAccountTagCount = (tags: AccountTag[], tag: string): number => {
     return tags?.find((t) => t.tag === tag)?.count || 0;
-  }, []);
+  };
 
   return { handleTag, handleClearTag, getAccountTagCount };
 };

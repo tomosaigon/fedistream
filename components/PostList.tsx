@@ -9,7 +9,7 @@ import {
 } from '@heroicons/react/24/solid';
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { Post, IMediaAttachment } from '../db/database';
+import { Post, IMediaAttachment, AccountTag } from '../db/database';
 import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils/nonStopWords';
 import { useServers } from '../context/ServersContext';
 import { useMutedWords } from '../hooks/useMutedWords';
@@ -51,13 +51,12 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
 
   const updateAccountTags = (
     userId: string,
-    data: any
+    tags: AccountTag[]
   ) => {
-    toast.success(data.message);
     setPosts(currentPosts =>
       currentPosts.map(post =>
         post.account_id === userId
-          ? { ...post, account_tags: data.tags }
+          ? { ...post, account_tags: tags }
           : post
       )
     );
@@ -305,8 +304,8 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                       <div key={tag} className="flex flex-row sm:flex-col gap-0 sm:gap-1">
                         <AsyncButton
                           callback={async () => {
-                            const data = await handleTag(tag, post.account_id, post.account_username);
-                            updateAccountTags(post.account_id, data);
+                            const tags = await handleTag(tag, post.account_id, post.account_username);
+                            tags && updateAccountTags(post.account_id, tags);
                           }}
                           defaultText={hasTag ? `${tag}(${count})` : tag}
                           color={color}
@@ -314,8 +313,8 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                         {hasTag ? (
                           <AsyncButton
                             callback={async () => {
-                              const data = await handleClearTag(post.account_id, post.account_username, tag);
-                              updateAccountTags(post.account_id, data);
+                              const tags = await handleClearTag(post.account_id, post.account_username, tag);
+                              tags && updateAccountTags(post.account_id, tags);
                             }}
                             loadingText={`Clearing ${tag}...`}
                             defaultText="×"
