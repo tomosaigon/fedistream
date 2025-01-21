@@ -19,7 +19,8 @@ export default {
       pattern: /bg-(blue|yellow|amber|red|green|purple)-(300|400|500|600)/,
     },
     {
-      pattern: /hover:bg-(blue|yellow|amber|red|green|purple)-(600)/,
+      pattern: /bg-(blue|yellow|amber|red|green|purple)-(600)/,
+      variants: ['hover'],
     },
     'disabled:bg-gray-400',
   ],
