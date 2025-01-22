@@ -86,7 +86,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
           if (isMuted) {
             // TODO - Add way to reveal the muted post
             return (
-              <div className="muted-disclaimer bg-gray-100 text-center p-2 text-sm text-red-500">
+              <div key={post.id} className="muted-disclaimer bg-gray-100 text-center p-2 text-sm text-red-500">
                 Contains muted words: {getMutedWordsFound(nonStopWords, mutedWords).join(', ')}
               </div>
             )
