@@ -100,7 +100,7 @@ function extractVisibleTextFromHTML(htmlString: string) {
   .replace(/<\/?(p|div|h[1-6]|blockquote|li|section|article|aside|header|footer|nav)>/gi, '\n'); // Add newline for block elements
 
   tempDiv.innerHTML = normalizedHtml;
-  console.log(htmlString);
+  // console.log(htmlString);
   return tempDiv.textContent || "";
 }
 
@@ -115,7 +115,7 @@ export const getNonStopWords = (htmlString: string): string[] => {
   )
     // Matches URLs starting with http:// or https://
     .replace(/https?:\/\/[^\s]+/g, ' ');
-  console.log(textContent);
+  // console.log(textContent);
 
   // Tokenize the text into words
   const words = textContent
