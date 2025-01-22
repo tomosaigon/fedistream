@@ -7,7 +7,7 @@ export class DatabaseManager {
 
   constructor() {
     const dbPath = process.env.DATABASE_FILE || 'mastodon.db';
-    console.log('Database path:', dbPath);
+    // console.log('Database path:', dbPath);
     this.db = new Database(dbPath);
 
     this.tableMappings = {
