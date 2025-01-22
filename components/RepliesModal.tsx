@@ -32,13 +32,24 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
           )
         );
       } catch (error) {
-        console.error('Failed to fetch replies:', error);
-        toast.error('Failed to fetch replies');
+        if (axios.isAxiosError(error)) {
+          if (error.response?.status === 404) {
+            toast.error('Replies not found.');
+          } else {
+            // console.error will trigger "Unhandled Runtime Error" in Next.js.
+            console.error('Failed to fetch replies:', error);
+            toast.error('Failed to fetch replies.');
+          }
+        } else {
+          console.error('Unexpected error:', error);
+          toast.error('An unexpected error occurred.');
+        }
       }
     };
 
     fetchReplies();
   }, [post]);
+
 
   return (
     <div
