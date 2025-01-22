@@ -9,20 +9,22 @@ const ERROR_MESSAGES = {
 
 const dbManager = new DatabaseManager();
 
-const validateServerData = (data: any): ServerData | null => {
+const validateServerData = (data: unknown): ServerData | null => {
   if (
     !data ||
-    typeof data.uri !== 'string' ||
-    typeof data.slug !== 'string' ||
-    typeof data.name !== 'string' ||
-    typeof data.enabled !== 'boolean'
+    typeof data !== 'object' ||
+    data === null ||
+    typeof (data as ServerData).uri !== 'string' ||
+    typeof (data as ServerData).slug !== 'string' ||
+    typeof (data as ServerData).name !== 'string' ||
+    typeof (data as ServerData).enabled !== 'boolean'
   ) {
     return null;
   }
   return data as ServerData;
 };
 
-const sendResponse = (res: NextApiResponse, status: number, message: string, data?: any) => {
+const sendResponse = (res: NextApiResponse, status: number, message: string, data?: Server[]) => {
   res.status(status).json(data ? { message, data } : { message });
 };
 

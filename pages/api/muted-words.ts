@@ -9,7 +9,7 @@ const ERROR_MESSAGES = {
 
 const dbManager = new DatabaseManager();
 
-const sendResponse = (res: NextApiResponse, status: number, message: string, data?: any) => {
+const sendResponse = (res: NextApiResponse, status: number, message: string, data?: string[]) => {
   res.status(status).json(data ? { message, data } : { message });
 };
 

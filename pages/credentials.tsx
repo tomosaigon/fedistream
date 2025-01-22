@@ -40,6 +40,7 @@ const CredentialsPage = () => {
       setAccessToken('');
       fetchCredentials(customServerUrl);
     } catch (err) {
+      console.error('Failed to save credentials:', err);
       setErrorMessage('Failed to save credentials. Please try again.');
     }
   };
@@ -70,6 +71,7 @@ const CredentialsPage = () => {
       setSuccessMessage('Credential removed successfully!');
       fetchCredentials(customServerUrl);
     } catch (err) {
+      console.error('Failed to remove credential:', err);
       setErrorMessage('Failed to remove credential. Please try again.');
     }
   };

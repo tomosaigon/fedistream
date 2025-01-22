@@ -12,8 +12,7 @@ import handler from './timeline-sync';
 // let dbManager: DatabaseManager;
 
 // Load mock API response
-const mockApiResponse = require('./timeline-sync.test.example.json');
-const firstPost = mockApiResponse[0];
+import mockApiResponse from './timeline-sync.test.example.json';
 
 // Mock dependencies
 jest.mock('../../config/servers');

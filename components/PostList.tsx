@@ -1,4 +1,3 @@
-import axios from 'axios';
 import {
   ChatBubbleOvalLeftEllipsisIcon,
   ArrowsRightLeftIcon,
@@ -8,7 +7,6 @@ import {
   UserPlusIcon,
 } from '@heroicons/react/24/solid';
 import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
 import { Post, IMediaAttachment, AccountTag } from '../db/database';
 import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils/nonStopWords';
 import { useServers } from '../context/ServersContext';
@@ -305,7 +303,9 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                         <AsyncButton
                           callback={async () => {
                             const tags = await handleTag(tag, post.account_id, post.account_username);
-                            tags && updateAccountTags(post.account_id, tags);
+                            if (tags) {
+                              updateAccountTags(post.account_id, tags);
+                            }
                           }}
                           defaultText={hasTag ? `${tag}(${count})` : tag}
                           color={color}
@@ -314,7 +314,9 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                           <AsyncButton
                             callback={async () => {
                               const tags = await handleClearTag(post.account_id, post.account_username, tag);
-                              tags && updateAccountTags(post.account_id, tags);
+                              if (tags) {
+                                updateAccountTags(post.account_id, tags);
+                              }
                             }}
                             loadingText={`Clearing ${tag}...`}
                             defaultText="×"

@@ -9,14 +9,14 @@ const ERROR_MESSAGES = {
 
 const dbManager = new DatabaseManager();
 
-const validateReasonData = (data: any): ReasonData | null => {
-  if (!data || typeof data.reason !== 'string' || data.active === undefined || data.filter === undefined) {
+const validateReasonData = (data: unknown): ReasonData | null => {
+  if (!data || typeof data !== 'object' || data === null || typeof (data as ReasonData).reason !== 'string' || (data as ReasonData).active === undefined || (data as ReasonData).filter === undefined) {
     return null;
   }
   return data as ReasonData;
 };
 
-const sendResponse = (res: NextApiResponse, status: number, message: string, data?: any) => {
+const sendResponse = (res: NextApiResponse, status: number, message: string, data?: Reason[]) => {
   res.status(status).json(data ? { message, data } : { message });
 };
 

@@ -26,7 +26,7 @@ const AsyncButton: React.FC<AsyncButtonProps> = ({
     try {
       await callback();
     } catch (error) {
-      // console.error(error);
+      console.log(error);
     } finally {
       setLoading(false);
     }

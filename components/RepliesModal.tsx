@@ -48,7 +48,7 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
     };
 
     fetchReplies();
-  }, [post]);
+  }, [post, getServerBySlug]);
 
 
   return (
