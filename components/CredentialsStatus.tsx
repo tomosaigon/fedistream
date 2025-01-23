@@ -9,7 +9,7 @@ const CredentialsStatus: React.FC = () => {
   useEffect(() => {
     setToken(localStorage.getItem('accessToken')??'');
     setServerUrl(localStorage.getItem('serverUrl')??'');
-  });
+  }, []);
 
   return (
     <div className="p-4 bg-gray-100 border border-gray-300 rounded shadow">
