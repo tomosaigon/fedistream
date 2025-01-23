@@ -10,6 +10,7 @@ import AsyncButton from '../../components/AsyncButton';
 import Link from 'next/link';
 import NavigationBar from '../../components/NavigationBar';
 import { getCategoryBySlug } from '../../db/categories';
+import { Bucket } from '@/db/bucket';
 
 const POSTS_PER_PAGE = 25;
 const FILTER_SETTINGS_KEY = 'filterSettings';
@@ -29,8 +30,9 @@ export default function CategoryPage() {
     postsPerPage: POSTS_PER_PAGE,
   });
 
+  const { bucket, label: bucketLabel } = getCategoryBySlug((category ? category : 'regular') as string);
   const posts = postsData?.pages.flatMap((page) => page.buckets[(category ? category : 'regular') as string] || []) || [];
-  const totalCount = countsData?.counts[(category ? category : 'regular') as string] || 0;
+  const totalCount = countsData ? (countsData?.counts as Record<Bucket, number>)[bucket] : -1;
 
   const handleLoadMore = async () => {
     await fetchNextPage();
@@ -58,7 +60,6 @@ export default function CategoryPage() {
     }
   }, []);
 
-  const { bucket, label: bucketLabel } = getCategoryBySlug((category ? category : 'regular') as string);
 
   const handleServerChange = (newServer: string) => {
     router.push(`/${newServer}/${category}`);
