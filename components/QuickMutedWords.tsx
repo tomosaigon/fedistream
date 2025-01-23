@@ -18,9 +18,7 @@ const QuickMutedWords = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-md">
-      <h1 className="text-xl font-bold mb-4">Muted Words</h1>
-
+    <div className="">
       <div className="flex mb-4">
         <Link
           href="/muted-words"

@@ -4,6 +4,7 @@ import { useServerStats } from "@/hooks/useServerStats";
 import { useModifyServers } from '@/hooks/useModifyServers';
 import AsyncButton from './AsyncButton';
 import Link from 'next/link';
+import CollapsibleDiv from './CollapsibleDiv';
 import ServerDash from './ServerDash';
 import CredentialsStatus from './CredentialsStatus';
 import QuickMutedWords from './QuickMutedWords';
@@ -83,10 +84,14 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Reasons */}
-      <QuickReasons />
+      <CollapsibleDiv title="Reasons to tag accounts">
+        <QuickReasons />
+      </CollapsibleDiv>
 
       {/* Muted Words */}
-      <QuickMutedWords />
+      <CollapsibleDiv title="Muted Words">
+        <QuickMutedWords />
+      </CollapsibleDiv>
 
       {/* Enabled servers */}
       <div className="mb-8">
@@ -101,8 +106,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Disabled servers */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Disabled Servers</h2>
+      <CollapsibleDiv title="Disabled Servers">
         <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {disabledServers.map((server) => (
             <li key={server.id} className="border rounded shadow-sm p-4 bg-gray-50">
@@ -117,7 +121,7 @@ const Dashboard: React.FC = () => {
             </li>
           ))}
         </ul>
-      </div>
+      </CollapsibleDiv>
     </div>
   );
 };
