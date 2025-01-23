@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 const CredentialsStatus: React.FC = () => {
-  const token = localStorage.getItem('accessToken');
-  const serverUrl = localStorage.getItem('serverUrl');
-
+  const [token, setToken] = useState('');
+  const [serverUrl, setServerUrl] = useState('');
   const isConfigured = token && serverUrl;
+
+  useEffect(() => {
+    setToken(localStorage.getItem('accessToken')??'');
+    setServerUrl(localStorage.getItem('serverUrl')??'');
+  });
 
   return (
     <div className="p-4 bg-gray-100 border border-gray-300 rounded shadow">
