@@ -1,4 +1,5 @@
-import { DatabaseManager, BucketedPosts } from '../../db/database';
+import { getCategoryBySlug } from '@/db/categories';
+import { DatabaseManager } from '@/db/database';
 
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -13,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     category
   } = req.query;
 
-  if (!server) {
+  if (!server || typeof server !== 'string') {
     return res.status(400).json({ error: 'Server slug is required' });
   }
 
@@ -23,14 +24,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json({ counts });
   }
 
-  if (!category) {
+  if (!category || typeof category !== 'string') {
     return res.status(400).json({ error: 'Category is required' });
   }
+  const { bucket } = getCategoryBySlug(category);
 
   // Get posts for specific category
   const posts = dbManager.getBucketedPostsByCategory(
-    server as string,
-    category as keyof BucketedPosts,
+    server,
+    bucket,
     parseInt(limit as string),
     parseInt(offset as string)
   );
