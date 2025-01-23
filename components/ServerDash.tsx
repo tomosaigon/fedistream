@@ -171,7 +171,7 @@ const ServerDash: React.FC<ServerDashProps> = ({ server }) => {
   }
 
   return (
-    <div className="server-stats mb-4 bg-white shadow-md rounded-lg p-6 border border-gray-200">
+    <div className="server-stats">
       <h2 className="text-xl font-bold text-gray-800 mb-4">{server.name}</h2>
       {stats && (
         <div className="mt-4 p-4 border rounded shadow-sm bg-gray-50">
