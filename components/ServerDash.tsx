@@ -3,7 +3,7 @@ import React from "react";
 import { useServerStats, ServerStatsPayload } from "@/hooks/useServerStats";
 import { Chart } from "react-chartjs-2";
 import "chart.js/auto";
-import { LegendItem } from "chart.js";
+import { Chart as ChartChart, ActiveElement, ChartEvent, LegendItem, Tick } from "chart.js";
 import toast from "react-hot-toast";
 import { Server } from '@/db/database';
 // import { Bucket } from "@/db/bucket";
@@ -11,6 +11,7 @@ import { CATEGORY_MAP } from "@/db/categories";
 import { formatDateTime, calculateTimeDifference } from '@/utils/format';
 
 interface ServerDashChartProps {
+  serverSlug: string;
   stats: ServerStatsPayload;
   displaySeen: boolean;
 }
@@ -24,6 +25,7 @@ interface ServerDashChartProps {
 // };
 
 const ServerDashChart = ({
+  serverSlug,
   stats,
   displaySeen,
 }: ServerDashChartProps) => {
@@ -86,7 +88,8 @@ const ServerDashChart = ({
   });
 
   const data = {
-    labels: ["Post Categories"],
+    // labels: ["Post Categories"],
+    labels: ["Unseen Post Counts"],
     datasets,
   };
 
@@ -100,13 +103,11 @@ const ServerDashChart = ({
           font: {
             size: 6,
           },
-          filter: (legendItem: LegendItem) =>
-            !legendItem.text.includes("(Seen)"), // Filter out labels containing "(Seen)"
+          filter: (legendItem: LegendItem) => !legendItem.text.includes("(Seen)"), // Filter out labels containing "(Seen)"
         },
-
       },
       title: {
-        display: true,
+        display: false,
         text: `Unseen Post Counts`,
       },
     },
@@ -117,15 +118,11 @@ const ServerDashChart = ({
           color: "#f0f0f0", // Subtle gray gridlines
         },
         ticks: {
-          callback: function (
-            value: number | string,
-            index: number,
-            values: { value: number | string }[]
-          ) {
-            if (index === 0 || index === values.length - 1 || index === Math.round(values.length / 2) - 1) {
-              return value; // Display only the first, last, and middle tick values
+          callback: function (tickValue: string | number, index: number, ticks: Tick[]) {
+            if (index === 0 || index === ticks.length - 1 || index === Math.round(ticks.length / 2) - 1) {
+              return tickValue; // Display only the first, last, and middle tick values
             }
-            return ""; // Hide other tick values 
+            return ""; // Hide other tick values
           },
         },
       },
@@ -139,6 +136,16 @@ const ServerDashChart = ({
           display: false, // Hide tick marks since there's only one bar
         },
       },
+    },
+    onClick: (_event: ChartEvent, elements: ActiveElement[], chart: ChartChart) => {
+      if (elements.length > 0 && chart && chart.data && chart.data.labels) {
+        const datasetIndex = elements[0].datasetIndex; // Get the dataset index of the clicked bar
+        const datasetLabel = chart.data.datasets[datasetIndex].label;
+        const slug = CATEGORY_MAP.find(c => c.label === datasetLabel);
+        if (slug) {
+          window.open(`/${serverSlug}/${slug.slug}`, "_self"); // Open the link in the same tab
+        }
+      }
     },
   };
 
@@ -206,7 +213,7 @@ const ServerDash: React.FC<ServerDashProps> = ({ server }) => {
         </div>
       )}
 
-      <ServerDashChart stats={stats} displaySeen={false} />
+      <ServerDashChart serverSlug={server.slug} stats={stats} displaySeen={false} />
 
     </div>
   );
