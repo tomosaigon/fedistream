@@ -6,6 +6,7 @@ import AsyncButton from './AsyncButton';
 import Link from 'next/link';
 import ServerDash from './ServerDash';
 import CredentialsStatus from './CredentialsStatus';
+import QuickMutedWords from './QuickMutedWords';
 import QuickReasons from './QuickReasons';
 import { formatDateTime, calculateTimeDifference } from '@/utils/format';
 
@@ -83,6 +84,9 @@ const Dashboard: React.FC = () => {
 
       {/* Reasons */}
       <QuickReasons />
+
+      {/* Muted Words */}
+      <QuickMutedWords />
 
       {/* Enabled servers */}
       <div className="mb-8">
