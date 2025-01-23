@@ -316,7 +316,7 @@ export class DatabaseManager {
     return result;
   }
 
-  public getServerStats(serverSlug: string): {
+  public getServerStats(serverSlug: string | null): {
     totalPosts: number;
     seenPosts: number;
     oldestPostDate: string | null;
@@ -324,21 +324,27 @@ export class DatabaseManager {
     categoryCounts: Record<Bucket, { seen: number; unseen: number }>;
   } {
     try {
+      const whereClause = serverSlug ? "WHERE server_slug = ?" : ""; // Omit WHERE clause if serverSlug is not provided
+
       // Fetch the basic stats
-      const stats = this.db.prepare(`
-        SELECT 
-          COUNT(*) AS totalPosts,
-          SUM(CASE WHEN seen = 1 THEN 1 ELSE 0 END) AS seenPosts,
-          MIN(created_at) AS oldestPostDate,
-          MAX(created_at) AS latestPostDate
-        FROM posts
-        WHERE server_slug = ?
-      `).get(serverSlug) as {
+      const stats = this.db
+        .prepare(
+          `
+          SELECT 
+            COUNT(*) AS totalPosts,
+            SUM(CASE WHEN seen = 1 THEN 1 ELSE 0 END) AS seenPosts,
+            MIN(created_at) AS oldestPostDate,
+            MAX(created_at) AS latestPostDate
+          FROM posts
+          ${whereClause}
+          `
+        )
+        .get(serverSlug ? [serverSlug] : []) as {
         totalPosts: number;
         seenPosts: number;
         oldestPostDate: string | null;
         latestPostDate: string | null;
-      };
+    };
   
       // Initialize the category counts
       const categoryCounts: Record<Bucket, { seen: number; unseen: number }> = {} as Record<
@@ -351,16 +357,20 @@ export class DatabaseManager {
       });
   
       // Fetch category-wise counts for seen and unseen posts
-      const categoryData = this.db.prepare(`
-        SELECT 
-          bucket,
-          SUM(CASE WHEN seen = 1 THEN 1 ELSE 0 END) AS seen,
-          SUM(CASE WHEN seen = 0 THEN 1 ELSE 0 END) AS unseen
-        FROM posts
-        WHERE server_slug = ?
-        GROUP BY bucket
-      `).all(serverSlug) as { bucket: Bucket; seen: number; unseen: number }[];
-  
+      const categoryData = this.db
+        .prepare(
+          `
+          SELECT 
+            bucket,
+            SUM(CASE WHEN seen = 1 THEN 1 ELSE 0 END) AS seen,
+            SUM(CASE WHEN seen = 0 THEN 1 ELSE 0 END) AS unseen
+          FROM posts
+          ${whereClause}
+          GROUP BY bucket
+          `
+        )
+        .all(serverSlug ? [serverSlug] : []) as { bucket: Bucket; seen: number; unseen: number }[];
+
       categoryData.forEach((row) => {
         if (categoryCounts[row.bucket]) {
           categoryCounts[row.bucket].seen = row.seen;

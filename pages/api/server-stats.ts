@@ -5,15 +5,17 @@ import { DatabaseManager } from '../../db/database';
 const dbManager = new DatabaseManager();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { server } = req.query;
-
-  if (!server) {
-    return res.status(400).json({ error: 'Server slug is required' });
-  }
+  const { server, all } = req.query;
 
   try {
-    // Fetch server stats from the database
-    const stats = dbManager.getServerStats(server as string) as {
+    // fetch stats for all servers or a specific server
+    const serverSlug = all === 'true' ? null : (server as string);
+
+    if (!serverSlug && all !== 'true') {
+      return res.status(400).json({ error: 'Server slug is required unless "all" is true' });
+    }
+
+    const stats = dbManager.getServerStats(serverSlug) as {
       totalPosts: number;
       seenPosts: number;
       oldestPostDate: string | null;
