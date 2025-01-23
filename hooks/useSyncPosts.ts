@@ -1,4 +1,5 @@
 import { useMutation, UseMutationResult } from '@tanstack/react-query';
+import { toast } from 'react-hot-toast';
 
 interface SyncParams {
   older?: boolean;
@@ -15,6 +16,7 @@ export function useSyncPosts({
 }): UseMutationResult<number, Error, SyncParams> {
   return useMutation<number, Error, SyncParams>({
     mutationFn: async ({ older = false }) => {
+      // TODO try 
       const res = await fetch(
         `/api/timeline-sync?server=${server}${older ? '&older=true' : ''}`,
         { method: 'POST' }
@@ -37,6 +39,7 @@ export function useSyncPosts({
     },
     onError: (error) => {
       console.error('Error syncing posts:', error);
+      toast.error('Failed to sync posts');
     },
   });
 }
