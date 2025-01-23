@@ -5,6 +5,7 @@ import { useModifyServers } from '@/hooks/useModifyServers';
 import AsyncButton from './AsyncButton';
 import Link from 'next/link';
 import ServerDash from './ServerDash';
+import CredentialsStatus from './CredentialsStatus';
 import { formatDateTime, calculateTimeDifference } from '@/utils/format';
 
 const Dashboard: React.FC = () => {
@@ -25,8 +26,8 @@ const Dashboard: React.FC = () => {
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold text-gray-800 mb-4">Dashboard</h1>
-      <div className="grid grid-cols-4 gap-4">
-        <div className="col-span-1 bg-gray-100 p-4 text-center border border-gray-300">
+      <div className="grid grid-cols-5 gap-4">
+        <div className="col-span-2 bg-gray-100 p-4 text-center border border-gray-300">
           {/* Server counts and configuration link */}
           <p className="text-gray-700">
             Enabled Servers: <span className="font-semibold">{enabledServers.length}</span>
@@ -40,11 +41,14 @@ const Dashboard: React.FC = () => {
           >
             Configure Servers
           </Link>
+
+          {/* Credentials status */}
+          <CredentialsStatus />
         </div>
         <div className="col-span-3 bg-gray-50 p-4 text-center border border-gray-300">
 
           {stats && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="flex items-center">
                 <span className="text-blue-500 text-2xl font-bold">{stats.totalPosts || 0}</span>
                 <span className="ml-2 text-gray-600">Total Posts</span>
