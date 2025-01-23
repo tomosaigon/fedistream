@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { servers } from '../config/servers';
-import toast, { Toaster } from 'react-hot-toast';
+import { useServers } from '@/context/ServersContext';
+import toast from 'react-hot-toast';
+import Dashboard from '@/components/Dashboard';
 
 interface Counts {
   nonEnglish: number;
@@ -15,6 +16,7 @@ interface Counts {
 
 export default function Home() {
   const router = useRouter();
+  const { servers } = useServers();
   const [counts, setCounts] = useState<Counts | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncingOlder, setSyncingOlder] = useState(false);
@@ -22,8 +24,7 @@ export default function Home() {
   const [deleting, setDeleting] = useState(false);
   const [destroying, setDestroying] = useState(false);
   
-  const serverSlug = router.query.server as string || servers[0].slug;
-  // const currentServer = servers.find(s => s.slug === serverSlug);
+  const serverSlug = router.query.server as string || (servers[0] ? servers[0].slug : '');
 
   useEffect(() => {
     if (!serverSlug) return;
@@ -38,7 +39,7 @@ export default function Home() {
         console.error(err);
         setLoading(false);
       });
-  }, [serverSlug]);
+  }, [servers, serverSlug]);
 
   const handleServerChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     router.push(`/?server=${event.target.value}`);
@@ -167,7 +168,7 @@ export default function Home() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Mastodon Timeline Categories</h1>
+        <h1 className="text-3xl font-bold">Shadowbox Social</h1>
         <Link href="/credentials">Manage Mastodon Credentials</Link>
         <div className="flex items-center space-x-4">
           <select 
@@ -183,6 +184,8 @@ export default function Home() {
           </select>
         </div>
       </div>
+
+      <Dashboard />
 
       {/* Server selection and refresh buttons */}
       <div className="flex gap-2 mb-4">
@@ -283,7 +286,6 @@ export default function Home() {
           </button>
         </div>
       </div>
-      <Toaster position="top-right" />
     </div>
   );
 }

@@ -1,5 +1,6 @@
-import { DatabaseManager } from '../../db/database';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { Bucket } from '@/db/bucket';
+import { DatabaseManager } from '../../db/database';
 
 const dbManager = new DatabaseManager();
 
@@ -17,6 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       seenPosts: number;
       oldestPostDate: string | null;
       latestPostDate: string | null;
+      categoryCounts: Record<Bucket, { seen: number; unseen: number }>;
     };
 
     if (!stats) {

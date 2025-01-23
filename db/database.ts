@@ -321,8 +321,10 @@ export class DatabaseManager {
     seenPosts: number;
     oldestPostDate: string | null;
     latestPostDate: string | null;
+    categoryCounts: Record<Bucket, { seen: number; unseen: number }>;
   } {
     try {
+      // Fetch the basic stats
       const stats = this.db.prepare(`
         SELECT 
           COUNT(*) AS totalPosts,
@@ -338,14 +340,53 @@ export class DatabaseManager {
         latestPostDate: string | null;
       };
   
-      return stats;
+      // Initialize the category counts
+      const categoryCounts: Record<Bucket, { seen: number; unseen: number }> = {} as Record<
+        Bucket,
+        { seen: number; unseen: number }
+      >;
+  
+      Object.values(Bucket).forEach((bucket) => {
+        categoryCounts[bucket] = { seen: 0, unseen: 0 };
+      });
+  
+      // Fetch category-wise counts for seen and unseen posts
+      const categoryData = this.db.prepare(`
+        SELECT 
+          bucket,
+          SUM(CASE WHEN seen = 1 THEN 1 ELSE 0 END) AS seen,
+          SUM(CASE WHEN seen = 0 THEN 1 ELSE 0 END) AS unseen
+        FROM posts
+        WHERE server_slug = ?
+        GROUP BY bucket
+      `).all(serverSlug) as { bucket: Bucket; seen: number; unseen: number }[];
+  
+      categoryData.forEach((row) => {
+        if (categoryCounts[row.bucket]) {
+          categoryCounts[row.bucket].seen = row.seen;
+          categoryCounts[row.bucket].unseen = row.unseen;
+        }
+      });
+  
+      return { ...stats, categoryCounts };
     } catch (error) {
       console.error('Error in getServerStats:', error);
+  
+      // Return default structure on error
+      const defaultCategoryCounts: Record<Bucket, { seen: number; unseen: number }> = {} as Record<
+        Bucket,
+        { seen: number; unseen: number }
+      >;
+      Object.values(Bucket).forEach((bucket) => {
+        defaultCategoryCounts[bucket] = { seen: 0, unseen: 0 };
+      });
+  
       return {
         totalPosts: 0,
         seenPosts: 0,
         oldestPostDate: null,
         latestPostDate: null,
+        categoryCounts: defaultCategoryCounts,
       };
     }
   }
