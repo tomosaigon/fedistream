@@ -14,21 +14,31 @@ interface RepliesModalProps {
 
 const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
   const { getServerBySlug } = useServers();
-  const [replies, setReplies] = useState<Post[]>([]);
+  const [ancestors, setAncestors] = useState<Post[]>([]);
+  const [descendants, setDescendants] = useState<Post[]>([]);
 
   useEffect(() => {
-    const fetchReplies = async () => {
+    const fetchContext = async () => {
       try {
         const serverUrl = getServerBySlug(post.server_slug)?.uri;
         if (!serverUrl) {
           throw new Error('Server URL not found');
         }
 
-        const repliesApiUrl = `${serverUrl}/api/v1/statuses/${post.id}/context`;
-        const response = await axios.get(repliesApiUrl);
-        setReplies(
-          response.data.descendants.map((reply: MastodonStatus) =>
-            mastodonStatusToPost(reply, post.server_slug)
+        const contextApiUrl = `${serverUrl}/api/v1/statuses/${post.id}/context`;
+        const response = await axios.get(contextApiUrl);
+
+        const { ancestors: ancestorData, descendants: descendantData } = response.data;
+
+        setAncestors(
+          ancestorData.map((ancestor: MastodonStatus) =>
+            mastodonStatusToPost(ancestor, post.server_slug)
+          )
+        );
+
+        setDescendants(
+          descendantData.map((descendant: MastodonStatus) =>
+            mastodonStatusToPost(descendant, post.server_slug)
           )
         );
       } catch (error) {
@@ -47,23 +57,64 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
       }
     };
 
-    fetchReplies();
+    fetchContext();
   }, [post, getServerBySlug]);
 
+  const renderReply = (reply: Post, isOriginalAuthor: boolean) => (
+    <div
+      key={reply.id}
+      className={`flex items-start space-x-3 p-4 rounded ${
+        isOriginalAuthor
+          ? 'border border-blue-500 bg-blue-50'
+          : 'border border-gray-200 bg-white'
+      }`}
+    >
+      <img
+        src={reply.account_avatar || ''}
+        alt={reply.account_display_name || 'Avatar'}
+        className="w-10 h-10 rounded-full"
+      />
+      <div className="flex-1 min-w-0">
+        <div className="text-sm flex justify-between items-center">
+          <div>
+            <span className="font-medium text-gray-800">
+              {reply.account_display_name || 'Anonymous'}
+            </span>
+            <span className="text-gray-500 ml-1">
+              @{reply.account_acct || reply.account_username}
+            </span>
+          </div>
+          <span className="text-xs text-gray-400">
+            <a
+              href={reply.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+            >
+              {formatDateTime(reply.created_at)}
+            </a>
+          </span>
+        </div>
+        <div
+          dangerouslySetInnerHTML={{ __html: reply.content }}
+          className="prose max-w-none mt-2 text-gray-700"
+        />
+      </div>
+    </div>
+  );
 
   return (
     <div
       className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center"
       onClick={(e) => {
-        // Check if the click is outside the modal
         if (e.target === e.currentTarget) {
           onClose();
         }
-      }}>
+      }}
+    >
       <div className="relative bg-white w-full max-w-2xl mx-auto rounded-lg shadow-lg max-h-screen overflow-hidden">
         {/* Sticky Header */}
         <div className="sticky top-0 bg-white z-10 border-b px-6 py-4 flex justify-between items-center">
-          {/* Original Post Snippet */}
           <div className="flex items-center space-x-4 overflow-hidden truncate">
             <div
               className="text-gray-700 text-sm truncate"
@@ -72,7 +123,6 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
               }}
             />
           </div>
-          {/* Close Button */}
           <button
             className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none"
             onClick={onClose}
@@ -83,9 +133,13 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
 
         {/* Scrollable Content */}
         <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(100vh-100px)]">
-          <div
-            className={`flex items-start space-x-3 p-4 rounded border border-gray-200 bg-white`}
-          >
+          {/* Render Ancestors */}
+          {ancestors.map((ancestor) =>
+            renderReply(ancestor, ancestor.account_username === post.account_username)
+          )}
+
+          {/* Original Post */}
+          <div className="flex items-start space-x-3 p-4 rounded border border-gray-200 bg-white">
             <img
               src={post.account_avatar || ''}
               alt={post.account_display_name || 'Avatar'}
@@ -119,57 +173,15 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
             </div>
           </div>
 
-          {/* Replies */}
-          {replies.map((reply) => {
-            const isAuthor = reply.account_username === post.account_username;
-            return (
-              <div
-                key={reply.id}
-                className={`flex items-start space-x-3 p-4 rounded ${isAuthor
-                  ? 'border border-blue-500 bg-blue-50'
-                  : 'border border-gray-200 bg-white'
-                  }`}
-              >
-                <img
-                  src={reply.account_avatar || ''}
-                  alt={reply.account_display_name || 'Avatar'}
-                  className="w-10 h-10 rounded-full"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm flex justify-between items-center">
-                    <div>
-                      <span className="font-medium text-gray-800">
-                        {reply.account_display_name || 'Anonymous'}
-                      </span>
-                      <span className="text-gray-500 ml-1">
-                        @{reply.account_acct || reply.account_username}
-                      </span>
-                    </div>
-                    <span className="text-xs text-gray-400">
-                      <a
-                        href={reply.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:underline"
-                      >
-                        {formatDateTime(reply.created_at)}
-                      </a>
-                    </span>
-                  </div>
-                  <div
-                    dangerouslySetInnerHTML={{ __html: reply.content }}
-                    className="prose max-w-none mt-2 text-gray-700"
-                  />
-                </div>
-              </div>
-            );
-          })}
+          {/* Render Descendants */}
+          {descendants.map((descendant) =>
+            renderReply(descendant, descendant.account_username === post.account_username)
+          )}
 
-          {replies.length === 0 && (
+          {ancestors.length === 0 && descendants.length === 0 && (
             <div className="text-center text-gray-500 mt-4">No replies yet.</div>
           )}
         </div>
-
       </div>
     </div>
   );
