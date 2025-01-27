@@ -1,4 +1,6 @@
+import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/router';
+// import Head from 'next/head';
 import { useEffect, useState, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { useServers } from '@/context/ServersContext';
@@ -9,11 +11,13 @@ import PostList from '../../components/PostList';
 import AsyncButton from '../../components/AsyncButton';
 import Link from 'next/link';
 import NavigationBar from '../../components/NavigationBar';
-import { getCategoryBySlug } from '../../db/categories';
+import { CATEGORY_MAP, getCategoryBySlug } from '../../db/categories';
 import { Bucket } from '@/db/bucket';
 
 const POSTS_PER_PAGE = 25;
 const FILTER_SETTINGS_KEY = 'filterSettings';
+
+
 
 export default function CategoryPage() {
   const router = useRouter();
@@ -43,6 +47,7 @@ export default function CategoryPage() {
   const [filterSettings, setFilterSettings] = useState({
     showNonStopWords: true,
     highlightThreshold: null as number | null,
+    enableForeignBots: false
   });
 
   // Update filter settings in localStorage and state
@@ -60,6 +65,13 @@ export default function CategoryPage() {
     }
   }, []);
 
+  useEffect(() => {
+    // if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
+    scrollContainerRef.current?.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  }, [posts]);
 
   const handleServerChange = (newServer: string) => {
     router.push(`/${newServer}/${category}`);
@@ -71,48 +83,16 @@ export default function CategoryPage() {
     invalidateServerStats,
   });
   
-  const handleSync = async (older: boolean, batchCount = 1) => {
-    let totalNewPosts = 0;
-    try {
-      for (let i = 0; i < batchCount; i++) {
-        const newPosts = await syncPosts({ older });
-        if (newPosts > 0) {
-          totalNewPosts += newPosts;
-          toast.success(`${batchCount > 1 ? `Batch ${i + 1}: ` : ''}Synced ${newPosts} ${older ? 'older' : 'newer'} posts`);
-        } else {
-          toast(`${batchCount > 1 ? `Batch ${i + 1}: ` : ''}No ${older ? 'older' : 'newer'} posts found`);
-          break;
-        }
-  
-        if (batchCount > 1 && newPosts < 40) {
-          toast(`Stopped after batch ${i + 1} as fewer than 40 posts were returned`);
-          break;
-        }
-      }
-  
-      if (batchCount > 1) {
-        if (totalNewPosts > 0) {
-          toast.success(`Synced a total of ${totalNewPosts} ${older ? 'older' : 'newer'} posts`);
-        } else {
-          toast(`No ${older ? 'older' : 'newer'} posts found after ${batchCount} batch${batchCount > 1 ? 'es' : ''}`);
-        }
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error(`Failed to sync ${older ? 'older' : 'newer'} posts`);
-    }
-  };
-
   const handleSyncNewer = async () => {
-    await handleSync(false, 1);
+    await syncPosts({ older: false, batch: 1 });
   };
   
   const handleSyncOlder = async () => {
-    await handleSync(true, 1);
+    await syncPosts({ older: true, batch: 1 });
   };
   
   const handleSyncNewer5x = async () => {
-    await handleSync(false, 5);
+    await syncPosts({ older: false, batch: 5 });
   };
 
   const handleDelete = async () => {
@@ -165,7 +145,14 @@ export default function CategoryPage() {
     }
   };
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   const handleMarkSeen = async () => {
+    // scrollContainerRef.current?.scrollTo({
+    //   top: 0,
+    //   behavior: 'smooth',
+    // });
+
     if (posts.length === 0) {
       toast.error('No posts to mark as seen');
       return;
@@ -196,8 +183,77 @@ export default function CategoryPage() {
     }
   };
 
+  function CategoryNavigation({
+    currentSlug,
+    counts,
+    server,
+    bucketLabel,
+    totalCount,
+  }: {
+    currentSlug: string;
+    counts: Record<string, number>;
+    server: string;
+    bucketLabel: string;
+    totalCount: number;
+  }) {
+    if (!counts) return null;
+    const currentIndex = CATEGORY_MAP.findIndex((cat) => cat.slug === currentSlug);
+  
+    const prevCategory =
+      currentIndex > 0 ? CATEGORY_MAP[currentIndex - 1] : CATEGORY_MAP[CATEGORY_MAP.length - 1];
+    const nextCategory =
+      currentIndex < CATEGORY_MAP.length - 1 ? CATEGORY_MAP[currentIndex + 1] : CATEGORY_MAP[0];
+  
+    return (
+      <div className="p-3 sm:p-4">
+        <div className="flex items-center justify-between">
+          {/* Previous Category Link */}
+          <Link
+            href={`/${server}/${prevCategory.slug}`}
+            className="text-blue-500 hover:underline flex items-center gap-1"
+          >
+            <ArrowLeftIcon className="h-5 w-5" />
+            {prevCategory.label} ({counts[prevCategory.bucket] || 0})
+          </Link>
+  
+          {/* Home Link */}
+          <Link
+            href={`/?server=${server}`}
+            className="text-blue-500 hover:underline text-center"
+          >
+            Home
+          </Link>
+  
+          {/* Next Category Link */}
+          <Link
+            href={`/${server}/${nextCategory.slug}`}
+            className="text-blue-500 hover:underline flex items-center gap-1"
+          >
+            {nextCategory.label} ({counts[nextCategory.bucket] || 0})
+            <ArrowRightIcon className="h-5 w-5" />
+          </Link>
+        </div>
+  
+        {/* Current Category Heading */}
+        <h1 className="text-2xl font-bold mt-2">
+          {bucketLabel}
+          <span className="text-gray-500 text-xl ml-2">({totalCount} total)</span>
+        </h1>
+  
+        {/* Server Information */}
+        <p className="text-gray-600 text-base">
+          From {server ? getServerBySlug(server)?.name : 'Unknown server'}
+        </p>
+      </div>
+    );
+  }
+
+  // <Head>
+  //   <title>{`${bucketLabel} - ${server}`}</title>
+  //   <meta name="description" content={`Posts from ${server} in category ${bucketLabel}`} />
+  // </Head>
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen" style={{ "overflowY": "scroll",  height: '100vh' }} ref={scrollContainerRef}>
       <main className="flex-1 w-full">
         <NavigationBar
           server={server as string}
@@ -215,26 +271,13 @@ export default function CategoryPage() {
           onDestroy={handleDestroy}
         />
         <div className="p-0 sm:p-8">
-          {/* Back link and title */}
-          <div className="p-3 sm:p-4">
-            <div>
-              <Link 
-                href={`/?server=${server}`}
-                className="text-blue-500 hover:underline"
-              >
-                ← Back to Categories
-              </Link>
-              <h1 className="text-2xl font-bold mt-2">
-                {bucketLabel} 
-                <span className="text-gray-500 text-xl ml-2">
-                  ({totalCount} total)
-                </span>
-              </h1>
-              <p className="text-gray-600 text-base">
-                From {server ? getServerBySlug(server as string)?.name : 'Unknown server'}
-              </p>
-            </div>
-          </div>
+          <CategoryNavigation 
+            currentSlug={category as string}
+            counts={countsData?.counts as Record<string, number>}
+            server={server as string}
+            bucketLabel={bucketLabel}
+            totalCount={totalCount}
+          />
           {!postsData ? (
             <div className="p-4">Loading...</div>
           ) : (

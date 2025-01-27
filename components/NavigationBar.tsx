@@ -26,6 +26,7 @@ interface NavigationBarProps {
   filterSettings: {
     showNonStopWords: boolean;
     highlightThreshold: number | null;
+    enableForeignBots: boolean;
   };
   updateFilterSettings: (newSettings: Partial<NavigationBarProps['filterSettings']>) => void;
   onMarkSeen: () => Promise<void>;
@@ -202,7 +203,15 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 
             {/* Right Column: Categories and Filters */}
             <div className="col-span-3">
-              {CATEGORY_MAP.map(({ slug, bucket, label }) => (
+              {CATEGORY_MAP.filter(({ slug }) => {
+                if (!filterSettings.enableForeignBots && (slug === 'from-bots' || slug === 'network-mentions' || slug === 'non-english')) {
+                  return false;
+                }
+                if (slug === 'reblogs' && server !== '$HOME') {
+                  return false;
+                }
+                return true;
+              }).map(({ slug, bucket, label }) => (
                 <Link
                   key={slug}
                   href={`/${server}/${slug}`}
@@ -247,6 +256,19 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                     className="form-checkbox"
                   />
                   <span>Highlight 10+ retoot/favs</span>
+                </label>
+                <label className="flex items-center space-x-2 mt-2">
+                  <input
+                    type="checkbox"
+                    checked={filterSettings.enableForeignBots}
+                    onChange={() =>
+                      updateFilterSettings({
+                        enableForeignBots: !filterSettings.enableForeignBots,
+                      })
+                    }
+                    className="form-checkbox"
+                  />
+                  <span>Enable Foreign & Bots</span>
                 </label>
               </div>
             </div>

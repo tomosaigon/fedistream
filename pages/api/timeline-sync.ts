@@ -72,7 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { server, older, delete: deleteFlag } = req.query;
+  const { server, older, delete: deleteFlag, batch = 1 } = req.query;
 
   // Handle database reset first
   // For non-delete operations, require server parameter
@@ -94,77 +94,78 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Server slug is required' });
   }
 
+  if (isNaN(Number(batch)) || Number(batch) < 1) {
+    return res.status(400).json({ error: 'Invalid batch parameter' });
+  }
+
   try {
-    console.log('Refreshing posts for server:', server);
-    let newPosts = [];
+    const batchCount = parseInt(batch as string, 10);
+    let totalNewPosts = 0;
+    let firstPost: MastodonStatus | null = null;
+    let lastPost: MastodonStatus | null = null;
 
-    // Check if the server is $HOME
-    const isHomeServer = server === '$HOME';
+    for (let i = 0; i < batchCount; i++) {
+      let newPosts = [];
+      const isHomeServer = server === '$HOME';
+      const fetchOptions = isHomeServer ? { home: true } : {};
+      const baseUrl =
+        server === 'test-server' // XXX mock
+          ? 'https://example.com'
+          : dbManager.getAllServers().find((s) => s.slug === server)?.uri;
 
-    // Set home option to true if the server is $HOME
-    const fetchOptions = isHomeServer ? { home: true } : {};
+      if (!baseUrl) {
+        return res.status(404).json({ error: 'Server not found' });
+      }
 
-    // XXX mock
-    const baseUrl = server === 'test-server' ? 'https://example.com' : dbManager.getAllServers().find((s) => s.slug === server)?.uri;
-    if (!baseUrl) {
-      return res.status(404).json({ error: 'Server not found'});
+      if (older === 'true') {
+        const oldestPostId = dbManager.getOldestPostId(server as string);
+        newPosts = await fetchTimelinePage(baseUrl, {
+          maxId: oldestPostId,
+          ...fetchOptions,
+        });
+      } else {
+        const latestPostId = dbManager.getLatestPostId(server as string);
+        newPosts = await fetchTimelinePage(baseUrl, {
+          minId: latestPostId,
+          ...fetchOptions,
+        });
+      }
+
+      if (newPosts.length > 0) {
+        // Set the firstPost and lastPost if not already set
+        if (!firstPost) firstPost = newPosts[0];
+        lastPost = newPosts[newPosts.length - 1];
+
+        // Store new posts in the database
+        newPosts.forEach((post: MastodonStatus) => {
+          post.was_reblogged = 0;
+          if (post.reblog) {
+            post.reblog.was_reblogged = 1;
+            dbManager.insertPost(mastodonStatusToPost(post.reblog, server as string));
+          }
+          dbManager.insertPost(mastodonStatusToPost(post, server as string));
+        });
+        totalNewPosts += newPosts.length;
+      }
+
+      totalNewPosts += newPosts.length;
+
+      // Stop early if fewer posts than a typical batch size were returned
+      if (newPosts.length < 40) break;
     }
 
-    if (older === 'true') {
-      const oldestPostId = dbManager.getOldestPostId(server as string);
-      console.log('Oldest post ID:', oldestPostId);
-      
-      if (oldestPostId) {
-        const posts = await fetchTimelinePage(baseUrl, { maxId: oldestPostId, ...fetchOptions });
-        newPosts = posts;
-      } else {
-        const posts = await fetchTimelinePage(baseUrl, fetchOptions);
-        newPosts = posts;
-      }
-    } else {
-      const latestPostId = dbManager.getLatestPostId(server as string);
-      console.log('Latest post ID:', latestPostId);
-
-      if (latestPostId) {
-        const posts = await fetchTimelinePage(baseUrl, { minId: latestPostId, ...fetchOptions });
-        newPosts = posts;
-      } else {
-        const posts = await fetchTimelinePage(baseUrl, fetchOptions);
-        newPosts = posts;
-      }
-    }
-
-    // Store new posts in database
-    newPosts.forEach((post: MastodonStatus) => {
-      post.was_reblogged = 0;
-      // console.log('Inserting post:', post);
-      if (post.reblog) {
-        post.reblog.was_reblogged = 1;
-        // console.log('Reblogged post:', post.reblog);
-        dbManager.insertPost(mastodonStatusToPost(post.reblog, server as string));
-
-      }
-      dbManager.insertPost(mastodonStatusToPost(post, server as string));
-    });
-
-    const firstPost = newPosts[0];
-    const lastPost = newPosts[newPosts.length - 1];
-
-    res.status(200).json({ 
-      message: `Stored ${newPosts.length} new posts`,
-      newPosts: newPosts.length,
-      firstPost: {
-        id: firstPost?.id,
-        created_at: firstPost?.created_at
-      },
-      lastPost: {
-        id: lastPost?.id,
-        created_at: lastPost?.created_at
-      }
+    res.status(200).json({
+      message: `Synced ${totalNewPosts} posts across ${batchCount} batch(es)`,
+      newPosts: totalNewPosts,
+      firstPost: firstPost
+        ? { id: firstPost.id, created_at: firstPost.created_at }
+        : null,
+      lastPost: lastPost
+        ? { id: lastPost.id, created_at: lastPost.created_at }
+        : null,
     });
   } catch (error) {
-    console.error('Error refreshing posts:', error);
+    console.error('Error syncing posts:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 }
-

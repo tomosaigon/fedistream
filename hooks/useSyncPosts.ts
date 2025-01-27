@@ -3,6 +3,7 @@ import { toast } from 'react-hot-toast';
 
 interface SyncParams {
   older?: boolean;
+  batch?: number;
 }
 
 export function useSyncPosts({
@@ -15,10 +16,9 @@ export function useSyncPosts({
   invalidateServerStats: () => void;
 }): UseMutationResult<number, Error, SyncParams> {
   return useMutation<number, Error, SyncParams>({
-    mutationFn: async ({ older = false }) => {
-      // TODO try 
+    mutationFn: async ({ older = false, batch = 1 }) => {
       const res = await fetch(
-        `/api/timeline-sync?server=${server}${older ? '&older=true' : ''}`,
+        `/api/timeline-sync?server=${server}&older=${older}&batch=${batch}`,
         { method: 'POST' }
       );
 
@@ -27,14 +27,14 @@ export function useSyncPosts({
       }
 
       const data = await res.json();
-      return data.newPosts; // Assume `data.newPosts` contains the number of posts synced
+      return data.newPosts;
     },
     onSuccess: (newPosts, { older }) => {
       if (newPosts > 0) {
         if (!older) {
-          invalidateTimeline(); // Reload posts for newer posts
+          invalidateTimeline();
         }
-        invalidateServerStats(); // Reload server stats
+        invalidateServerStats();
       }
     },
     onError: (error) => {
