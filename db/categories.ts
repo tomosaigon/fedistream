@@ -4,6 +4,7 @@ export const CATEGORY_MAP = [
   { slug: 'regular', bucket: Bucket.regular, label: 'Regular' },
   { slug: 'questions', bucket: Bucket.questions, label: 'Questions' },
   { slug: 'with-images', bucket: Bucket.withImages, label: 'Images' },
+  { slug: 'videos', bucket: Bucket.videos, label: 'Videos' },
   { slug: 'replies', bucket: Bucket.asReplies, label: 'Replies' },
   { slug: 'network-mentions', bucket: Bucket.networkMentions, label: 'Mentions' },
   { slug: 'hashtags', bucket: Bucket.hashtags, label: 'Hashtags' },
