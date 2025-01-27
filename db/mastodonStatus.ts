@@ -16,6 +16,7 @@ export interface MastodonStatus {
   content: string;
   language: string;
   in_reply_to_id: string | null;
+  in_reply_to_account_id: string | null;
   uri: string;
   url: string;
   account: MastodonAccount;

@@ -72,6 +72,7 @@ export class DatabaseManager {
         content TEXT NOT NULL,
         language TEXT,
         in_reply_to_id TEXT,
+        in_reply_to_account_id TEXT,
         uri TEXT,
         url TEXT,
         account_id TEXT,
@@ -278,13 +279,13 @@ export class DatabaseManager {
   public insertPost(post: Post) {
     const stmt = this.db.prepare(`
       INSERT INTO posts (
-        id, parent_id, was_reblogged, seen, created_at, content, language, in_reply_to_id, uri, url,
+        id, parent_id, was_reblogged, seen, created_at, content, language, in_reply_to_id, in_reply_to_account_id, uri, url,
         account_id, account_username, account_acct, account_display_name, account_url, account_avatar,
         media_attachments, visibility, favourites_count, reblogs_count, replies_count,
         server_slug, bucket, card, poll
       ) 
       VALUES (
-        @id, @parent_id, @was_reblogged, @seen, @created_at, @content, @language, @in_reply_to_id, @uri, @url,
+        @id, @parent_id, @was_reblogged, @seen, @created_at, @content, @language, @in_reply_to_id, @in_reply_to_account_id, @uri, @url,
         @account_id, @account_username, @account_acct, @account_display_name, @account_url, @account_avatar,
         @media_attachments, @visibility,
         COALESCE(@favourites_count, 0),
@@ -444,6 +445,7 @@ export class DatabaseManager {
             rp.content AS reblog_content,
             rp.language AS reblog_language,
             rp.in_reply_to_id AS reblog_in_reply_to_id,
+            rp.in_reply_to_account_id AS reblog_in_reply_to_account_id,
             rp.uri AS reblog_uri,
             rp.url AS reblog_url,
             rp.account_id AS reblog_account_id,
@@ -488,6 +490,7 @@ export class DatabaseManager {
           content: row.reblog_content!,
           language: row.reblog_language!,
           in_reply_to_id: row.reblog_in_reply_to_id!,
+          in_reply_to_account_id: row.reblog_in_reply_to_account_id!,
           uri: row.reblog_uri!,
           url: row.reblog_url!,
           account_id: row.reblog_account_id!,
@@ -623,6 +626,7 @@ interface SQLitePost {
   content: string;
   language: string | null;
   in_reply_to_id: string | null;
+  in_reply_to_account_id: string | null;
   uri: string;
   url: string;
   account_id: string;
@@ -652,6 +656,7 @@ interface SQLitePostWithReblog extends SQLitePost {
   reblog_content?: string;
   reblog_language?: string | null;
   reblog_in_reply_to_id?: string | null;
+  reblog_in_reply_to_account_id?: string | null;
   reblog_uri?: string | null;
   reblog_url?: string | null;
   reblog_account_id?: string | null;
