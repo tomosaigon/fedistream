@@ -1,4 +1,5 @@
 import { useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { getCategoryBySlug } from '@/db/categories';
 
 const fetchTimelineCounts = async (server: string) => {
   const res = await fetch(`/api/timeline?server=${server}&onlyCounts=true`);
@@ -56,7 +57,11 @@ export const useTimeline = ({
         (acc, page) => acc + (page?.buckets[category!] || []).length,
         0
       );
-      const totalCount = countsQuery.data?.counts[category!] || 0;
+      if (countsQuery === undefined) {
+        console.error('countsQuery is undefined');
+        return undefined;
+      }
+      const totalCount = countsQuery.data?.counts[getCategoryBySlug(category!).bucket] || 0;
       return totalFetched < totalCount ? allPages.length : undefined;
     },
     initialPageParam: 0, // Initial offset parameter
