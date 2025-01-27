@@ -10,6 +10,7 @@ import {
   GlobeAltIcon,
   HashtagIcon,
   LinkIcon,
+  VideoCameraIcon,
 } from '@heroicons/react/24/solid';
 import { Bucket } from '@/db/bucket';
 
@@ -40,6 +41,8 @@ const BucketIcon: React.FC<BucketIconProps> = ({ bucket, className = 'h-4 w-4' }
       return <GlobeAltIcon className={className} />;
     case Bucket.reblogs:
       return <ArrowPathIcon className={className} />;
+    case Bucket.videos:
+      return <VideoCameraIcon className={className} />;
     default:
       return null;
   }
