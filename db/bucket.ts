@@ -37,7 +37,7 @@ export function determineBucket(post: Post): Bucket {
   if (isHashtagPost(post.content)) return Bucket.hashtags;
   if (isNetworkMentionPost(post.content)) return Bucket.networkMentions;
   if (post.content.includes('<a href="')) return Bucket.withLinks;
-  if (post.in_reply_to_id) return Bucket.asReplies;
+  // if (post.in_reply_to_id) return Bucket.asReplies;
   if (containsQuestion(post.content)) return Bucket.questions;
   return Bucket.regular;
 }
