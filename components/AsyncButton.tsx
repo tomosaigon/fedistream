@@ -36,7 +36,7 @@ const AsyncButton: React.FC<AsyncButtonProps> = ({
     <button
       onClick={handleClick}
       disabled={loading}
-      className={`px-2 py-2 text-sm text-white rounded flex items-center justify-center ${baseClass} ${hoverClass} ${disabledClass}`}
+      className={`px-2 py-1 text-sm text-white rounded flex items-center justify-center ${baseClass} ${hoverClass} ${disabledClass}`}
     >
       {loading && loadingText ? loadingText : defaultText}
     </button>
