@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/solid';
+import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { Post } from '../db/database';
 import { useServers } from '../context/ServersContext';
-import toast from 'react-hot-toast';
 import { mastodonStatusToPost, MastodonStatus } from '../db/mastodonStatus';
 import { formatDateTime } from '@/utils/format';
-
 
 interface RepliesModalProps {
   post: Post;
@@ -117,14 +117,14 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
         <div className="sticky top-0 bg-white z-10 border-b px-6 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-4 overflow-hidden truncate">
             <div
-              className="text-gray-700 text-sm truncate"
+              className="text-gray-700 text-sm italic truncate"
               dangerouslySetInnerHTML={{
-                __html: post.content.slice(0, 50) + (post.content.length > 50 ? '...' : ''),
+                __html: post.content.slice(0, 90) + (post.content.length > 90 ? '...' : ''),
               }}
             />
           </div>
           <button
-            className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none"
+            className="px-1 hover:bg-gray-300"
             onClick={onClose}
           >
             ✕
@@ -138,8 +138,15 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
             renderReply(ancestor, ancestor.account_username === post.account_username)
           )}
 
+          {/* Up Arrow */}
+          {ancestors.length > 0 && (
+            <div className="flex justify-center py-0">
+              <ArrowUpIcon className="w-6 h-6 text-gray-500" />
+            </div>
+          )}
+
           {/* Original Post */}
-          <div className="flex items-start space-x-3 p-4 rounded border border-gray-200 bg-white">
+          <div className="flex items-start space-x-3 p-4 rounded border border-blue-500 bg-blue-50">
             <img
               src={post.account_avatar || ''}
               alt={post.account_display_name || 'Avatar'}
@@ -172,6 +179,13 @@ const RepliesModal: React.FC<RepliesModalProps> = ({ post, onClose }) => {
               />
             </div>
           </div>
+
+          {/* Down Arrow */}
+          {descendants.length > 0 && (
+            <div className="flex justify-center py-0">
+              <ArrowDownIcon className="w-6 h-6 text-gray-500" />
+            </div>
+          )}
 
           {/* Render Descendants */}
           {descendants.map((descendant) =>
