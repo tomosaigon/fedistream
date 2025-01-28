@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Server, useServers } from '@/context/ServersContext';
 import axios from 'axios';
+import { useLocalStorage } from '@uidotdev/usehooks';
 
 const CredentialsPage = () => {
   const { servers } = useServers();
 
   const [selectedServer, setSelectedServer] = useState<Server | undefined>(servers[0]);
   const [customServerUrl, setCustomServerUrl] = useState(servers[0]?.uri || '');
-  const [accessToken, setAccessToken] = useState('');
+  const [serverUrl, setServerUrl] = useLocalStorage<string | null>('serverUrl', null);
+  const [accessToken, setAccessToken] = useLocalStorage<string | null>('accessToken', null);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [credentials, setCredentials] = useState<
@@ -60,8 +62,8 @@ const CredentialsPage = () => {
   };
 
   const handleUseToken = (server_url: string, token: string) => {
-    localStorage.setItem('serverUrl', server_url);
-    localStorage.setItem('accessToken', token);
+    setServerUrl(server_url);
+    setAccessToken(token);
     setSuccessMessage('Credentials set in localStorage!');
   };
 
