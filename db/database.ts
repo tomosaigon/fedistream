@@ -115,10 +115,11 @@ export class DatabaseManager {
 
   private createAccountTagsTable() {
     this.db.exec(`
-      CREATE TABLE account_tags (
+      CREATE TABLE IF NOT EXISTS account_tags (
         user_id TEXT NOT NULL,
         username TEXT NOT NULL,
         tag TEXT NOT NULL,
+        server_slug TEXT NOT NULL DEFAULT '',
         count INTEGER NOT NULL DEFAULT 1,
         UNIQUE(user_id, tag)
       );
@@ -126,6 +127,7 @@ export class DatabaseManager {
     this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_account_tags_user_id ON account_tags(user_id);
       CREATE INDEX IF NOT EXISTS idx_account_tags_tag ON account_tags(tag);
+      CREATE INDEX IF NOT EXISTS idx_account_tags_server_slug ON account_tags(server_slug);
     `);
   }
 
@@ -555,39 +557,37 @@ export class DatabaseManager {
     }
   }
 
-  public tagAccount(userId: string, username: string, tag: string): void {
+  public tagAccount(userId: string, username: string, tag: string, serverSlug: string): void {
     const stmt = this.db.prepare(`
-      INSERT INTO account_tags (user_id, username, tag)
-      VALUES (@userId, @username, @tag)
+      INSERT INTO account_tags (user_id, username, tag, server_slug)
+      VALUES (@userId, @username, @tag, @serverSlug)
       ON CONFLICT(user_id, tag) DO UPDATE SET
       count = count + 1
     `);
 
-    stmt.run({ userId, username, tag });
+    stmt.run({ userId, username, tag, serverSlug });
   }
 
-  public clearAccountTag(userId: string, tag: string): void {
+  public clearAccountTag(userId: string, tag: string, serverSlug: string): void {
     const stmt = this.db.prepare(`
       DELETE FROM account_tags 
-      WHERE user_id = ? AND tag = ?
+      WHERE user_id = ? AND tag = ? AND 
+        (server_slug = ? OR server_slug = '')
     `);
-    stmt.run(userId, tag);
+    stmt.run(userId, tag, serverSlug);
   }
 
   public getAccountTags(userId: string): AccountTag[] {
     const stmt = this.db.prepare(`
-      SELECT tag, count
+      SELECT tag, count, server_slug
       FROM account_tags 
       WHERE user_id = ?
       ORDER BY count DESC
     `);
 
-    const rows = stmt.all(userId) as Pick<AccountTag, 'tag' | 'count'>[];
+    const rows = stmt.all(userId) as AccountTag[];
 
-    return rows.map(row => ({
-      tag: row.tag,
-      count: row.count
-    }));
+    return rows;
   }
 
   public markPostsAsSeen(serverSlug: string, bucket: string, seenFrom: string, seenTo: string): number {
@@ -609,7 +609,7 @@ export class DatabaseManager {
       ...sqlitePost,
       media_attachments: JSON.parse(sqlitePost.media_attachments),
       card: sqlitePost.card ? JSON.parse(sqlitePost.card) : null,
-      account_tags: this.getAccountTags(sqlitePost.account_id),
+      account_tags: this.getAccountTags(sqlitePost.account_id), // XXX: This is a separate query, looped
       poll: sqlitePost.poll ? JSON.parse(sqlitePost.poll) : null,
       reblog: null, // Reblogs are handled separately
     };
@@ -748,5 +748,7 @@ export type ReasonData = {
 export interface AccountTag {
   tag: string;
   count: number;
+  // serverSlug: string;
+  server_slug: string;
 }
 

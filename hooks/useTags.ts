@@ -11,11 +11,12 @@ type TagPayload = {
   tag: string;
   userId: string;
   username: string;
+  server: string;
 };
 
 type UseTagsReturn = {
-  handleTag: (tag: string, userId: string, username: string) => Promise<AccountTag[] | null>;
-  handleClearTag: (userId: string, username: string, tag: string) => Promise<AccountTag[] | null>;
+  handleTag: (tag: string, userId: string, username: string, server: string) => Promise<AccountTag[] | null>;
+  handleClearTag: (userId: string, username: string, tag: string, server: string) => Promise<AccountTag[] | null>;
   getAccountTagCount: (tags: AccountTag[], tag: string) => number;
 };
 
@@ -74,18 +75,18 @@ export const useTags = (): UseTagsReturn => {
     },
   });
 
-  const handleTag = async (tag: string, userId: string, username: string): Promise<AccountTag[] | null> => {
+  const handleTag = async (tag: string, userId: string, username: string, server: string): Promise<AccountTag[] | null> => {
     try {
-      const { tags } = await handleTagMutation.mutateAsync({ tag, userId, username });
+      const { tags } = await handleTagMutation.mutateAsync({ tag, userId, username, server });
       return tags;
     } catch {
       return null;
     }
   };
 
-  const handleClearTag = async (userId: string, username: string, tag: string): Promise<AccountTag[] | null> => {
+  const handleClearTag = async (userId: string, username: string, tag: string, server: string): Promise<AccountTag[] | null> => {
     try {
-      const { tags } = await handleClearTagMutation.mutateAsync({ tag, userId, username });
+      const { tags } = await handleClearTagMutation.mutateAsync({ tag, userId, username, server });
       return tags;
     } catch {
       return null;
