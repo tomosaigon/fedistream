@@ -237,7 +237,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                     onChange={() => updateFilterSettings({ showNonStopWords: !filterSettings.showNonStopWords })}
                     className="form-checkbox"
                   />
-                  <span>Show Non-Stop Words</span>
+                  <span>Show Mute Word Buttons</span>
                 </label>
                 <label className="flex items-center space-x-2 mt-2">
                   <input
