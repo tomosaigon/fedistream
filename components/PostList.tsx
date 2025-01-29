@@ -2,9 +2,9 @@ import {
   ChatBubbleOvalLeftEllipsisIcon,
   ArrowsRightLeftIcon,
   StarIcon,
-  ShareIcon,
   ArrowPathIcon,
   UserPlusIcon,
+  ArrowUturnLeftIcon,
 } from '@heroicons/react/24/solid';
 import React, { useState, useEffect } from 'react';
 import { Post, IMediaAttachment, AccountTag } from '../db/database';
@@ -41,7 +41,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
   const [activePost, setActivePost] = useState<Post | null>(null);
   const [activeRepliesPost, setActiveRepliesPost] = useState<Post | null>(null);
   const { getServerBySlug} = useServers();
-  const { handleFollow, handleFavorite } = useMastodonAccount({ baseUrl: getServerBySlug(server)?.uri??'' }); // XXX
+  const { handleFollow, handleFavorite, hasApiCredentials } = useMastodonAccount({ baseUrl: getServerBySlug(server)?.uri??'' }); // XXX
 
   useEffect(() => {
     setPosts(initialPosts);
@@ -65,13 +65,11 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
       <div className="space-y-1 sm:space-y-4">
         {posts.map((post) => {
           // console.log('Post:', post.account_tags);
-          const shouldFilter = reasons.some(
+          const matchingReason = reasons.find(
             (reason) =>
               reason.filter === 1 &&
               post.account_tags.some((tag) => tag.tag === reason.reason)
           );
-
-          if (shouldFilter) return null;
 
           let reblogger = null;
           if (post.reblog) {
@@ -81,30 +79,24 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
 
           const nonStopWords = getNonStopWords(post.content);
           const isMuted = containsMutedWord(nonStopWords, mutedWords);
-          if (isMuted) {
-            // TODO - Add way to reveal the muted post
-            return (
-              <div key={post.id} className="muted-disclaimer bg-gray-100 text-center p-2 text-sm text-red-500">
-                Contains muted words: {getMutedWordsFound(nonStopWords, mutedWords).join(', ')}
-              </div>
-            )
-          }
+          // TODO - Add way to reveal the muted post
 
           return (
             <div key={post.id} className="flex flex-col bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden max-w-full">
 
               <article className={`flex-grow min-w-0 ${
-                containsMutedWord(nonStopWords, mutedWords) ? 'bg-blue-50 opacity-10 hover:opacity-75'
+                // containsMutedWord(nonStopWords, mutedWords) ? 'bg-blue-50 opacity-10 hover:opacity-75'
+                false ? 'XXX'
                 : filterSettings.highlightThreshold && post.reblogs_count + post.favourites_count > filterSettings.highlightThreshold
                 ? 'bg-pink-100 border-l-4 border-pink-400 hover:bg-green-100'
                 : post.account_tags?.some(t => t.tag === 'cookie')
                   ? 'bg-green-50 border-l-4 border-green-400 hover:bg-green-100'
-                  : post.account_tags?.some(t => t.tag === 'phlog')
+                  : post.account_tags?.some(t => t.tag === 'phlog') // TODO color programmatically
                   ? 'bg-yellow-100 opacity-20 hover:opacity-75'
                   : post.account_tags?.some(t => t.tag === 'spam')
                   ? 'bg-red-50/5 opacity-10 hover:opacity-25 transition-all text-xs sm:text-[0.625rem]'
-                : post.account_tags?.some(t => t.tag === 'bitter')
-                  ? 'bg-yellow-50 opacity-20 hover:opacity-75 transition-all text-xs sm:text-[0.625rem]'
+                // : post.account_tags?.some(t => t.tag === 'bitter')
+                //   ? 'bg-yellow-50 opacity-20 hover:opacity-75 transition-all text-xs sm:text-[0.625rem]'
                 : 'bg-white'
               }`}>
                 {/* Reblog Header */}
@@ -129,6 +121,18 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                       >{formatDateTime(reblogger.created_at)}</a>
                     </span>
                   </div>
+                )}
+                {/* Reply Link */}
+                {post.in_reply_to_id && (
+                  <div className="flex items-center text-sm sm:text-base text-gray-500 px-4 pt-2">
+                  <button
+                    onClick={() => setActiveRepliesPost(post)}
+                    className="flex items-center space-x-2 text-blue-500 hover:underline focus:outline-none"
+                  >
+                    <ArrowUturnLeftIcon className="w-5 h-5 text-gray-400" />
+                    <span>View thread</span>
+                  </button>
+                </div>
                 )}
                 {/* Post Header */}
                 <div className={`p-4 flex items-start space-x-3`}>
@@ -190,55 +194,66 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                   </div>
                 </div>
 
-                {/* Post Content */}
-                <div className={`px-3 sm:px-4 pb-3 ${
-                  post.account_tags?.some(t => t.tag === 'spam' || t.tag === 'bitter')
-                    ? 'text-xs sm:text-[0.625rem]'
-                    : 'text-base sm:text-sm'
-                }`}>
-                  <div 
-                    className="prose max-w-none break-words"
-                    dangerouslySetInnerHTML={{ __html: post.content }}
-                  />
+                {matchingReason ? (
+                  <div className="mt-2 px-3 sm:px-4 pb-3 text-base sm:text-sm text-red-600">
+                    Filtered with reason:{" "}
+                    <span className="font-semibold">{matchingReason.reason}</span>
+                  </div>
+                ) : isMuted ? (
+                  <div key={post.id} className="muted-disclaimer bg-gray-100 text-center p-2 text-sm text-red-500">
+                    Contains muted words: {getMutedWordsFound(nonStopWords, mutedWords).join(', ')}
+                  </div>
+                ) : (
+                  <div className={`px-3 sm:px-4 pb-3 ${
+                    // {/* Post Content */}
+                    // post.account_tags?.some(t => t.tag === 'spam' || t.tag === 'bitter')
+                    //   ? 'text-xs sm:text-[0.625rem]'
+                    //   : 'text-base sm:text-sm'
+                    'text-base sm:text-sm'
+                    }`}>
+                    <div
+                      className="prose max-w-none break-words"
+                      dangerouslySetInnerHTML={{ __html: post.content }}
+                    />
 
-                  {post.card && <PostCard card={post.card} />}
+                    {post.card && <PostCard card={post.card} />}
 
-                  {post.poll && <PostPoll poll={post.poll} />}
-                </div>
+                    {post.poll && <PostPoll poll={post.poll} />}
 
-                {post.media_attachments.length > 0 && (
-                  <MediaAttachment
-                    post={post}
-                    mediaAttachments={post.media_attachments}
-                    setActiveImage={setActiveImage}
-                    setActivePost={setActivePost}
-                  />
+                    {post.media_attachments.length > 0 && (
+                      <MediaAttachment
+                        post={post}
+                        mediaAttachments={post.media_attachments}
+                        setActiveImage={setActiveImage}
+                        setActivePost={setActivePost}
+                      />
+                    )}
+                  </div>
                 )}
 
                 {/* Post Footer */}
-                <div className="px-4 py-3 border-t border-gray-100 flex items-center space-x-6 text-gray-500">
-                  <div
-                    className="flex items-center space-x-2 cursor-pointer"
-                    onClick={() => setActiveRepliesPost(post)}
-                  >
-                    <ChatBubbleOvalLeftEllipsisIcon className="w-5 h-5" />
-                    <span className="text-sm">{post.replies_count || 0}</span>
+                {matchingReason || isMuted ? null : (
+                  <div className="px-4 py-3 border-t border-gray-100 flex items-center space-x-6 text-gray-500">
+                    <div
+                      className="flex items-center space-x-2 cursor-pointer"
+                      onClick={() => setActiveRepliesPost(post)}
+                    >
+                      <ChatBubbleOvalLeftEllipsisIcon className="w-5 h-5" />
+                      <span className="text-sm">{post.replies_count || 0}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <ArrowsRightLeftIcon className="w-5 h-5" />
+                      <span className="text-sm">{post.reblogs_count || 0}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <StarIcon
+                        onClick={() => handleFavorite(post.url)}
+                        className="w-5 h-5 cursor-pointer hover:text-yellow-500 transition-colors"
+                      />
+                      <span className="text-sm">{post.favourites_count || 0}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <ArrowsRightLeftIcon className="w-5 h-5" />
-                    <span className="text-sm">{post.reblogs_count || 0}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <StarIcon
-                      onClick={() => handleFavorite(post.url)}
-                      className="w-5 h-5 cursor-pointer hover:text-yellow-500 transition-colors"
-                    />
-                    <span className="text-sm">{post.favourites_count || 0}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <ShareIcon className="w-5 h-5" />
-                  </div>
-                </div>
+                )}
 
                 {/* Non-Stop Words Section */}
                 {filterSettings.showNonStopWords && (
