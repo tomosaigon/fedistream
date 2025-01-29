@@ -299,10 +299,10 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                     const color = filter === 1 ? 'red' : 'green';
 
                     return (
-                      <div key={tag} className="flex flex-row sm:flex-col gap-0 sm:gap-1">
+                      <div key={tag} className="flex flex-row gap-1 ">
                         <AsyncButton
                           callback={async () => {
-                            const tags = await handleTag(tag, post.account_id, post.account_username);
+                            const tags = await handleTag(tag, post.account_id, post.account_username, post.server_slug);
                             if (tags) {
                               updateAccountTags(post.account_id, tags);
                             }
@@ -313,7 +313,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                         {hasTag ? (
                           <AsyncButton
                             callback={async () => {
-                              const tags = await handleClearTag(post.account_id, post.account_username, tag);
+                              const tags = await handleClearTag(post.account_id, post.account_username, tag, post.server_slug);
                               if (tags) {
                                 updateAccountTags(post.account_id, tags);
                               }
