@@ -42,3 +42,5 @@ next-env.d.ts
 mastodon.db
 config/servers.ts
 .vscode/settings.json
+db/exports/*
+new.db
