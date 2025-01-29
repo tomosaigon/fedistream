@@ -8,8 +8,8 @@ const CredentialsPage = () => {
 
   const [selectedServer, setSelectedServer] = useState<Server | undefined>(servers[0]);
   const [customServerUrl, setCustomServerUrl] = useState(servers[0]?.uri || '');
-  const [serverUrl, setServerUrl] = useLocalStorage<string | null>('serverUrl', null);
-  const [accessToken, setAccessToken] = useLocalStorage<string | null>('accessToken', null);
+  const [_serverUrl, setServerUrl] = useLocalStorage<string | null>('serverUrl', null);
+  const [accessToken, setAccessToken] = useLocalStorage<string>('accessToken', '');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [credentials, setCredentials] = useState<
