@@ -65,14 +65,6 @@ export default function CategoryPage() {
     }
   }, []);
 
-  useEffect(() => {
-    // if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
-    scrollContainerRef.current?.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    });
-  }, [posts]);
-
   const handleServerChange = (newServer: string) => {
     router.push(`/${newServer}/${category}`);
   };
@@ -148,10 +140,10 @@ export default function CategoryPage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const handleMarkSeen = async () => {
-    // scrollContainerRef.current?.scrollTo({
-    //   top: 0,
-    //   behavior: 'smooth',
-    // });
+    scrollContainerRef.current?.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
 
     if (posts.length === 0) {
       toast.error('No posts to mark as seen');
