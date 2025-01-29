@@ -5,18 +5,12 @@ import { useServers } from '@/context/ServersContext';
 import { CATEGORY_MAP, getCategoryBySlug } from '../db/categories';
 import AsyncButton from './AsyncButton';
 import BucketIcon from './BucketIcon';
-import { formatDateTime } from '@/utils/format';
-
-export interface ServerStats {
-  totalPosts: number;
-  seenPosts: number;
-  oldestPostDate: string | null;
-  latestPostDate: string | null;
-}
+import { ServerStatsPayload } from '@/db/database';
+import ServerStats from './ServerStats';
 
 interface NavigationBarProps {
   server: string;
-  serverStats?: ServerStats | null;
+  serverStats?: ServerStatsPayload | null;
   onServerChange: (newServer: string) => void;
 
   category: string;
@@ -59,7 +53,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 
   return (
     <nav className="sticky top-0 z-10 bg-white border-b shadow-sm">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4">
+      <div className="max-w-7xl mx-auto px-1 sm:px-4">
         <div className="flex items-center justify-between py-2">
           {/* Server Selector */}
           <select
@@ -105,13 +99,14 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
             ) : (
               <Bars3Icon className="w-6 h-6" />
             )}
-            <span className="text-lg">Menu / {getCategoryBySlug(category).label}</span>
+            <span className="text-xs sm:text-lg">Menu</span>
+            <span className="text-xs sm:text-lg"> / {getCategoryBySlug(category).label}</span>
           </button>
         </div>
 
         {/* Dropdown Menu */}
-        <div className={`${menuOpen ? 'block' : 'hidden'} w-full mt-2`}>
-          <div className="grid grid-cols-5 gap-4 px-4 py-3">
+        <div className={`${menuOpen ? 'block' : 'hidden'} w-full sm:mt-2`}>
+          <div className="grid grid-cols-5 gap-1 sm:gap-3 sm:px-4 py-3">
             {/* Left Column: Database Functions */}
             <div className="col-span-2 flex flex-col space-y-2">
               <AsyncButton
@@ -176,29 +171,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
               </Link>
 
               {/* Server Stats */}
-              {serverStats && (
-                <div className="mt-4 p-4 border rounded shadow-sm bg-gray-50">
-                <h3 className="text-lg font-semibold mb-2">Server Stats</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center">
-                    <span className="text-blue-500 text-2xl font-bold">{serverStats?.totalPosts || 0}</span>
-                    <span className="ml-2 text-gray-600">Total Posts</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-green-500 text-2xl font-bold">{serverStats?.seenPosts || 0}</span>
-                    <span className="ml-2 text-gray-600">Seen Posts</span>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-gray-500 text-sm">
-                      <strong>Oldest Post:</strong> {serverStats?.oldestPostDate ? formatDateTime(serverStats.oldestPostDate) : 'N/A'}
-                    </p>
-                    <p className="text-gray-500 text-sm">
-                      <strong>Latest Post:</strong> {serverStats?.latestPostDate ? formatDateTime(serverStats.latestPostDate) : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              )}
+              {serverStats && (<ServerStats stats={serverStats} />)}
             </div>
 
             {/* Right Column: Categories and Filters */}

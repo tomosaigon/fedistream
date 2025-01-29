@@ -9,7 +9,7 @@ import ServerDash from './ServerDash';
 import CredentialsStatus from './CredentialsStatus';
 import QuickMutedWords from './QuickMutedWords';
 import QuickReasons from './QuickReasons';
-import { formatDateTime, calculateTimeDifference } from '@/utils/format';
+import ServerStats from './ServerStats';
 
 const Dashboard: React.FC = () => {
   const { servers } = useServers();
@@ -26,15 +26,8 @@ const Dashboard: React.FC = () => {
     });
   };
 
-  const calculatePostsPerDay = (totalPosts: number, startDate: string | Date, endDate: string | Date): string => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const days = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-    return days > 0 ? (totalPosts / days).toFixed(1) : totalPosts.toString();
-  };
-
   return (
-    <div className="p-4">
+    <div className="sm:p-4">
       {/* <h1 className="text-xl font-bold text-gray-800 mb-4">Dashboard</h1> */}
       <div className="grid grid-cols-5 gap-4 mb-4">
         <div className="col-span-2 bg-white p-4 border border-gray-300 shadow-sm">
@@ -55,51 +48,8 @@ const Dashboard: React.FC = () => {
           {/* Credentials Status */}
           <CredentialsStatus />
         </div>
-        <div className="col-span-3 bg-gray-50 p-4 border border-gray-300">
-
-          {stats && (
-            <div className="grid grid-cols-4 gap-4">
-              <div className="flex items-center">
-                <span className="text-blue-500 text-2xl font-bold">{stats.totalPosts || 0}</span>
-                <span className="ml-2 text-gray-600">Total Posts</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-green-500 text-2xl font-bold">{stats.seenPosts || 0}</span>
-                <span className="ml-2 text-gray-600">Seen Posts</span>
-              </div>
-              <div className="flex items-center">
-                <span className="ml-4 text-red-500 text-2xl font-bold">
-                  {(stats.totalPosts || 0) - (stats.seenPosts || 0)}
-                </span>
-                <span className="ml-2 text-gray-600">Unseen Posts</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-purple-500 text-2xl font-bold">{stats.uniqueAccounts || 0}</span>
-                <span className="ml-2 text-gray-600">Unique Accounts</span>
-              </div>
-              <div className="col-span-3">
-                {stats?.latestPostDate && stats?.oldestPostDate ? (
-                  <p className="text-gray-500 text-sm">
-                    <strong>Last Updated:</strong>{" "}
-                    <span className="text-blue-500">{formatDateTime(stats.latestPostDate)}</span>
-                    <br />
-                    <strong>Coverage:</strong>{" "}
-                    <span className="text-green-500 font-medium">
-                      {calculateTimeDifference(stats.oldestPostDate, stats.latestPostDate)}
-                    </span>
-                    {" of posts collected"}
-                    <br />
-                    <strong>Avg Posts/Day:</strong>{" "}
-                    <span className="text-blue-500 font-medium">
-                      {calculatePostsPerDay(stats.totalPosts, stats.oldestPostDate, stats.latestPostDate)}
-                    </span>
-                  </p>
-                ) : (
-                  <p className="text-gray-500 text-sm">No posts available to calculate stats.</p>
-                )}
-              </div>
-            </div>
-          )}
+        <div className="col-span-3 bg-gray-50  border border-gray-300  p-4 ">
+          {stats && (<ServerStats stats={stats} />)}
         </div>
       </div>
 

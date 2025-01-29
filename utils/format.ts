@@ -30,3 +30,10 @@ export function calculateTimeDifference(startDate: string | Date, endDate: strin
   }
   return `${diffInHours} hour${diffInHours > 1 ? "s" : ""}`;
 }
+
+export const calculatePostsPerDay = (totalPosts: number, startDate: string | Date, endDate: string | Date): string => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const days = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+  return days > 0 ? (totalPosts / days).toFixed(1) : totalPosts.toString();
+};
