@@ -264,35 +264,61 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
               </article>
 
               {/* Admin section - full width on mobile, side panel on desktop */}
-              <div className="w-full border-t sm:border-t-0 sm:border-l p-2 sm:p-4 bg-gray-50">
-                {containsMutedWord(nonStopWords, mutedWords) && (
-                  <p className="text-red-500 text-xs sm:text-sm m-2">
-                    Contains muted words: {getMutedWordsFound(nonStopWords, mutedWords).join(', ')}
-                  </p>
-                )}
-                <div className="flex flex-row gap-1 sm:gap-2 max-h-32 sm:max-h-64 overflow-y-auto relative">
-                  <AsyncButton
-                    callback={() => handleFavorite(post.url)}
-                    defaultText={
-                      <>
-                        <StarIcon
-                          className="w-5 h-5 cursor-pointer hover:text-yellow-500 transition-colors"
-                        />
-                        <span>fav</span>
-                      </>
-                    }
-                    color={'yellow'}
-                  />
-                  <AsyncButton
-                    callback={() => handleFollow(post.account_acct)}
-                    defaultText={
-                      <>
-                        <UserPlusIcon className="w-5 h-5 cursor-pointer hover:text-green-500 transition-colors" />
-                        <span>Follow</span>
-                      </>
-                    }
-                    color={'green'}
-                  />
+              <div className="w-full flex items-start space-x-4 border-t sm:border-t-0 sm:border-l p-2 bg-gray-50">
+                <div className="flex gap-1 sm:gap-2 max-h-32 sm:max-h-64 relative">
+                  {hasApiCredentials ? (
+                    <>
+                      <AsyncButton
+                        callback={() => handleFavorite(post.url)}
+                        defaultText={
+                          <>
+                            <StarIcon
+                              className="w-4 h-4 cursor-pointer hover:text-yellow-500 transition-colors"
+                            />
+                            <span>fav</span>
+                          </>
+                        }
+                        color={'yellow'}
+                      />
+                      <AsyncButton
+                        callback={() => handleFollow(post.account_acct)}
+                        defaultText={
+                          <>
+                            <UserPlusIcon className="w-4 h-4 cursor-pointer hover:text-green-500 transition-colors" />
+                            <span>Follow</span>
+                          </>
+                        }
+                        color={'green'}
+                      />
+                    </>
+                  ) : (
+                    <div className="relative group flex space-x-1">
+                      {/* Favorite Button with Tooltip */}
+                      <StarIcon className="w-5 h-5 text-gray-400" />
+                      <span className="text-gray-500">fav</span>
+                      {/* Tooltip */}
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                        <div className="bg-gray-800 text-white text-xs rounded px-2 py-1 shadow-lg">
+                          You need to configure API credentials
+                        </div>
+                        <div className="absolute left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
+                      </div>
+
+                      {/* Follow Button with Tooltip */}
+                      <UserPlusIcon className="w-5 h-5 text-gray-400" />
+                      <span className="text-gray-500">Follow</span>
+                      {/* Tooltip */}
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                        <div className="bg-gray-800 text-white text-xs rounded px-2 py-1 shadow-lg">
+                          You need to configure API credentials
+                        </div>
+                        <div className="absolute left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
+                      </div>
+                    </div>
+                  )}
+                  </div>
+                  <div className="flex flex-row gap-1 sm:gap-2 max-h-32 sm:max-h-64 overflow-y-auto relative">
+
                   {reasons.filter(reason => reason.active === 1).map(({ reason: tag, filter }) => {
                     const hasTag = post.account_tags?.some(t => t.tag === tag);
                     const count = getAccountTagCount(post.account_tags, tag);
