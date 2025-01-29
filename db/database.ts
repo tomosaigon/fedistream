@@ -347,17 +347,11 @@ export class DatabaseManager {
     return result;
   }
 
-  public getServerStats(serverSlug: string | null): {
-    totalPosts: number;
-    seenPosts: number;
-    oldestPostDate: string | null;
-    latestPostDate: string | null;
-    categoryCounts: Record<Bucket, { seen: number; unseen: number }>;
-  } {
+  public getServerStats(serverSlug: string | null): ServerStatsPayload {
     try {
-      const whereClause = serverSlug ? "WHERE server_slug = ?" : ""; // Omit WHERE clause if serverSlug is not provided
-
-      // Fetch the basic stats
+      const whereClause = serverSlug ? "WHERE server_slug = ?" : "";
+  
+      // Fetch the basic stats including unique account count
       const stats = this.db
         .prepare(
           `
@@ -365,7 +359,8 @@ export class DatabaseManager {
             COUNT(*) AS totalPosts,
             SUM(CASE WHEN seen = 1 THEN 1 ELSE 0 END) AS seenPosts,
             MIN(created_at) AS oldestPostDate,
-            MAX(created_at) AS latestPostDate
+            MAX(created_at) AS latestPostDate,
+            COUNT(DISTINCT account_id) AS uniqueAccounts
           FROM posts
           ${whereClause}
           `
@@ -375,7 +370,8 @@ export class DatabaseManager {
         seenPosts: number;
         oldestPostDate: string | null;
         latestPostDate: string | null;
-    };
+        uniqueAccounts: number;
+      };
   
       // Initialize the category counts
       const categoryCounts: Record<Bucket, { seen: number; unseen: number }> = {} as Record<
@@ -401,7 +397,7 @@ export class DatabaseManager {
           `
         )
         .all(serverSlug ? [serverSlug] : []) as { bucket: Bucket; seen: number; unseen: number }[];
-
+  
       categoryData.forEach((row) => {
         if (categoryCounts[row.bucket]) {
           categoryCounts[row.bucket].seen = row.seen;
@@ -411,7 +407,7 @@ export class DatabaseManager {
   
       return { ...stats, categoryCounts };
     } catch (error) {
-      console.error('Error in getServerStats:', error);
+      console.error("Error in getServerStats:", error);
   
       // Return default structure on error
       const defaultCategoryCounts: Record<Bucket, { seen: number; unseen: number }> = {} as Record<
@@ -427,6 +423,7 @@ export class DatabaseManager {
         seenPosts: 0,
         oldestPostDate: null,
         latestPostDate: null,
+        uniqueAccounts: 0,
         categoryCounts: defaultCategoryCounts,
       };
     }
@@ -758,6 +755,15 @@ export type Server = {
 };
 
 export type ServerData = Omit<Server, 'id' | 'created_at'>;
+
+export type ServerStatsPayload = {
+  totalPosts: number;
+  seenPosts: number;
+  oldestPostDate: string | null;
+  latestPostDate: string | null;
+  uniqueAccounts: number;
+  categoryCounts: Record<Bucket, { seen: number; unseen: number }>;
+};
 
 export type Reason = {
   id: number; 

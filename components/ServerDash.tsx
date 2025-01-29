@@ -1,14 +1,18 @@
 // ServerDash.tsx
+import Link from "next/link";
 import React from "react";
-import { useServerStats, ServerStatsPayload } from "@/hooks/useServerStats";
 import { Chart } from "react-chartjs-2";
 import "chart.js/auto";
 import { Chart as ChartChart, ActiveElement, ChartEvent, LegendItem, Tick } from "chart.js";
 import toast from "react-hot-toast";
 import { Server } from '@/db/database';
-// import { Bucket } from "@/db/bucket";
+import { Bucket } from "@/db/bucket";
 import { CATEGORY_MAP } from "@/db/categories";
 import { formatDateTime, calculateTimeDifference } from '@/utils/format';
+import { useServerStats } from "@/hooks/useServerStats";
+import { ServerStatsPayload } from '@/db/database';
+import { useSyncPosts } from "@/hooks/useSyncPosts";
+import AsyncButton from "./AsyncButton";
 
 interface ServerDashChartProps {
   serverSlug: string;
@@ -164,7 +168,16 @@ interface ServerDashProps {
 // }
 
 const ServerDash: React.FC<ServerDashProps> = ({ server }) => {
-  const { data: stats, isPending: isStatsLoading, error: statsError } = useServerStats(server.slug);
+  const { data: stats, isPending: isStatsLoading, error: statsError, invalidateServerStats } = useServerStats(server.slug);
+
+  const { mutateAsync: syncPosts } = useSyncPosts({
+    server: server.slug,
+    invalidateTimeline: () => { },
+    invalidateServerStats,
+  });
+  const handleSyncNewer = async () => {
+    await syncPosts({ older: false, batch: 1 });
+  };
 
   if (isStatsLoading) {
     return <p>Loading stats for {server.name}...</p>;
@@ -177,12 +190,28 @@ const ServerDash: React.FC<ServerDashProps> = ({ server }) => {
     return <p>Error loading stats for {server.name}.</p>;
   }
 
+  const calculatePostsPerDay = (totalPosts: number, startDate: string | Date, endDate: string | Date): string => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const days = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+    return days > 0 ? (totalPosts / days).toFixed(1) : totalPosts.toString();
+  };
+
   return (
     <div className="server-stats">
-      <h2 className="text-xl font-bold text-gray-800 mb-4">{server.name}</h2>
+      <h2 className="text-xl font-bold text-gray-800 mb-4">{server.name} /{" "}
+        <Link href={`/${server.slug}/regular`} className="text-blue-500 hover:text-blue-600 underline">
+          Regular ({stats?.categoryCounts[Bucket.regular]?.unseen || 0})
+        </Link></h2>
+      <AsyncButton
+        callback={handleSyncNewer}
+        loadingText="Syncing Newer..."
+        defaultText="Collect Newer Posts"
+        color="blue"
+      />
       {stats && (
         <div className="mt-4 p-4 border rounded shadow-sm bg-gray-50">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <div className="flex items-center">
               <span className="text-blue-500 text-2xl font-bold">{stats.totalPosts || 0}</span>
               <span className="ml-2 text-gray-600">Total Posts</span>
@@ -190,23 +219,39 @@ const ServerDash: React.FC<ServerDashProps> = ({ server }) => {
             <div className="flex items-center">
               <span className="text-green-500 text-2xl font-bold">{stats.seenPosts || 0}</span>
               <span className="ml-2 text-gray-600">Seen Posts</span>
+            </div>
+            <div className="flex items-center">
               <span className="ml-4 text-red-500 text-2xl font-bold">
                 {(stats.totalPosts || 0) - (stats.seenPosts || 0)}
               </span>
               <span className="ml-2 text-gray-600">Unseen Posts</span>
             </div>
+            <div className="flex items-center">
+              <span className="text-purple-500 text-2xl font-bold">{stats.uniqueAccounts || 0}</span>
+              <span className="ml-2 text-gray-600">Unique Accounts</span>
+            </div>
             <div className="col-span-2">
-              {stats?.oldestPostDate && stats?.latestPostDate ? (
+              {stats?.latestPostDate && stats?.oldestPostDate ? (
                 <p className="text-gray-500 text-sm">
-                  <strong>Posts Collected:</strong> From{" "}
-                  <span className="text-blue-500">{formatDateTime(stats.oldestPostDate)}</span> to{" "}
-                  <span className="text-blue-500">{formatDateTime(stats.latestPostDate)}</span>
-                  {" ("}
-                  <span className="text-green-500 font-medium">{calculateTimeDifference(stats.oldestPostDate, stats.latestPostDate)}</span>
-                  {")"}
+                  <strong>Latest:</strong>{" "}
+                  <span className="text-blue-500">{formatDateTime(stats.latestPostDate)}</span>{" "}
+                  <span className="text-gray-400 text-xs">
+                    ({calculateTimeDifference(stats.latestPostDate, new Date().toISOString())} ago)
+                  </span>
+                  <br />
+                  <strong>Coverage:</strong>{" "}
+                  <span className="text-green-500 font-medium">
+                    {calculateTimeDifference(stats.oldestPostDate, stats.latestPostDate)}
+                  </span>
+                  {" of posts collected"}
+                  <br />
+                  <strong>Avg Posts/Day:</strong>{" "}
+                  <span className="text-blue-500 font-medium">
+                    {calculatePostsPerDay(stats.totalPosts, stats.oldestPostDate, stats.latestPostDate)}
+                  </span>
                 </p>
               ) : (
-                <p className="text-gray-500 text-sm">No posts available to calculate date range.</p>
+                <p className="text-gray-500 text-sm">No posts available to calculate stats.</p>
               )}
             </div>
           </div>

@@ -26,32 +26,39 @@ const Dashboard: React.FC = () => {
     });
   };
 
+  const calculatePostsPerDay = (totalPosts: number, startDate: string | Date, endDate: string | Date): string => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const days = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+    return days > 0 ? (totalPosts / days).toFixed(1) : totalPosts.toString();
+  };
+
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold text-gray-800 mb-4">Dashboard</h1>
-      <div className="grid grid-cols-5 gap-4">
-        <div className="col-span-2 bg-gray-100 p-4 text-center border border-gray-300">
-          {/* Server counts and configuration link */}
-          <p className="text-gray-700">
-            Enabled Servers: <span className="font-semibold">{enabledServers.length}</span>
-          </p>
-          <p className="text-gray-700">
-            Disabled Servers: <span className="font-semibold">{disabledServers.length}</span>
-          </p>
-          <Link
-            href="/servers"
-            className="w-full text-base text-blue-500 hover:text-blue-600 rounded transition-all duration-200 "
-          >
-            Configure Servers
-          </Link>
+      {/* <h1 className="text-xl font-bold text-gray-800 mb-4">Dashboard</h1> */}
+      <div className="grid grid-cols-5 gap-4 mb-4">
+        <div className="col-span-2 bg-white p-4 border border-gray-300 shadow-sm">
+          {/* Server Status */}
+          <div className="text-center mb-4">
+            <p className="text-gray-700 text-lg font-medium">
+              Servers: <span className="text-green-600 font-semibold">{enabledServers.length}</span>&nbsp;Enabled,
+              <span className="text-red-500 font-semibold"> {disabledServers.length}</span>&nbsp;Disabled
+            </p>
+            <Link
+              href="/servers"
+              className="inline-block mt-2 text-blue-500 hover:text-blue-600 text-sm font-medium transition-all duration-200"
+            >
+              Manage Servers
+            </Link>
+          </div>
 
-          {/* Credentials status */}
+          {/* Credentials Status */}
           <CredentialsStatus />
         </div>
-        <div className="col-span-3 bg-gray-50 p-4 text-center border border-gray-300">
+        <div className="col-span-3 bg-gray-50 p-4 border border-gray-300">
 
           {stats && (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-4">
               <div className="flex items-center">
                 <span className="text-blue-500 text-2xl font-bold">{stats.totalPosts || 0}</span>
                 <span className="ml-2 text-gray-600">Total Posts</span>
@@ -59,23 +66,36 @@ const Dashboard: React.FC = () => {
               <div className="flex items-center">
                 <span className="text-green-500 text-2xl font-bold">{stats.seenPosts || 0}</span>
                 <span className="ml-2 text-gray-600">Seen Posts</span>
+              </div>
+              <div className="flex items-center">
                 <span className="ml-4 text-red-500 text-2xl font-bold">
                   {(stats.totalPosts || 0) - (stats.seenPosts || 0)}
                 </span>
                 <span className="ml-2 text-gray-600">Unseen Posts</span>
               </div>
-              <div className="col-span-2">
-                {stats?.oldestPostDate && stats?.latestPostDate ? (
+              <div className="flex items-center">
+                <span className="text-purple-500 text-2xl font-bold">{stats.uniqueAccounts || 0}</span>
+                <span className="ml-2 text-gray-600">Unique Accounts</span>
+              </div>
+              <div className="col-span-3">
+                {stats?.latestPostDate && stats?.oldestPostDate ? (
                   <p className="text-gray-500 text-sm">
-                    <strong>Posts Collected:</strong> From{" "}
-                    <span className="text-blue-500">{formatDateTime(stats.oldestPostDate)}</span> to{" "}
+                    <strong>Last Updated:</strong>{" "}
                     <span className="text-blue-500">{formatDateTime(stats.latestPostDate)}</span>
-                    {" ("}
-                    <span className="text-green-500 font-medium">{calculateTimeDifference(stats.oldestPostDate, stats.latestPostDate)}</span>
-                    {")"}
+                    <br />
+                    <strong>Coverage:</strong>{" "}
+                    <span className="text-green-500 font-medium">
+                      {calculateTimeDifference(stats.oldestPostDate, stats.latestPostDate)}
+                    </span>
+                    {" of posts collected"}
+                    <br />
+                    <strong>Avg Posts/Day:</strong>{" "}
+                    <span className="text-blue-500 font-medium">
+                      {calculatePostsPerDay(stats.totalPosts, stats.oldestPostDate, stats.latestPostDate)}
+                    </span>
                   </p>
                 ) : (
-                  <p className="text-gray-500 text-sm">No posts available to calculate date range.</p>
+                  <p className="text-gray-500 text-sm">No posts available to calculate stats.</p>
                 )}
               </div>
             </div>
@@ -95,7 +115,7 @@ const Dashboard: React.FC = () => {
 
       {/* Enabled servers */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Enabled Servers</h2>
+        {/* <h2 className="text-lg font-semibold text-gray-800 mb-4">Enabled Servers</h2> */}
         <ul className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
           {enabledServers.map((server) => (
             <li key={server.id} className="border rounded shadow-sm p-4 bg-white">

@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Bucket } from '@/db/bucket';
 import { DatabaseManager } from '../../db/database';
 
 const dbManager = new DatabaseManager();
@@ -15,13 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Server slug is required unless "all" is true' });
     }
 
-    const stats = dbManager.getServerStats(serverSlug) as {
-      totalPosts: number;
-      seenPosts: number;
-      oldestPostDate: string | null;
-      latestPostDate: string | null;
-      categoryCounts: Record<Bucket, { seen: number; unseen: number }>;
-    };
+    const stats = dbManager.getServerStats(serverSlug);
 
     if (!stats) {
       return res.status(404).json({ error: 'Stats not found for the specified server' });
