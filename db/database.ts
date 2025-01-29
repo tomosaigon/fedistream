@@ -1,5 +1,8 @@
+import fs from 'fs';
+import path from 'path';
 import Database from 'better-sqlite3';
 import { Bucket, determineBucket } from './bucket';
+import { exportDatabaseToSQL } from './dump';
 
 export class DatabaseManager {
   private db: Database.Database;
@@ -8,6 +11,9 @@ export class DatabaseManager {
   constructor() {
     const dbPath = process.env.DATABASE_FILE || 'mastodon.db';
     // console.log('Database path:', dbPath);
+    if (!fs.existsSync(dbPath)) {
+      this.initializeDatabase(dbPath);
+    }
     this.db = new Database(dbPath);
 
     this.tableMappings = {
@@ -20,6 +26,24 @@ export class DatabaseManager {
     };
 
     this.ensureTablesExist();
+  }
+
+  private initializeDatabase(dbPath: string): void {
+    console.log(`Initializing new database at: ${dbPath}`);
+    const db = new Database(dbPath);
+
+    // Ingest all .sql files from db/imports/
+    const importDir = path.resolve(process.cwd(), 'db/imports');
+    const sqlFiles = fs.readdirSync(importDir).filter(file => file.endsWith('.sql'));
+
+    for (const file of sqlFiles) {
+      const filePath = path.join(importDir, file);
+      const sql = fs.readFileSync(filePath, 'utf-8');
+      db.exec(sql);
+      console.log(`Executed SQL from file: ${file}`);
+    }
+
+    db.close();
   }
 
   private ensureTablesExist(): void {
@@ -46,6 +70,10 @@ export class DatabaseManager {
       });
       this.ensureTablesExist();
     }
+  }
+
+  public exportDatabase(outputDir: string): void {
+    exportDatabaseToSQL(this.db, outputDir);
   }
 
   private createMastodonServersTable() {
