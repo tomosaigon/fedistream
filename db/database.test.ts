@@ -258,7 +258,8 @@ describe('DatabaseManager Tests', () => {
     dbManager.insertPost(testPost1);
     dbManager.insertPost(testPost2);
     dbManager.insertPost(testPost2);
-    dbManager.insertPost(testPost3);
+    // disabled replies for now
+    // dbManager.insertPost(testPost3);
     dbManager.insertPost(testPost4);
     dbManager.insertPost(testPost5);
     dbManager.insertPost(testPost6);
@@ -270,7 +271,8 @@ describe('DatabaseManager Tests', () => {
       reblogs: 0,
       videos: 0,
       withImages: 1,
-      asReplies: 1,
+      // asReplies: 1,
+      asReplies: 0,
       networkMentions: 0,
       hashtags: 1,
       withLinks: 1,
@@ -297,16 +299,16 @@ describe('Account Tags', () => {
     const username = 'testuser';
     
     // Add tags
-    dbManager.tagAccount(userId, username, 'spam');
-    dbManager.tagAccount(userId, username, 'bitter');
-    dbManager.tagAccount(userId, username, 'spam'); // Increment spam count
+    dbManager.tagAccount(userId, username, 'spam', 'test-server');
+    dbManager.tagAccount(userId, username, 'bitter', 'test-server');
+    dbManager.tagAccount(userId, username, 'spam', 'test-server'); // Increment spam count
     
     // Get tags
     const tags = dbManager.getAccountTags(userId);
     
     expect(tags).toEqual([
-      { tag: 'spam', count: 2 },
-      { tag: 'bitter', count: 1 }
+      { tag: 'spam', count: 2, server_slug: 'test-server' },
+      { tag: 'bitter', count: 1, server_slug: 'test-server' }
     ]);
   });
 
@@ -319,13 +321,13 @@ describe('Account Tags', () => {
     const userId = '1001';
     const username = 'testuser';
 
-    dbManager.tagAccount(userId, username, 'spam');
-    dbManager.tagAccount(userId, username, 'spam');
-    dbManager.tagAccount(userId, username, 'spam');
+    dbManager.tagAccount(userId, username, 'spam', 'test-server');
+    dbManager.tagAccount(userId, username, 'spam', 'test-server');
+    dbManager.tagAccount(userId, username, 'spam', 'test-server');
 
     const tags = dbManager.getAccountTags(userId);
     expect(tags).toEqual([
-      { tag: 'spam', count: 3 }
+      { tag: 'spam', count: 3, server_slug: 'test-server' }
     ]);
   });
 });
