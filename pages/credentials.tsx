@@ -1,17 +1,15 @@
+import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { Server, useServers } from '@/context/ServersContext';
-import axios from 'axios';
-import { useLocalStorage } from '@uidotdev/usehooks';
+import UseTokenButton from '@/components/UseTokenButton';
+import { toast } from 'react-hot-toast';
 
 const CredentialsPage = () => {
   const { servers } = useServers();
 
   const [selectedServer, setSelectedServer] = useState<Server | undefined>(servers[0]);
   const [customServerUrl, setCustomServerUrl] = useState(servers[0]?.uri || '');
-  const [_serverUrl, setServerUrl] = useLocalStorage<string | null>('serverUrl', null);
-  const [accessToken, setAccessToken] = useLocalStorage<string>('accessToken', '');
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [accessToken, setAccessToken] = useState('');
   const [credentials, setCredentials] = useState<
     { id: number; server_url: string; access_token: string; created_at: string }[]
   >([]);
@@ -21,29 +19,24 @@ const CredentialsPage = () => {
     const server = servers.find(s => s.slug === slug);
     setSelectedServer(server);
     setCustomServerUrl(server?.uri || '');
-    setAccessToken('');
-    setSuccessMessage('');
-    setErrorMessage('');
     setVisibleTokens({});
     fetchCredentials(server?.uri || '');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccessMessage('');
-    setErrorMessage('');
 
     try {
       await axios.post('/api/credentials', {
         serverUrl: customServerUrl,
         accessToken,
       });
-      setSuccessMessage('Credentials saved successfully!');
+      toast.success('Credentials saved successfully!');
       setAccessToken('');
       fetchCredentials(customServerUrl);
     } catch (err) {
       console.error('Failed to save credentials:', err);
-      setErrorMessage('Failed to save credentials. Please try again.');
+      toast.error('Failed to save credentials. Please try again.');
     }
   };
 
@@ -61,20 +54,14 @@ const CredentialsPage = () => {
     setVisibleTokens((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleUseToken = (server_url: string, token: string) => {
-    setServerUrl(server_url);
-    setAccessToken(token);
-    setSuccessMessage('Credentials set in localStorage!');
-  };
-
   const handleRemoveCredential = async (serverUrl: string, id: number) => {
     try {
       await axios.delete('/api/credentials', { data: { serverUrl, id } });
-      setSuccessMessage('Credential removed successfully!');
+      toast.success('Credential removed successfully!');
       fetchCredentials(customServerUrl);
     } catch (err) {
       console.error('Failed to remove credential:', err);
-      setErrorMessage('Failed to remove credential. Please try again.');
+      toast.error('Failed to remove credential. Please try again.');
     }
   };
 
@@ -144,10 +131,6 @@ const CredentialsPage = () => {
         </button>
       </form>
 
-      {/* Success and Error Messages */}
-      {successMessage && <p className="mt-4 text-sm text-green-600">{successMessage}</p>}
-      {errorMessage && <p className="mt-4 text-sm text-red-600">{errorMessage}</p>}
-
       {/* Credentials List */}
       <div className="mt-8">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Saved Credentials</h2>
@@ -183,12 +166,7 @@ const CredentialsPage = () => {
                 </p>
 
                 {/* Use Token Button */}
-                <button
-                  onClick={() => handleUseToken(server_url, access_token)}
-                  className="mt-2 px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600"
-                >
-                  Use this Token
-                </button>
+                <UseTokenButton serverUrl={server_url} accessToken={access_token} />
 
                 {/* Remove Credential Button */}
                 <button
