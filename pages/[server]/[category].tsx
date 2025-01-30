@@ -112,6 +112,7 @@ export default function CategoryPage() {
     }
   };
 
+  // TODO refactor this to use a modal, hook
   const handleDestroy = async () => {
     if (!confirm('Are you sure you want to destroy the database? This will delete ALL posts from ALL servers.')) {
       return;
@@ -175,6 +176,34 @@ export default function CategoryPage() {
     }
   };
 
+  function getAdjacentCategory(
+    currentSlug: string,
+    direction: 'prev' | 'next',
+    counts: Record<string, number>,
+    server: string,
+    filterSettings: { enableForeignBots: boolean }
+  ) {
+    const filteredCategories = CATEGORY_MAP.filter(({ slug, bucket }) => {
+      if (slug === currentSlug) return true;
+      if (!filterSettings.enableForeignBots && ['from-bots', 'network-mentions', 'non-english'].includes(slug)) {
+        return false;
+      }
+      if (slug === 'reblogs' && server !== '$HOME') {
+        return false;
+      }
+      return counts[bucket] > 0;
+    });
+    const currentIndex = filteredCategories.findIndex((cat) => cat.slug === currentSlug);
+    if (currentIndex === -1) return null;
+  
+    const newIndex =
+      direction === 'prev'
+        ? (currentIndex - 1 + filteredCategories.length) % filteredCategories.length
+        : (currentIndex + 1) % filteredCategories.length;
+
+    return filteredCategories[newIndex] || null;
+  }
+
   function CategoryNavigation({
     currentSlug,
     counts,
@@ -189,13 +218,12 @@ export default function CategoryPage() {
     totalCount: number;
   }) {
     if (!counts) return null;
-    const currentIndex = CATEGORY_MAP.findIndex((cat) => cat.slug === currentSlug);
-  
-    const prevCategory =
-      currentIndex > 0 ? CATEGORY_MAP[currentIndex - 1] : CATEGORY_MAP[CATEGORY_MAP.length - 1];
-    const nextCategory =
-      currentIndex < CATEGORY_MAP.length - 1 ? CATEGORY_MAP[currentIndex + 1] : CATEGORY_MAP[0];
-  
+
+    const prevCategory = getAdjacentCategory(currentSlug, 'prev', counts, server, filterSettings);
+    const nextCategory = getAdjacentCategory(currentSlug, 'next', counts, server, filterSettings);
+
+    if (!prevCategory || !nextCategory) return null;
+
     return (
       <div className="p-3 sm:p-4">
         <div className="flex items-center justify-between">
