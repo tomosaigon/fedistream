@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster, ToastOptions, ToastPosition } from 'react-hot-toast';
 import type { AppProps } from 'next/app';
+import Head from 'next/head';
 import '../styles/globals.css';
 import { ServersProvider } from '../context/ServersContext';
 
@@ -17,14 +18,17 @@ const toastOptions: ToastOptions = {
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <div className="min-h-screen bg-gray-50">
+      <Head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </Head>
       <QueryClientProvider client={queryClient}>
         <ServersProvider>
           <Component {...pageProps} />
         </ServersProvider>
       </QueryClientProvider>
       <Toaster toastOptions={toastOptions} />
-      </div>
+    </div>
   );
 }
 
-export default MyApp; 
+export default MyApp;
