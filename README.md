@@ -6,10 +6,15 @@ Shadowbox is an alternative timeline client for Mastodon, acting as a community 
 - **Who is it for?** People who want to social network around topics that are popular on Mastodon, such as software, Linux, and coding, and who might want to ignore US political discussions.
 - **Why it's awesome:** Faster, more efficient, and provides a cleaner experience with less noise.
 
-- [Installation](#installation)
-- [Usage](#usage)
-- [License](#license)
-- [Contact](#contact)
+## Screenshots
+
+<p align="center">
+  <img src="images/screenshot1.png" width="200" />
+  <img src="images/screenshot2.png" width="200" />
+  <img src="images/screenshot3.png" width="200" />
+  <img src="images/screenshot4.png" width="200" />
+  <img src="images/screenshot5.png" width="200" />
+</p>
 
 ### Installation
 To get started with Shadowbox, follow these steps:
@@ -17,7 +22,7 @@ To get started with Shadowbox, follow these steps:
 #### Local Installation
 1. **Clone the repository:**
     ```bash
-    git clone https://github.com/yourusername/shadowbox.git
+    git clone https://github.com/tomosaigon/shadowbox.git
     cd shadowbox
     ```
 
@@ -63,4 +68,4 @@ To use Shadowbox, follow these steps:
 This project is licensed under the terms of the [GNU General Public License (GPL)](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 ### Contact
-For any questions or feedback, reach out to me on Mastodon at **@tomosaigon@fosstodon.org**.
+For any questions or feedback, reach out to me on Mastodon at [**@tomosaigon@fosstodon.org**](https://fosstodon.org/@tomosaigon).
