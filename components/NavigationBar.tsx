@@ -21,6 +21,7 @@ interface NavigationBarProps {
     showNonStopWords: boolean;
     highlightThreshold: number | null;
     enableForeignBots: boolean;
+    enableMedia: boolean;
   };
   updateFilterSettings: (newSettings: Partial<NavigationBarProps['filterSettings']>) => void;
   onMarkSeen: () => Promise<void>;
@@ -177,6 +178,9 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
             {/* Right Column: Categories and Filters */}
             <div className="col-span-3">
               {CATEGORY_MAP.filter(({ slug }) => {
+                if (!filterSettings.enableMedia && (slug === 'videos' || slug === 'with-images')) {
+                  return false;
+                }
                 if (!filterSettings.enableForeignBots && (slug === 'from-bots' || slug === 'network-mentions' || slug === 'non-english')) {
                   return false;
                 }
@@ -233,6 +237,15 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                 <label className="flex items-center space-x-2 mt-2">
                   <input
                     type="checkbox"
+                    checked={filterSettings.enableMedia}
+                    onChange={() => updateFilterSettings({ enableMedia: !filterSettings.enableMedia })}
+                    className="form-checkbox"
+                  />
+                  <span>Enable Media</span>
+                </label>
+                <label className="flex items-center space-x-2 mt-2">
+                  <input
+                    type="checkbox"
                     checked={filterSettings.enableForeignBots}
                     onChange={() =>
                       updateFilterSettings({
@@ -241,7 +254,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                     }
                     className="form-checkbox"
                   />
-                  <span>Enable Foreign & Bots</span>
+                  <span>Enable Ats, Foreign, & Bots</span>
                 </label>
               </div>
             </div>
