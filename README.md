@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shadowbox
 
-## Getting Started
+### Description
+Shadowbox is an alternative timeline client for Mastodon, acting as a community timeline aggregator. It's the missing bootstrapping and discovery function for Mastodon, with an emphasis on client-based moderation over server and community moderation.
 
-First, run the development server:
+- **Who is it for?** People who want to social network around topics that are popular on Mastodon, such as software, Linux, and coding, and who might want to ignore US political discussions.
+- **Why it's awesome:** Faster, more efficient, and provides a cleaner experience with less noise.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- [Installation](#installation)
+- [Usage](#usage)
+- [License](#license)
+- [Contact](#contact)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
+To get started with Shadowbox, follow these steps:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+#### Local Installation
+1. **Clone the repository:**
+    ```bash
+    git clone https://github.com/yourusername/shadowbox.git
+    cd shadowbox
+    ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Install dependencies:**
+    ```bash
+    npm install
+    ```
 
-## Learn More
+3. **Run the development server:**
+    ```bash
+    npm run dev
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+#### Docker Installation (Recommended)
+1. **Build the Docker image:**
+    ```bash
+    docker build -t shadowbox .
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+    This will install the required dependencies.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Run the Docker container:**
+    ```bash
+    docker run -p 3000:3000 shadowbox
+    ```
 
-## Deploy on Vercel
+### Usage
+To use Shadowbox, follow these steps:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Open your browser:**
+    Navigate to `http://localhost:3000`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. **Homepage:**
+    You will be presented with the homepage that already has many open-source related Mastodon instances populated and ready to start collecting posts.
+
+3. **Collect Posts:**
+    Click on the "Collect Posts" button for each instance. This action will update a graph showing how the posts have been categorized and how many regular posts are available to read.
+
+4. **View Regular Posts:**
+    Click on the "Regular" link to view a timeline of regular posts on that instance.
+
+### License
+This project is licensed under the terms of the [GNU General Public License (GPL)](https://www.gnu.org/licenses/gpl-3.0.en.html).
+
+### Contact
+For any questions or feedback, reach out to me on Mastodon at **@tomosaigon@fosstodon.org**.
