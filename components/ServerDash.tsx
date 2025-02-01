@@ -59,7 +59,7 @@ const ServerDashChart = ({
   // Filter out Bots, Non-English, and Reblogs categories
   const filteredCategoryMap = CATEGORY_MAP.filter(
     (category) =>
-      !["Bots", "Non-English", "Reblogs"].includes(category.label)
+      !["Mentions", "Bots", "Non-English", "Reblogs"].includes(category.label)
   );
 
   // Prepare datasets: Each category contributes two segments (seen and unseen)
