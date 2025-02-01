@@ -13,6 +13,7 @@ import Link from 'next/link';
 import NavigationBar from '../../components/NavigationBar';
 import { CATEGORY_MAP, getCategoryBySlug } from '../../db/categories';
 import { Bucket } from '@/db/bucket';
+import Head from 'next/head';
 
 const POSTS_PER_PAGE = 25;
 const FILTER_SETTINGS_KEY = 'filterSettings';
@@ -21,22 +22,33 @@ const FILTER_SETTINGS_KEY = 'filterSettings';
 
 export default function CategoryPage() {
   const router = useRouter();
-  const { server, category } = router.query;
+  const rawServer = router.query.server;
+  const rawCategory = router.query.category;
+
+  // Normalize server and category
+  const server = typeof rawServer === 'string' ? rawServer : rawServer?.[0] ?? undefined;
+  const category = typeof rawCategory === 'string' ? rawCategory : rawCategory?.[0] ?? 'regular';
+
   const { getServerBySlug } = useServers();
-  const { data: serverStats, invalidateServerStats } = useServerStats(server as string);
+  const { data: serverStats, invalidateServerStats } = useServerStats(server || '');
+
   const {
     countsQuery: { data: countsData },
     postsQuery: { data: postsData, fetchNextPage, hasNextPage },
     invalidateTimeline,
   } = useTimeline({
-    server: server as string,
-    category: category as string,
+    server: server || '',
+    category,
     postsPerPage: POSTS_PER_PAGE,
   });
 
-  const { bucket, label: bucketLabel } = getCategoryBySlug((category ? category : 'regular') as string);
-  const posts = postsData?.pages.flatMap((page) => page.buckets[(category ? category : 'regular') as string] || []) || [];
-  const totalCount = countsData ? (countsData?.counts as Record<Bucket, number>)[bucket] : -1;
+  const { bucket, label: bucketLabel } = getCategoryBySlug(category);
+  const posts =
+    postsData?.pages.flatMap((page) => page.buckets[category] || []) || [];
+
+  const totalCount = countsData
+    ? (countsData?.counts as Record<Bucket, number>)[bucket]
+    : -1;
 
   const handleLoadMore = async () => {
     await fetchNextPage();
@@ -47,7 +59,8 @@ export default function CategoryPage() {
   const [filterSettings, setFilterSettings] = useState({
     showNonStopWords: true,
     highlightThreshold: null as number | null,
-    enableForeignBots: false
+    enableForeignBots: false,
+    enableMedia: true,
   });
 
   // Update filter settings in localStorage and state
@@ -181,10 +194,15 @@ export default function CategoryPage() {
     direction: 'prev' | 'next',
     counts: Record<string, number>,
     server: string,
-    filterSettings: { enableForeignBots: boolean }
+    filterSettings: {
+      enableMedia: boolean; enableForeignBots: boolean 
+}
   ) {
     const filteredCategories = CATEGORY_MAP.filter(({ slug, bucket }) => {
       if (slug === currentSlug) return true;
+      if (!filterSettings.enableMedia && ['videos', 'with-images'].includes(slug)) {
+        return false;
+      }
       if (!filterSettings.enableForeignBots && ['from-bots', 'network-mentions', 'non-english'].includes(slug)) {
         return false;
       }
@@ -268,18 +286,24 @@ export default function CategoryPage() {
     );
   }
 
+  if (!server) {
+    return <p className="text-gray-600">Invalid server selection.</p>;
+  }
   // <Head>
   //   <title>{`${bucketLabel} - ${server}`}</title>
   //   <meta name="description" content={`Posts from ${server} in category ${bucketLabel}`} />
   // </Head>
   return (
     <div className="flex flex-col min-h-screen" style={{ "overflowY": "scroll",  height: '100vh' }} ref={scrollContainerRef}>
+      <Head>
+        <title>{server ? getServerBySlug(server)?.name : 'Unknown server'} / {getCategoryBySlug(category).label}</title>
+      </Head>
       <main className="flex-1 w-full">
         <NavigationBar
-          server={server as string}
+          server={server}
           serverStats={serverStats}
           onServerChange={handleServerChange}
-          category={category ? (category as string) : 'regular'}
+          category={category}
           counts={countsData?.counts}
           filterSettings={filterSettings}
           updateFilterSettings={updateFilterSettings}
