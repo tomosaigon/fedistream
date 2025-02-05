@@ -16,7 +16,7 @@ const Dashboard: React.FC = () => {
   const { data: stats } = useServerStats(undefined, true);
   const { updateServer } = useModifyServers();
 
-  const enabledServers = servers.filter((server) => server.enabled);
+  const enabledServers = servers.filter((server) => server.enabled).sort((a, b) => a.name.localeCompare(b.name));
   const disabledServers = servers.filter((server) => !server.enabled);
 
   const enableServer = async (server: Server) => {
