@@ -5,6 +5,7 @@ import {
   ArrowPathIcon,
   UserPlusIcon,
   ArrowUturnLeftIcon,
+  FolderOpenIcon,
 } from '@heroicons/react/24/solid';
 import React, { useState, useEffect } from 'react';
 import { Post, IMediaAttachment, AccountTag } from '../db/database';
@@ -22,6 +23,7 @@ import RepliesModal from './RepliesModal';
 import AsyncButton from './AsyncButton';
 
 import { formatDateTime } from '@/utils/format';
+import AccountPostsModal from './AccountPostsModal';
 
 interface PostListProps {
   posts: Post[];
@@ -39,6 +41,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
   const [posts, setPosts] = useState(initialPosts);
   const [activeImage, setActiveImage] = useState<IMediaAttachment | null>(null);
   const [activePost, setActivePost] = useState<Post | null>(null);
+  const [activeAccount, setActiveAccount] = useState<string | null>(null);
   const [activeRepliesPost, setActiveRepliesPost] = useState<Post | null>(null);
   const { getServerBySlug} = useServers();
   const { handleFollow, handleFavorite, hasApiCredentials } = useMastodonAccount({ baseUrl: getServerBySlug(server)?.uri??'' }); // XXX
@@ -179,6 +182,13 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                             </div>
                           </>
                         )}
+                        <button
+                          onClick={() => setActiveAccount(post.account_id)}
+                          // className="flex items-center space-x-2 text-blue-500 hover:underline focus:outline-none"
+                          className="ml-2 inline-block hover:underline focus:outline-none"
+                        >
+                          <FolderOpenIcon className="w-4 sm:w-6 h-4 sm:h-8 text-gray-400" />
+                        </button>
                       </div>
                       {post.url ? (
                         <a
@@ -395,6 +405,13 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
           }}
         />
       )}
+
+      {activeAccount && (
+        <AccountPostsModal
+          accountId={activeAccount}
+          onClose={() => setActiveAccount(null)}
+        />
+    )}
     </div>
   );
 };
