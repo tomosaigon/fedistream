@@ -161,7 +161,7 @@ interface ServerDashProps {
   server: Server;
 }
 
-const ServerfeatDash: React.FC<ServerDashProps> = ({ server }) => {
+const ServerDash: React.FC<ServerDashProps> = ({ server }) => {
   const { data: stats, isPending: isStatsLoading, error: statsError, invalidateServerStats } = useServerStats(server.slug);
   const { updateServer } = useModifyServers();
 
