@@ -118,6 +118,7 @@ export class DatabaseManager {
         bucket TEXT NOT NULL,
         card TEXT,
         poll TEXT,
+        saved	INTEGER DEFAULT 0,
         UNIQUE(id, server_slug)
         FOREIGN KEY(parent_id) REFERENCES posts(id) ON DELETE CASCADE
       );
@@ -453,6 +454,48 @@ export class DatabaseManager {
     return result?.id;
   }
 
+  // special case getBucketedPostsByCategory
+  public getSavedPosts(
+    serverSlug: string,
+    // bucket: Bucket,
+    limit: number = 20,
+    offset: number = 0
+  ): Post[] {
+    try {
+      // no p.seen = 0 
+      const rows = this.db
+        .prepare(
+          `
+          SELECT * 
+          FROM posts
+          WHERE server_slug = ? AND saved = 1
+          ORDER BY created_at DESC
+          LIMIT ? OFFSET ?
+        `
+        )
+        .all(serverSlug, limit, offset) as SQLitePost[];
+
+      return rows.map((row) => this.transformSQLitePost(row));
+    } catch (error) {
+      console.error('Error in getSavedPosts:', error);
+      return [];
+    }
+  }
+
+  public markPostSaved(
+    serverSlug: string,
+    postId: string,
+    saved: boolean
+  ): boolean {
+    const stmt = this.db.prepare(`
+      UPDATE posts
+      SET saved = ?
+      WHERE server_slug = ? AND id = ?
+    `);
+    const result = stmt.run(saved ? 1 : 0, serverSlug, postId);
+    return result.changes > 0;
+  }
+
   public getBucketedPostsByCategory(
     serverSlug: string,
     bucket: Bucket,
@@ -490,6 +533,7 @@ export class DatabaseManager {
             rp.bucket AS reblog_bucket,
             rp.card AS reblog_card,
             rp.poll AS reblog_poll,
+            rp.saved AS reblog_saved,
             GROUP_CONCAT(at.tag) AS account_tags
           FROM posts p
           LEFT JOIN posts rp ON p.parent_id = rp.id
@@ -536,6 +580,7 @@ export class DatabaseManager {
           bucket: row.reblog_bucket!,
           card: row.reblog_card!,
           poll: row.reblog_poll!,
+          saved: row.reblog_saved!,
         });
       
         const mainPost = this.transformSQLitePost(row);
@@ -575,10 +620,42 @@ export class DatabaseManager {
         counts[row.bucket] = row.count;
       });
 
+      const saved = this.db.prepare(`
+        SELECT COUNT(*) as count
+        FROM posts 
+        WHERE server_slug = ? AND saved = 1
+      `).all(serverSlug) as { count: number }[];
+      counts[Bucket.saved] = saved[0].count;
+
       return counts;
     } catch (error) {
       console.error('Error in getCategoryCounts:', error);
       return counts;
+    }
+  }
+
+  public getPostsByAccount(
+    accountId: string,
+    limit: number = 20,
+    offset: number = 0
+  ): Post[] {
+    try {
+      const rows = this.db
+        .prepare(
+          `
+          SELECT p.*
+          FROM posts p
+          WHERE p.account_id = ?
+          ORDER BY p.created_at DESC
+          LIMIT ? OFFSET ?
+          `
+        )
+        .all(accountId, limit, offset) as SQLitePostWithReblog[];
+  
+      return rows.map((row) => this.transformSQLitePost(row));
+    } catch (error) {
+      console.error('Error in getPostsByAccount:', error);
+      return [];
     }
   }
 
@@ -670,6 +747,7 @@ interface SQLitePost {
   bucket: string;
   card: string | null;
   poll: string | null;
+  saved?: number; // bool
 }
 
 interface SQLitePostWithReblog extends SQLitePost {
@@ -700,6 +778,7 @@ interface SQLitePostWithReblog extends SQLitePost {
   reblog_bucket?: string;
   reblog_card?: string | null;
   reblog_poll?: string | null;
+  reblog_saved?: number; // bool
 }
 
 // Account tags come from JOIN with account_tags table

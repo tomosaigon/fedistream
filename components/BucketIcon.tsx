@@ -11,6 +11,7 @@ import {
   HashtagIcon,
   LinkIcon,
   VideoCameraIcon,
+  BookmarkIcon,
 } from '@heroicons/react/24/solid';
 import { Bucket } from '@/db/bucket';
 
@@ -23,6 +24,8 @@ const BucketIcon: React.FC<BucketIconProps> = ({ bucket, className = 'h-4 w-4' }
   switch (bucket) {
     case Bucket.regular:
       return <DocumentTextIcon className={className} />;
+    case Bucket.saved:
+      return <BookmarkIcon className={className} />;
     case Bucket.questions:
       return <QuestionMarkCircleIcon className={className} />;
     case Bucket.withImages:

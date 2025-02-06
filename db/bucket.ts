@@ -9,6 +9,8 @@ export enum Bucket {
   withLinks = 'withLinks',
   fromBots = 'fromBots',
   regular = 'regular',
+  subscribed = 'subscribed',
+  saved = 'saved',
   reblogs = 'reblogs',
   questions = 'questions',
   videos = 'videos',

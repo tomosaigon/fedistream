@@ -6,8 +6,10 @@ import {
   UserPlusIcon,
   ArrowUturnLeftIcon,
   FolderOpenIcon,
+  BookmarkIcon,
 } from '@heroicons/react/24/solid';
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Post, IMediaAttachment, AccountTag } from '../db/database';
 import { getNonStopWords, postContainsMutedWord, getMutedWordsFoundInPost } from '@/utils/nonStopWords';
 import { formatDateTime } from '@/utils/format';
@@ -60,6 +62,23 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
           : post
       )
     );
+  }
+
+  const handleMarkSaved = async (postId: string) => {
+    try {
+      const res = await fetch(`/api/mark-saved?server=${server}&id=${postId}&saved=true`, {
+        method: 'POST',
+      });
+      if (!res.ok) {
+        throw new Error(`Mark saved failed: ${res.statusText}`);
+      }
+  
+      const data = await res.json();
+      toast.success(`Marked ${data.updatedCount} posts as saved`);
+    } catch (error) {
+      console.error('Error marking post saved:', error);
+      toast.error('Error marking post saved');
+    }
   }
 
   return (
@@ -315,6 +334,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                           key={word}
                           onClick={() => mutedWordsFound.includes(word) ? deleteMutedWord(word) : createMutedWord(word)}
                           className={`px-2 py-1 rounded text-xs sm:text-sm ${
+                            mutedWordsFound.includes(word) ? 'bg-gray-300 text-gray-500' :
                             word.startsWith('#')
                               ? 'bg-red-500 text-white hover:bg-red-600' // Styling for hashtags
                               : 'bg-orange-500 text-white hover:bg-red-600'  // Styling for regular words
@@ -329,8 +349,21 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
               </article>
 
               {/* Admin section - full width on mobile, side panel on desktop */}
+              {matchingReason ? '' : isMuted ? '' : (
               <div className="w-full flex items-start space-x-4 border-t sm:border-t-0 sm:border-l p-2 bg-gray-50">
                 <div className="flex gap-1 sm:gap-2 max-h-32 sm:max-h-64 relative">
+                <AsyncButton
+                        callback={() => handleMarkSaved(post.id)}
+                        defaultText={
+                          <>
+                            <BookmarkIcon
+                              className="w-4 h-4 cursor-pointer hover:text-yellow-500 transition-colors"
+                            />
+                            {/* <span>fav</span> */}
+                          </>
+                        }
+                        color={'yellow'}
+                      />
                   {hasApiCredentials ? (
                     <>
                       <AsyncButton

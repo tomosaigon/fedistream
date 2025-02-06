@@ -2,6 +2,8 @@ import { Bucket } from './bucket';
 
 export const CATEGORY_MAP = [
   { slug: 'regular', bucket: Bucket.regular, label: 'Regular' },
+  // { slug: 'subscribed', bucket: Bucket.subscribed, label: 'Subscribed' },
+  { slug: 'saved', bucket: Bucket.saved, label: 'Saved' },
   { slug: 'questions', bucket: Bucket.questions, label: 'Questions' },
   { slug: 'with-images', bucket: Bucket.withImages, label: 'Images' },
   { slug: 'videos', bucket: Bucket.videos, label: 'Videos' },

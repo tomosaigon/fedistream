@@ -1,7 +1,7 @@
+import { NextApiRequest, NextApiResponse } from 'next';
+import { Bucket } from '@/db/bucket';
 import { getCategoryBySlug } from '@/db/categories';
 import { DatabaseManager } from '@/db/database';
-
-import { NextApiRequest, NextApiResponse } from 'next';
 
 const dbManager = new DatabaseManager();
 
@@ -30,7 +30,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { bucket } = getCategoryBySlug(category);
 
   // Get posts for specific category
-  const posts = dbManager.getBucketedPostsByCategory(
+  const posts = bucket === Bucket.saved ? dbManager.getSavedPosts(server,
+    parseInt(limit as string),
+    parseInt(offset as string)
+  ) : dbManager.getBucketedPostsByCategory(
     server,
     bucket,
     parseInt(limit as string),

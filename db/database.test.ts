@@ -279,6 +279,8 @@ describe('DatabaseManager Tests', () => {
       fromBots: 1,
       questions: 0,
       regular: 1,
+      saved: 0,
+      subscribed: 0,
     });
   });
 
