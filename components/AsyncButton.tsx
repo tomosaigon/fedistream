@@ -5,6 +5,7 @@ interface AsyncButtonProps {
   loadingText?: string;
   defaultText: string | JSX.Element;
   color: 'blue' | 'yellow' | 'amber' | 'red' | 'green' | 'purple';
+  extraClasses?: string;
 }
 
 const AsyncButton: React.FC<AsyncButtonProps> = ({
@@ -12,6 +13,7 @@ const AsyncButton: React.FC<AsyncButtonProps> = ({
   loadingText,
   defaultText,
   color,
+  extraClasses,
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -36,7 +38,7 @@ const AsyncButton: React.FC<AsyncButtonProps> = ({
     <button
       onClick={handleClick}
       disabled={loading}
-      className={`px-2 py-1 text-sm text-white rounded flex items-center justify-center ${baseClass} ${hoverClass} ${disabledClass}`}
+      className={`px-2 py-1 text-sm text-white rounded flexxx items-center justify-center ${baseClass} ${hoverClass} ${disabledClass} ${extraClasses}`}
     >
       {loading && loadingText ? loadingText : defaultText}
     </button>
