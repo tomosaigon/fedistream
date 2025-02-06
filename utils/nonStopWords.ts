@@ -137,10 +137,27 @@ export const getNonStopWords = (htmlString: string): string[] => {
  * @param mutedWords - An array of words to mute.
  * @returns True if any non-stop word is in the muted words list; otherwise, false.
  */
-export const containsMutedWord = (nonStopWords: string[], mutedWords: string[]): boolean => {
-  const mutedWordsSet = new Set(mutedWords); // Convert to set for O(1) lookups
-  return nonStopWords.some(word => mutedWordsSet.has(word));
-};
+// export const containsMutedWord = (nonStopWords: string[], mutedWords: string[]): boolean => {
+//   const mutedWordsSet = new Set(mutedWords); // Convert to set for O(1) lookups
+//   return nonStopWords.some(word => mutedWordsSet.has(word));
+// };
+
+export const postContainsMutedWord = (postText: string, mutedWords: string[]): boolean => {
+  const textContent = extractVisibleTextFromHTML(postText
+    .replace(/<a href=".*" class="u-url mention">@<span>.*<\/span><\/a>/g, ' ') // Matches, hides mentions
+  )
+    // Matches URLs starting with http:// or https://
+    .replace(/https?:\/\/[^\s]+/g, ' ')
+    .toLowerCase();
+    // return textContent.split(' ').some(word => mutedWords.includes(word));
+  const words = textContent
+    .toLowerCase()
+    .match(/(?:#)?[a-z0-9_]+(?:'[a-z]+)?/g) || []; // Matches words, including contractions, and hashtags
+
+  // Remove the apostrophe in contractions
+  const cleanedWords = words.map(word => word.replace(/'/g, ''));
+  return cleanedWords.some(word => mutedWords.includes(word));
+}
 
 /**
  * Returns a list of muted words found in the non-stop words array.
@@ -148,7 +165,26 @@ export const containsMutedWord = (nonStopWords: string[], mutedWords: string[]):
  * @param mutedWords - An array of words to mute.
  * @returns An array of muted words found in the non-stop words array.
  */
-export const getMutedWordsFound = (nonStopWords: string[], mutedWords: string[]): string[] => {
+// export const getMutedWordsFound = (nonStopWords: string[], mutedWords: string[]): string[] => {
+//   const mutedWordsSet = new Set(mutedWords); // Convert to set for O(1) lookups
+//   return nonStopWords.filter(word => mutedWordsSet.has(word));
+// };
+
+export const getMutedWordsFoundInPost = (postText: string, mutedWords: string[]): string[] => {
   const mutedWordsSet = new Set(mutedWords); // Convert to set for O(1) lookups
-  return nonStopWords.filter(word => mutedWordsSet.has(word));
+  const textContent = extractVisibleTextFromHTML(postText
+    .replace(/<a href=".*" class="u-url mention">@<span>.*<\/span><\/a>/g, ' ') // Matches, hides mentions
+  )
+    // Matches URLs starting with http:// or https://
+    .replace(/https?:\/\/[^\s]+/g, ' ')
+    .toLowerCase();
+  // return textContent.split(' ').some(word => mutedWords.includes(word));
+  // return textContent.split(' ').filter(word => mutedWordsSet.has(word));
+  const words = textContent
+    .toLowerCase()
+    .match(/(?:#)?[a-z0-9_]+(?:'[a-z]+)?/g) || []; // Matches words, including contractions, and hashtags
+
+  // Remove the apostrophe in contractions
+  const cleanedWords = words.map(word => word.replace(/'/g, ''));
+  return [...new Set(cleanedWords.filter(word => mutedWordsSet.has(word)))];
 };

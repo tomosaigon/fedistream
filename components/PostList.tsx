@@ -9,7 +9,8 @@ import {
 } from '@heroicons/react/24/solid';
 import React, { useState, useEffect } from 'react';
 import { Post, IMediaAttachment, AccountTag } from '../db/database';
-import { getNonStopWords, containsMutedWord, getMutedWordsFound } from '../utils/nonStopWords';
+import { getNonStopWords, postContainsMutedWord, getMutedWordsFoundInPost } from '@/utils/nonStopWords';
+import { formatDateTime } from '@/utils/format';
 import { useServers } from '../context/ServersContext';
 import { useMutedWords } from '../hooks/useMutedWords';
 import { useMastodonAccount } from '../hooks/useMastodonAccount';  
@@ -21,8 +22,6 @@ import PostCard from './PostCard';
 import PostPoll from "./PostPoll";
 import RepliesModal from './RepliesModal';
 import AsyncButton from './AsyncButton';
-
-import { formatDateTime } from '@/utils/format';
 import AccountPostsModal from './AccountPostsModal';
 
 interface PostListProps {
@@ -36,7 +35,7 @@ interface PostListProps {
 
 const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filterSettings }) => {
   const { reasons } = useReasons();
-  const { mutedWords, createMutedWord } = useMutedWords();
+  const { mutedWords, createMutedWord, deleteMutedWord } = useMutedWords();
   const { handleTag, handleClearTag, getAccountTagCount } = useTags();
   const [posts, setPosts] = useState(initialPosts);
   const [activeImage, setActiveImage] = useState<IMediaAttachment | null>(null);
@@ -65,7 +64,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
 
   return (
     <div className="w-full sm:max-w-4xl mx-0 sm:mx-auto p-0">
-      <div className="space-y-1 sm:space-y-4">
+      <div className="space-y-1 sm:space-y-2">
         {posts.map((post) => {
           // console.log('Post:', post.account_tags);
           const matchingReason = reasons.find(
@@ -80,8 +79,18 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
             post = post.reblog;
           }
 
-          const nonStopWords = getNonStopWords(post.content);
-          const isMuted = containsMutedWord(nonStopWords, mutedWords);
+          const postText = [
+            // post.content.replace(/<[^>]*>/g, ''),
+            post.content,
+            post.media_attachments.map((m) => m.description).join(' '), 
+            post.card?.title, post.card?.description,
+            post.poll?.options.map((o) => o.title).join(' ')
+          ].join('\n');
+          const nonStopWords = getNonStopWords(postText);
+          // const isMuted = containsMutedWord(nonStopWords, mutedWords);
+          const isMuted = postContainsMutedWord(postText, mutedWords);
+          const mutedWordsFound = getMutedWordsFoundInPost(postText, mutedWords);
+
           // TODO - Add way to reveal the muted post
 
           return (
@@ -138,7 +147,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                 </div>
                 )}
                 {/* Post Header */}
-                <div className={`p-4 flex items-start space-x-3`}>
+                <div className={`p-2 sm:p-3 flex items-start space-x-2`}>
                   {post.account_url && (
                     <a
                       href={post.account_url}
@@ -156,18 +165,20 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                     </a>
                   )}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
+                    <div className="flex  justify-between">
                       <div>
                         {post.account_url ? (
                           <a
                             href={post.account_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="hover:underline"
+                            className="hover:underline inline-block"
                           >
-                            <div className="font-medium text-gray-900">
-                              {post.account_display_name}
-                            </div>
+                            {matchingReason || isMuted ? null : (
+                              <div className="font-medium text-xs sm:text-base text-gray-900">
+                                {post.account_display_name}
+                              </div>
+                            )}
                             <div className="text-sm text-gray-500">
                               @{post.account_acct ? post.account_acct : post.account_username}
                             </div>
@@ -190,12 +201,50 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                           <FolderOpenIcon className="w-4 sm:w-6 h-4 sm:h-8 text-gray-400" />
                         </button>
                       </div>
+
+                      {/* <span>more posts</span> */}
+                      {matchingReason ? (
+                        <div className="text-sm sm:text-base text-red-600">
+                          reason:{" "}
+                          <span className="font-semibold">{matchingReason.reason}</span>
+                          <AsyncButton
+                            callback={async () => {
+                              const tags = await handleClearTag(post.account_id, post.account_username, matchingReason.reason, post.server_slug);
+                              if (tags) {
+                                updateAccountTags(post.account_id, tags);
+                              }
+                            }}
+                            loadingText={`Clearing ${matchingReason.reason}...`}
+                            defaultText="×"
+                            color={'red'}
+                          />
+                        </div>
+                      ) : isMuted ? (
+                        <div key={post.id} className="muted-disclaimer bg-gray-100 text-center p-0 text-sm text-red-500">
+                          Contains muted words: {
+                            mutedWordsFound.map(word => {
+                              return (
+                                <button
+                                  key={word}
+                                  onClick={() => deleteMutedWord(word)} // Call the function when clicked
+                                  className={`px-2 py-1 rounded text-xs sm:text-sm ${word.startsWith('#')
+                                      ? 'bg-red-500 text-white hover:bg-red-600' // Styling for hashtags
+                                      : 'bg-orange-500 text-white hover:bg-red-600'  // Styling for regular words
+                                    }`}
+                                >
+                                  {word}
+                                </button>
+                              )
+                            })
+                          }
+                        </div>
+                      ) : ''}
                       {post.url ? (
                         <a
                           href={post.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-gray-500 hover:underline"
+                          className="text-xs sm:text-sm text-gray-500 hover:underline"
                         >{formatDateTime(post.created_at)}</a>
                       ) : (
                         <div className="text-sm text-gray-500">{formatDateTime(post.created_at)}</div>
@@ -204,16 +253,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                   </div>
                 </div>
 
-                {matchingReason ? (
-                  <div className="mt-2 px-3 sm:px-4 pb-3 text-base sm:text-sm text-red-600">
-                    Filtered with reason:{" "}
-                    <span className="font-semibold">{matchingReason.reason}</span>
-                  </div>
-                ) : isMuted ? (
-                  <div key={post.id} className="muted-disclaimer bg-gray-100 text-center p-2 text-sm text-red-500">
-                    Contains muted words: {getMutedWordsFound(nonStopWords, mutedWords).join(', ')}
-                  </div>
-                ) : (
+                {matchingReason ? '' : isMuted ? '' : (
                   <div className={`px-3 sm:px-4 pb-3 ${
                     // {/* Post Content */}
                     // post.account_tags?.some(t => t.tag === 'spam' || t.tag === 'bitter')
@@ -267,17 +307,17 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
 
                 {/* Non-Stop Words Section */}
                 {filterSettings.showNonStopWords && (
-                  <div className="px-3 sm:px-4 pt-3">
-                    <p className="text-gray-600 text-xs sm:text-sm">Non-Stop Words:</p>
-                    <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="px-3 sm:px-4 pt-1">
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      <span className="text-gray-600 text-xs sm:text-sm font-extrabold py-1">Mute:</span>
                       {nonStopWords.map((word) => (
                         <button
                           key={word}
-                          onClick={() => createMutedWord(word)} // Call the function when clicked
+                          onClick={() => mutedWordsFound.includes(word) ? deleteMutedWord(word) : createMutedWord(word)}
                           className={`px-2 py-1 rounded text-xs sm:text-sm ${
                             word.startsWith('#')
-                              ? 'bg-green-500 text-white hover:bg-red-600' // Styling for hashtags
-                              : 'bg-blue-500 text-white hover:bg-red-600'  // Styling for regular words
+                              ? 'bg-red-500 text-white hover:bg-red-600' // Styling for hashtags
+                              : 'bg-orange-500 text-white hover:bg-red-600'  // Styling for regular words
                           }`}
                         >
                           {word}
@@ -300,7 +340,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                             <StarIcon
                               className="w-4 h-4 cursor-pointer hover:text-yellow-500 transition-colors"
                             />
-                            <span>fav</span>
+                            {/* <span>fav</span> */}
                           </>
                         }
                         color={'yellow'}
@@ -310,7 +350,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                         defaultText={
                           <>
                             <UserPlusIcon className="w-4 h-4 cursor-pointer hover:text-green-500 transition-colors" />
-                            <span>Follow</span>
+                            {/* <span>Follow</span> */}
                           </>
                         }
                         color={'green'}
@@ -380,6 +420,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                   })}
                 </div>
               </div>
+              )}
 
             </div>
           );
