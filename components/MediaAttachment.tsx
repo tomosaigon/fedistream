@@ -1,5 +1,6 @@
 import { Post, IMediaAttachment } from "@/db/database";
-import React from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 
 interface MediaAttachmentProps {
   post: Post;
@@ -14,6 +15,28 @@ const MediaAttachment: React.FC<MediaAttachmentProps> = ({
   setActiveImage,
   setActivePost,
 }) => {
+  const [info, setInfo] = useState<Record<number, { width: number; height: number; fileSize: number }>>({});
+  const DEBUG = false;
+
+  useEffect(() => {
+    if (!DEBUG) return;
+    mediaAttachments.forEach((media, index) => {
+      const fetchFileSize = async () => {
+        try {
+          const response = await axios.head(media.preview_url || '');
+          const fileSize = Number(response.headers["content-length"]) || 0;
+          setInfo((prev) => ({
+            ...prev,
+            [index]: { ...(prev[index] || { width: 0, height: 0 }), fileSize },
+          }));
+        } catch (error) {
+          console.error("Error fetching file size:", error);
+        }
+      };
+
+      fetchFileSize();
+    });
+  }, [mediaAttachments]);
   return (
     <div
       className={`grid gap-2 p-3 sm:p-4 ${
@@ -34,20 +57,37 @@ const MediaAttachment: React.FC<MediaAttachmentProps> = ({
             </video>
           </div>
         ) : media.type === "image" && media.url && media.preview_url ? (
-          <div
-            key={index}
-            onClick={() => {
-              setActiveImage(media);
-              setActivePost(post);
-            }}
-            className="cursor-zoom-in"
-          >
+            <div
+              key={index}
+              onClick={() => {
+                setActiveImage(media);
+                setActivePost(post);
+              }}
+              className="cursor-zoom-in"
+            >
+              {DEBUG && (<>
+                <span>File ext: {media.url.split('.').pop()}</span>
+                {info[index] && (
+                  <span className="text-xs px-1 rounded">
+                    {info[index].width}x{info[index].height} •{" "}
+                    {info[index].fileSize > 0 ? `${Math.round(info[index].fileSize / 1024)} KB` : "Size Unavailable"}
+                  </span>
+                )}
+              </>)}
             <img
               src={media.preview_url}
               alt={media.description || "Image preview"}
               className={`w-full rounded-lg hover:opacity-90 transition-opacity ${
                 mediaAttachments.length === 1 ? "h-auto" : "h-40 sm:h-48"
               } object-cover`}
+              onLoad={(e) => {
+                if (!DEBUG) return;
+                const { naturalWidth, naturalHeight } = e.currentTarget;
+                setInfo((prev) => ({
+                  ...prev,
+                  [index]: { ...(prev[index] || { fileSize: 0 }), width: naturalWidth, height: naturalHeight },
+                }));
+              }}
             />
             {media.description && (
               <span className="text-xs px-1 rounded">{media.description}</span>
