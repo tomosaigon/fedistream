@@ -1,4 +1,4 @@
-import { Post } from "./database";
+import { Post, PostCard } from "./database";
 
 export enum Bucket {
   nonEnglish = 'nonEnglish',
@@ -34,8 +34,9 @@ export function determineBucket(post: Post): Bucket {
   if (post.account_bot) return Bucket.fromBots;
   if (post.language && post.language !== 'en') return Bucket.nonEnglish; // assume unspecified language is English
   if (post.poll) return Bucket.questions;
-  if (isVideoPost(mediaAttachments, post.content)) return Bucket.videos;
-  if (mediaAttachments?.length > 0) return Bucket.withImages;
+  if (isVideoPost(mediaAttachments, post.card, post.content)) return Bucket.videos;
+  if (post.card && post.card.type === 'link') return Bucket.withLinks;
+  if (mediaAttachments?.length > 0 || post.card && post.card.type === 'photo') return Bucket.withImages;
   if (isHashtagPost(post.content)) return Bucket.hashtags;
   if (isNetworkMentionPost(post.content)) return Bucket.networkMentions;
   if (post.content.includes('<a href="')) return Bucket.withLinks;
@@ -62,12 +63,14 @@ function containsQuestion(content: string): boolean {
   return textContent.includes('?');
 }
 
-function isVideoPost(mediaAttachments: any[], content: string): boolean {
+function isVideoPost(mediaAttachments: any[], card: PostCard | null, content: string): boolean {
   // Check media attachments for video types
   const videoMimeTypes = ["video/mp4", "video/webm", "video/ogg", "video/quicktime"];
   const hasVideoAttachment = mediaAttachments.some(attachment => videoMimeTypes.includes(attachment.type));
 
   if (hasVideoAttachment) return true;
+
+  if (card && card.type === 'video') return true;
 
   // Check content for links to popular video platforms
   const videoHosts = [
