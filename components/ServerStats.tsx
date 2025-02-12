@@ -23,22 +23,22 @@ const ServerStats: React.FC<ServerStatsProps> = ({
   return (
     stats && (
       <div>
-        <div className="grid grid-cols-4 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 sm:grid-cols-4 gap-4 text-base">
           {/* Total Posts */}
           <div className="flex flex-col sm:flex-row items-center sm:justify-center">
-            <span className="text-blue-500 text-xl font-bold">{stats.totalPosts || 0}</span>
+            <span className="text-blue-500 sm:text-xl font-bold">{stats.totalPosts || 0}</span>
             <span className="text-gray-600 text-xs sm:ml-2">Total Posts</span>
           </div>
 
           {/* Seen Posts */}
           <div className="flex flex-col sm:flex-row items-center sm:justify-center">
-            <span className="text-green-500 text-xl font-bold">{stats.seenPosts || 0}</span>
+            <span className="text-green-500 sm:text-xl font-bold">{stats.seenPosts || 0}</span>
             <span className="text-gray-600 text-xs sm:ml-2">Seen</span>
           </div>
 
           {/* Unseen Posts */}
           <div className="flex flex-col sm:flex-row items-center sm:justify-center">
-            <span className="text-red-500 text-xl font-bold">
+            <span className="text-red-500 sm:text-xl font-bold">
               {(stats.totalPosts || 0) - (stats.seenPosts || 0)}
             </span>
             <span className="text-gray-600 text-xs sm:ml-2">Unseen</span>
@@ -46,7 +46,7 @@ const ServerStats: React.FC<ServerStatsProps> = ({
 
           {/* Unique Accounts */}
           <div className="flex flex-col sm:flex-row items-center sm:justify-center">
-            <span className="text-purple-500 text-xl font-bold">{stats.uniqueAccounts || 0}</span>
+            <span className="text-purple-500 sm:text-xl font-bold">{stats.uniqueAccounts || 0}</span>
             <span className="text-gray-600 text-xs sm:ml-2">Accts</span>
           </div>
         </div>
