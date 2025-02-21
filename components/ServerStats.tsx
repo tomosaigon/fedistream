@@ -26,28 +26,28 @@ const ServerStats: React.FC<ServerStatsProps> = ({
         <div className="grid grid-cols-4 sm:grid-cols-4 gap-4 text-base">
           {/* Total Posts */}
           <div className="flex flex-col sm:flex-row items-center sm:justify-center">
-            <span className="text-blue-500 sm:text-xl font-bold">{stats.totalPosts || 0}</span>
-            <span className="text-gray-600 text-xs sm:ml-2">Total Posts</span>
+            <span className="text-blue-500 font-bold">{stats.totalPosts || 0}</span>
+            <span className="text-gray-600 text-xs sm:ml-1">Total Posts</span>
           </div>
 
           {/* Seen Posts */}
           <div className="flex flex-col sm:flex-row items-center sm:justify-center">
-            <span className="text-green-500 sm:text-xl font-bold">{stats.seenPosts || 0}</span>
-            <span className="text-gray-600 text-xs sm:ml-2">Seen</span>
+            <span className="text-green-500 font-bold">{stats.seenPosts || 0}</span>
+            <span className="text-gray-600 text-xs sm:ml-1">Seen</span>
           </div>
 
           {/* Unseen Posts */}
           <div className="flex flex-col sm:flex-row items-center sm:justify-center">
-            <span className="text-red-500 sm:text-xl font-bold">
+            <span className="text-red-500 font-bold">
               {(stats.totalPosts || 0) - (stats.seenPosts || 0)}
             </span>
-            <span className="text-gray-600 text-xs sm:ml-2">Unseen</span>
+            <span className="text-gray-600 text-xs sm:ml-1">Unseen</span>
           </div>
 
           {/* Unique Accounts */}
           <div className="flex flex-col sm:flex-row items-center sm:justify-center">
-            <span className="text-purple-500 sm:text-xl font-bold">{stats.uniqueAccounts || 0}</span>
-            <span className="text-gray-600 text-xs sm:ml-2">Accts</span>
+            <span className="text-purple-500 font-bold">{stats.uniqueAccounts || 0}</span>
+            <span className="text-gray-600 text-xs sm:ml-1">Accts</span>
           </div>
         </div>
 
