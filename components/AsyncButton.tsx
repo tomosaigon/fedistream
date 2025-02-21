@@ -4,7 +4,7 @@ interface AsyncButtonProps {
   callback: () => Promise<void>;
   loadingText?: string;
   defaultText: string | JSX.Element;
-  color: 'blue' | 'yellow' | 'amber' | 'red' | 'green' | 'purple';
+  color?: 'blue' | 'yellow' | 'amber' | 'red' | 'green' | 'purple';
   extraClasses?: string;
 }
 
@@ -17,8 +17,8 @@ const AsyncButton: React.FC<AsyncButtonProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
 
-  const baseClass = `bg-${color}-400`;
-  const hoverClass = `hover:bg-${color}-600`;
+  const baseClass = color ? `bg-${color}-400` : '';
+  const hoverClass = color ? `hover:bg-${color}-600` : '';
   const disabledClass = `disabled:bg-gray-400`;
 
   const handleClick = async () => {
@@ -38,7 +38,7 @@ const AsyncButton: React.FC<AsyncButtonProps> = ({
     <button
       onClick={handleClick}
       disabled={loading}
-      className={`px-2 py-1 text-sm text-white rounded flexxx items-center justify-center ${baseClass} ${hoverClass} ${disabledClass} ${extraClasses}`}
+      className={`px-1 sm:px-2 py-1 text-sm text-white rounded flexxx items-center justify-center ${baseClass} ${hoverClass} ${disabledClass} ${extraClasses}`}
     >
       {loading && loadingText ? loadingText : defaultText}
     </button>
