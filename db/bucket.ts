@@ -37,8 +37,8 @@ export function determineBucket(post: Post): Bucket {
   if (isVideoPost(mediaAttachments, post.card, post.content)) return Bucket.videos;
   if (post.card && post.card.type === 'link') return Bucket.withLinks;
   if (mediaAttachments?.length > 0 || post.card && post.card.type === 'photo') return Bucket.withImages;
-  if (isHashtagPost(post.content)) return Bucket.hashtags;
   if (isNetworkMentionPost(post.content)) return Bucket.networkMentions;
+  if (isHashtagPost(post.content)) return Bucket.hashtags;
   if (post.content.includes('<a href="')) return Bucket.withLinks;
   // if (post.in_reply_to_id) return Bucket.asReplies;
   if (containsQuestion(post.content)) return Bucket.questions;
