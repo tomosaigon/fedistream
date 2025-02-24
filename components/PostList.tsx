@@ -260,14 +260,14 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                           />
                         </div>
                       ) : isMuted ? (
-                        <div key={post.id} className="muted-disclaimer bg-gray-100 text-center p-0 text-sm text-red-500">
+                        <div key={post.id} className="p-0 text-sm text-red-500">
                           Contains muted words: {
                             mutedWordsFound.map(word => {
                               return (
                                 <button
                                   key={word}
                                   onClick={() => deleteMutedWord(word)} // Call the function when clicked
-                                  className={`px-2 py-1 rounded text-xs sm:text-sm ${word.startsWith('#')
+                                  className={`mr-1 mb-1 px-1 sm:px-2 py-0 rounded text-xs sm:text-sm ${word.startsWith('#')
                                       ? 'bg-red-500 text-white hover:bg-red-600' // Styling for hashtags
                                       : 'bg-orange-500 text-white hover:bg-red-600'  // Styling for regular words
                                     }`}
