@@ -6,13 +6,13 @@
 export function formatDateTime(dateString: string): string {
   const date = new Date(dateString);
   return date.toLocaleString(undefined, {
-    year: 'numeric',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-  });
+    hourCycle: 'h23', // Ensures 24-hour format
+  }).replace(/,/g, ''); // Remove any remaining commas
 }
 
 export function calculateTimeDifference(startDate: string | Date, endDate: string | Date): string {
