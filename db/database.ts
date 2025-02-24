@@ -92,7 +92,11 @@ export class DatabaseManager {
   private createPostsTable() {
     this.db.exec(`
       CREATE TABLE posts (
-        id TEXT PRIMARY KEY,
+        id TEXT NOT NULL UNIQUE,
+        server_slug TEXT NOT NULL,
+        bucket TEXT NOT NULL,
+        uri TEXT,
+        url TEXT,
         parent_id TEXT,
         was_reblogged	INTEGER DEFAULT 0,
         seen INTEGER DEFAULT 0,
@@ -101,8 +105,6 @@ export class DatabaseManager {
         language TEXT,
         in_reply_to_id TEXT,
         in_reply_to_account_id TEXT,
-        uri TEXT,
-        url TEXT,
         account_id TEXT,
         account_username TEXT NOT NULL,
         account_acct TEXT,
@@ -114,19 +116,17 @@ export class DatabaseManager {
         favourites_count INTEGER DEFAULT 0,
         reblogs_count INTEGER DEFAULT 0,
         replies_count INTEGER DEFAULT 0,
-        server_slug TEXT NOT NULL,
-        bucket TEXT NOT NULL,
         card TEXT,
         poll TEXT,
         saved	INTEGER DEFAULT 0,
-        UNIQUE(id, server_slug)
+        PRIMARY KEY(id, server_slug)
         FOREIGN KEY(parent_id) REFERENCES posts(id) ON DELETE CASCADE
       );
 
       CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at);
+      CREATE INDEX IF NOT EXISTS idx_posts_account_id ON posts(account_id);
       CREATE INDEX IF NOT EXISTS idx_posts_account_username ON posts(account_username);
       CREATE INDEX IF NOT EXISTS idx_posts_server_slug ON posts(server_slug);
-      CREATE INDEX IF NOT EXISTS idx_posts_account_id ON posts(account_id);
     `);
   }
 
