@@ -53,16 +53,6 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Reasons */}
-      <CollapsibleDiv title="Reasons to tag accounts">
-        <QuickReasons />
-      </CollapsibleDiv>
-
-      {/* Muted Words */}
-      <CollapsibleDiv title="Muted Words">
-        <QuickMutedWords />
-      </CollapsibleDiv>
-
       {/* Enabled servers */}
       <div className="mb-8">
         {/* <h2 className="text-lg font-semibold text-gray-800 mb-4">Enabled Servers</h2> */}
@@ -92,6 +82,18 @@ const Dashboard: React.FC = () => {
           ))}
         </ul>
       </CollapsibleDiv>
+
+
+      {/* Reasons */}
+      <CollapsibleDiv title="Reasons to tag accounts">
+        <QuickReasons />
+      </CollapsibleDiv>
+
+      {/* Muted Words */}
+      <CollapsibleDiv title="Muted Words">
+        <QuickMutedWords />
+      </CollapsibleDiv>
+
     </div>
   );
 };
