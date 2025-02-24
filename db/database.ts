@@ -702,13 +702,25 @@ export class DatabaseManager {
   public markPostsAsSeen(serverSlug: string, bucket: string, seenFrom: string, seenTo: string): number {
     console.log(`Marking posts as seen for server: ${serverSlug}, bucket: ${bucket}, from: ${seenFrom}, to: ${seenTo}`);
 
+    // const stmt = this.db.prepare(`
+    //   UPDATE posts
+    //   SET seen = 1
+    //   WHERE server_slug = ? AND bucket = ? AND created_at BETWEEN ? AND ?
+    // `);
+    // const result = stmt.run(serverSlug, bucket, seenFrom, seenTo);
+
+    // Marks the reblogging, but not the original post which may be out of the timeline.
     const stmt = this.db.prepare(`
       UPDATE posts
       SET seen = 1
-      WHERE server_slug = ? AND bucket = ? AND created_at BETWEEN ? AND ?
+      WHERE server_slug = ? 
+        AND created_at BETWEEN ? AND ?
+        AND (
+          bucket = ? OR id IN (SELECT p.id FROM posts p JOIN posts rp ON p.parent_id = rp.id WHERE rp.bucket = ?)
+        )
     `);
+    const result = stmt.run(serverSlug, seenFrom, seenTo, bucket, bucket);
 
-    const result = stmt.run(serverSlug, bucket, seenFrom, seenTo);
     console.log(`Rows updated: ${result.changes}`);
     return result.changes;
   }
