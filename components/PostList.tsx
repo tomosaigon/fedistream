@@ -280,16 +280,18 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                           }
                         </div>
                       ) : ''}
-                      {post.url ? (
+                      <div className="text-right">
                         <a
-                          href={post.url}
+                          href={post.url ? post.url : post.uri}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs sm:text-sm text-gray-500 hover:underline"
                         >{formatDateTime(post.created_at)}</a>
-                      ) : (
-                        <div className="text-sm text-gray-500">{formatDateTime(post.created_at)}</div>
-                      )}
+
+                        <div className="text-xs sm:text-sm text-gray-500">
+                          {post.account_acct.split('@').length > 1 ? '*@' + post.account_acct.split('@')[1] : ''}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
