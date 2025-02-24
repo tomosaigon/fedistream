@@ -64,6 +64,26 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
     );
   }
 
+  const handleMarkAccountSeen = async (acct: string) => {
+    try {
+      const res = await fetch(`/api/mark-account-seen?server=${server}&acct=${acct}`, {
+        method: 'POST',
+      });
+  
+      if (!res.ok) {
+        throw new Error(`Mark seen failed: ${res.statusText}`);
+      }
+  
+      const data = await res.json();
+      toast.success(`Marked ${data.updatedCount} posts as seen`);
+  
+      invalidateTimeline();
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to mark posts as seen');
+    }
+  };
+  
   const handleMarkSaved = async (postId: string) => {
     try {
       const res = await fetch(`/api/mark-saved?server=${server}&id=${postId}&saved=true`, {

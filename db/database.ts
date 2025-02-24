@@ -706,6 +706,23 @@ export class DatabaseManager {
     return result.changes;
   }
 
+  public markAccountsAsSeen(serverSlug: string, acct: string): number {
+    console.log(`Marking acct as seen for server: ${serverSlug}, acct: ${acct}`);
+
+    const stmt = this.db.prepare(`
+      UPDATE posts
+      SET seen = 1
+      WHERE server_slug = ? 
+        AND account_acct = ?
+        AND seen = 0
+    `);
+    const result = stmt.run(serverSlug, acct);
+
+    console.log(`Rows updated: ${result.changes}`);
+    return result.changes;
+  }
+
+
   private transformSQLitePost(sqlitePost: SQLitePost): Post {
     return {
       ...sqlitePost,
