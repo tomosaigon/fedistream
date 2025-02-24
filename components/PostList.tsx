@@ -6,6 +6,7 @@ import {
   UserPlusIcon,
   ArrowUturnLeftIcon,
   FolderOpenIcon,
+  FolderMinusIcon,
   BookmarkIcon,
 } from '@heroicons/react/24/solid';
 import React, { useState, useEffect } from 'react';
@@ -152,7 +153,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
               }`}>
                 {/* Reblog Header */}
                 {reblogger && (
-                  <div className="flex items-center space-x-2 text-sm sm:text-base text-gray-500 italic p-4">
+                  <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500 italic px-4 pt-2">
                     <ArrowPathIcon className="w-5 h-5 text-gray-400" />
                     <span>
                       <a
@@ -162,7 +163,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                         className="text-blue-500 hover:underline font-semibold"
                         title={reblogger.account_display_name}
                       >
-                        {reblogger.account_display_name}
+                        {reblogger.account_acct}
                       </a>{" "}
                       boosted on{" "}
                       <a
@@ -174,18 +175,9 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                     </span>
                   </div>
                 )}
-                {/* Reply Link */}
-                {post.in_reply_to_id && (
-                  <div className="flex items-center text-sm sm:text-base text-gray-500 px-4 pt-2">
-                  <button
-                    onClick={() => setActiveRepliesPost(post)}
-                    className="flex items-center space-x-2 text-blue-500 hover:underline focus:outline-none"
-                  >
-                    <ArrowUturnLeftIcon className="w-5 h-5 text-gray-400" />
-                    <span>View thread</span>
-                  </button>
-                </div>
-                )}
+
+                {/* {post.was_reblogged ? 'was_reblogged' : ''} */}
+
                 {/* Post Header */}
                 <div className={`p-2 sm:p-3 flex items-start space-x-2`}>
                   {post.account_url && (
@@ -229,6 +221,36 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                         >
                           <FolderOpenIcon className="w-4 sm:w-6 h-4 sm:h-8 text-blue-300" />
                         </button>
+
+                        <AsyncButton
+                          callback={() => handleMarkAccountSeen(post.account_acct)}
+                          defaultText={
+                            <FolderMinusIcon
+                              className="mr-2 w-4 sm:w-6 h-4 sm:h-8 cursor-pointer text-gray-400 hover:text-red-500 transition-colors"
+                              title='Mark all from account seen'
+                            />
+                          }
+                        />
+
+                        {matchingReason ? '' : isMuted ? '' : hasApiCredentials ? (
+                          <AsyncButton
+                            callback={() => handleFollow(post.account_acct)}
+                            defaultText={
+                              <UserPlusIcon
+                                className="w-4 sm:w-6 h-4 sm:h-8 cursor-pointer text-gray-500  hover:text-green-500 transition-colors"
+                                title='Follow'
+                              />
+                            }
+                          />
+                        ) : (
+                          <div className="inline-block">
+                            <UserPlusIcon 
+                              className="w-4 sm:w-6 h-4 sm:h-8 cursor-pointer text-gray-400"
+                              title='You need to configure API credentials to follow'
+                            />
+                            </div>
+                        )}
+
                       </div>
 
                       {/* <span>more posts</span> */}
@@ -285,6 +307,19 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                   </div>
                 </div>
 
+                {/* Reply Link */}
+                {!matchingReason && !isMuted && post.in_reply_to_id && (
+                  <div className="flex items-center text-sm sm:text-base text-gray-500 px-4 pt-0">
+                  <button
+                    onClick={() => setActiveRepliesPost(post)}
+                    className="flex items-center space-x-2 text-blue-500 hover:underline focus:outline-none"
+                  >
+                    <ArrowUturnLeftIcon className="w-5 h-5 text-gray-400" />
+                    <span>View thread</span>
+                  </button>
+                </div>
+                )}
+
                 {matchingReason ? '' : isMuted ? '' : (
                   <div className={`px-3 sm:px-4 pb-3 ${
                     // {/* Post Content */}
@@ -316,6 +351,19 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                 {/* Post Footer */}
                 {matchingReason || isMuted ? null : (
                   <div className="px-4 py-3 border-t border-gray-100 flex items-center space-x-6 text-gray-500">
+                    <AsyncButton
+                        callback={() => handleMarkSaved(post.id)}
+                        defaultText={
+                          <>
+                            <BookmarkIcon
+                              className="w-4 h-4 cursor-pointer hover:text-yellow-500 transition-colors"
+                              title='Bookmark as saved'
+                            />
+                            {/* <span>fav</span> */}
+                          </>
+                        }
+                        color={'yellow'}
+                      />
                     <div
                       className="flex items-center space-x-2 cursor-pointer"
                       onClick={() => setActiveRepliesPost(post)}
@@ -372,72 +420,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
               {/* Admin section - full width on mobile, side panel on desktop */}
               {matchingReason ? '' : isMuted ? '' : (
               <div className="w-full flex items-start space-x-4 border-t sm:border-t-0 sm:border-l p-2 bg-gray-50">
-                <div className="flex gap-1 sm:gap-2 max-h-32 sm:max-h-64 relative">
-                <AsyncButton
-                        callback={() => handleMarkSaved(post.id)}
-                        defaultText={
-                          <>
-                            <BookmarkIcon
-                              className="w-4 h-4 cursor-pointer hover:text-yellow-500 transition-colors"
-                            />
-                            {/* <span>fav</span> */}
-                          </>
-                        }
-                        color={'yellow'}
-                      />
-                  {hasApiCredentials ? (
-                    <>
-                      <AsyncButton
-                        callback={() => handleFavorite(post.url)}
-                        defaultText={
-                          <>
-                            <StarIcon
-                              className="w-4 h-4 cursor-pointer hover:text-yellow-500 transition-colors"
-                            />
-                            {/* <span>fav</span> */}
-                          </>
-                        }
-                        color={'yellow'}
-                      />
-                      <AsyncButton
-                        callback={() => handleFollow(post.account_acct)}
-                        defaultText={
-                          <>
-                            <UserPlusIcon className="w-4 h-4 cursor-pointer hover:text-green-500 transition-colors" />
-                            {/* <span>Follow</span> */}
-                          </>
-                        }
-                        color={'green'}
-                      />
-                    </>
-                  ) : (
-                    <div className="relative group flex space-x-1">
-                      {/* Favorite Button with Tooltip */}
-                      <StarIcon className="w-5 h-5 text-gray-400" />
-                      <span className="text-gray-500">fav</span>
-                      {/* Tooltip */}
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50">
-                        <div className="bg-gray-800 text-white text-xs rounded px-2 py-1 shadow-lg">
-                          You need to configure API credentials
-                        </div>
-                        <div className="absolute left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
-                      </div>
-
-                      {/* Follow Button with Tooltip */}
-                      <UserPlusIcon className="w-5 h-5 text-gray-400" />
-                      <span className="text-gray-500">Follow</span>
-                      {/* Tooltip */}
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50">
-                        <div className="bg-gray-800 text-white text-xs rounded px-2 py-1 shadow-lg">
-                          You need to configure API credentials
-                        </div>
-                        <div className="absolute left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
-                      </div>
-                    </div>
-                  )}
-                  </div>
-                  <div className="flex flex-row gap-1 sm:gap-2 max-h-32 sm:max-h-64 overflow-y-auto relative">
-
+                <div className="flex flex-row gap-1 sm:gap-2 max-h-32 sm:max-h-64 overflow-y-auto relative">
                   {reasons.filter(reason => reason.active === 1).map(({ reason: tag, filter }) => {
                     const hasTag = post.account_tags?.some(t => t.tag === tag);
                     const count = getAccountTagCount(post.account_tags, tag);
