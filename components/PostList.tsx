@@ -453,6 +453,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                           }}
                           defaultText={hasTag ? `${tag}(${count})` : tag}
                           color={color}
+                          extraClasses='text-xs sm:text-sm'
                         />
                         {hasTag ? (
                           <AsyncButton
