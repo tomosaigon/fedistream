@@ -11,7 +11,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     offset = '0',
     limit = '20',
     onlyCounts = 'false',
-    category
+    category,
+    chronological = 'false'
   } = req.query;
 
   if (!server || typeof server !== 'string') {
@@ -37,7 +38,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     server,
     bucket,
     parseInt(limit as string),
-    parseInt(offset as string)
+    parseInt(offset as string),
+    chronological === 'true'
   );
 
   // Normalize response by wrapping posts in buckets object

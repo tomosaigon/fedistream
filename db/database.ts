@@ -503,13 +503,14 @@ export class DatabaseManager {
     return result.changes > 0;
   }
 
-  public getBucketedPostsByCategory(
+  public getReblogs(
     serverSlug: string,
-    bucket: Bucket,
     limit: number = 20,
-    offset: number = 0
+    offset: number = 0,
+    chronological: boolean = true
   ): Post[] {
     try {
+      const order = chronological ? 'ASC' : 'DESC';
       const rows = this.db
         .prepare(
           `
@@ -517,6 +518,7 @@ export class DatabaseManager {
             p.*, 
             rp.id AS reblog_id,
             rp.parent_id AS reblog_parent_id,
+            rp.was_reblogged AS reblog_was_reblogged,
             rp.seen AS reblog_seen,
             rp.created_at AS reblog_created_at,
             rp.content AS reblog_content,
@@ -547,17 +549,16 @@ export class DatabaseManager {
           LEFT JOIN account_tags at ON p.account_id = at.user_id
           WHERE 
             p.server_slug = ? AND p.seen = 0 AND (rp.seen IS NULL or rp.seen = 0)
-            AND (
-              (p.parent_id IS NOT NULL AND rp.bucket = ?)
-              OR (p.parent_id IS NULL AND p.bucket = ?)
-            )
+            AND p.parent_id IS NOT NULL
           GROUP BY p.id
-          ORDER BY p.created_at DESC
+          ORDER BY p.created_at ${order}
           LIMIT ? OFFSET ?
         `
         )
-        .all(serverSlug, bucket, bucket, limit, offset) as SQLitePostWithReblog[];
-  
+        .all(serverSlug, limit, offset) as SQLitePost[];
+        // p.parent_id IS NOT NULL implies that the post is a reblog
+
+      // return rows.map((row) => this.transformSQLitePost(row));
       const posts = rows.map((row: SQLitePostWithReblog) => {
         const transformRow = (row: SQLitePostWithReblog): SQLitePost => ({
           id: row.reblog_id!,
@@ -601,6 +602,122 @@ export class DatabaseManager {
   
       return posts;
     } catch (error) {
+      console.error('Error in getRebloggedPosts:', error);
+      return [];
+    }
+  }
+
+  public getBucketedPostsByCategory(
+    serverSlug: string,
+    bucket: Bucket,
+    limit: number = 20,
+    offset: number = 0,
+    chronological: boolean = true
+  ): Post[] {
+    // if (bucket === Bucket.saved) {
+    //   return this.getSavedPosts(serverSlug, limit, offset);
+    // }
+    if (bucket === Bucket.reblogs) {
+      return this.getReblogs(serverSlug, limit, offset, chronological);
+    }
+
+    try {
+      const order = chronological ? 'ASC' : 'DESC';
+      const NOREBLOG = 'p.parent_id IS NULL AND p.was_reblogged = 0 AND'; // XXX
+      const rows = this.db
+        .prepare(
+          `
+          SELECT 
+            p.*, 
+            rp.id AS reblog_id,
+            rp.parent_id AS reblog_parent_id,
+            rp.was_reblogged AS reblog_was_reblogged,
+            rp.seen AS reblog_seen,
+            rp.created_at AS reblog_created_at,
+            rp.content AS reblog_content,
+            rp.language AS reblog_language,
+            rp.in_reply_to_id AS reblog_in_reply_to_id,
+            rp.in_reply_to_account_id AS reblog_in_reply_to_account_id,
+            rp.uri AS reblog_uri,
+            rp.url AS reblog_url,
+            rp.account_id AS reblog_account_id,
+            rp.account_username AS reblog_account_username,
+            rp.account_acct AS reblog_account_acct,
+            rp.account_display_name AS reblog_account_display_name,
+            rp.account_url AS reblog_account_url,
+            rp.account_avatar AS reblog_account_avatar,
+            rp.media_attachments AS reblog_media_attachments,
+            rp.visibility AS reblog_visibility,
+            rp.favourites_count AS reblog_favourites_count,
+            rp.reblogs_count AS reblog_reblogs_count,
+            rp.replies_count AS reblog_replies_count,
+            rp.server_slug AS reblog_server_slug,
+            rp.bucket AS reblog_bucket,
+            rp.card AS reblog_card,
+            rp.poll AS reblog_poll,
+            rp.saved AS reblog_saved,
+            GROUP_CONCAT(at.tag) AS account_tags
+          FROM posts p
+          LEFT JOIN posts rp ON p.parent_id = rp.id
+          LEFT JOIN account_tags at ON p.account_id = at.user_id
+          WHERE 
+            ${NOREBLOG}
+            p.server_slug = ? AND p.seen = 0 AND (rp.seen IS NULL or rp.seen = 0)
+            AND (
+              (p.parent_id IS NOT NULL AND rp.bucket = ?)
+              OR (p.parent_id IS NULL AND p.bucket = ?)
+            )
+          GROUP BY p.id
+          ORDER BY p.created_at ${order}
+          LIMIT ? OFFSET ?
+        `
+        )
+        .all(serverSlug, bucket, bucket, limit, offset) as SQLitePostWithReblog[];
+        // ORDER BY p.created_at DESC
+  
+      const posts = rows.map((row: SQLitePostWithReblog) => {
+        const _transformRow = (row: SQLitePostWithReblog): SQLitePost => ({
+          id: row.reblog_id!,
+          parent_id: row.reblog_parent_id!,
+          was_reblogged: row.reblog_was_reblogged!,
+          seen: row.reblog_seen!,
+          created_at: row.reblog_created_at!,
+          content: row.reblog_content!,
+          language: row.reblog_language!,
+          in_reply_to_id: row.reblog_in_reply_to_id!,
+          in_reply_to_account_id: row.reblog_in_reply_to_account_id!,
+          uri: row.reblog_uri!,
+          url: row.reblog_url!,
+          account_id: row.reblog_account_id!,
+          account_username: row.reblog_account_username!,
+          account_acct: row.reblog_account_acct!,
+          account_display_name: row.reblog_account_display_name!,
+          account_url: row.reblog_account_url!,
+          account_avatar: row.reblog_account_avatar!,
+          account_bot: row.reblog_account_bot!,
+          media_attachments: row.reblog_media_attachments!,
+          visibility: row.reblog_visibility!,
+          favourites_count: row.reblog_favourites_count!,
+          reblogs_count: row.reblog_reblogs_count!,
+          replies_count: row.reblog_replies_count!,
+          server_slug: row.reblog_server_slug!,
+          bucket: row.reblog_bucket!,
+          card: row.reblog_card!,
+          poll: row.reblog_poll!,
+          saved: row.reblog_saved!,
+        });
+      
+        const mainPost = this.transformSQLitePost(row);
+        const reblog = row.parent_id ? this.transformSQLitePost(_transformRow(row)) : null;
+        if (reblog) {
+          // console.log('Reblog:', reblog);
+        }
+      
+        return { ...mainPost, reblog };
+      });
+  
+      return posts;
+    } catch (error) {
       console.error('Error in getBucketedPostsByCategory:', error);
       return [];
     }
@@ -614,10 +731,14 @@ export class DatabaseManager {
     });
 
     try {
+      const NOREBLOG = 'was_reblogged = 0 AND'; // XXX
+
       const posts = this.db.prepare(`
         SELECT bucket, COUNT(*) as count
         FROM posts 
-        WHERE server_slug = ? AND seen = 0
+        WHERE 
+        ${NOREBLOG}
+        server_slug = ? AND seen = 0
         GROUP BY bucket
       `).all(serverSlug) as { bucket: Bucket, count: number }[];
       // If the database contains an unexpected value for bucket 
@@ -827,6 +948,7 @@ export interface Post extends Omit<SQLitePost, 'media_attachments' | 'card' | 'p
 }
 
 export interface PostCard {
+  type: string;
   url: string;
   title: string;
   description: string;

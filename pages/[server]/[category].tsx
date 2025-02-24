@@ -29,6 +29,8 @@ export default function CategoryPage() {
   const server = typeof rawServer === 'string' ? rawServer : rawServer?.[0] ?? undefined;
   const category = typeof rawCategory === 'string' ? rawCategory : rawCategory?.[0] ?? 'regular';
 
+  const [chronological, setChronological] = useState<boolean | undefined>(undefined); 
+
   const { getServerBySlug } = useServers();
   const { data: serverStats, invalidateServerStats } = useServerStats(server || '');
 
@@ -39,6 +41,7 @@ export default function CategoryPage() {
   } = useTimeline({
     server: server || '',
     category,
+    chronological,
     postsPerPage: POSTS_PER_PAGE,
   });
 
@@ -57,6 +60,7 @@ export default function CategoryPage() {
   const latestFetchId = useRef(0);
 
   const [filterSettings, setFilterSettings] = useState({
+    chronological: true,
     showNonStopWords: true,
     highlightThreshold: null as number | null,
     enableForeignBots: false,
@@ -66,17 +70,35 @@ export default function CategoryPage() {
   // Update filter settings in localStorage and state
   const updateFilterSettings = (newSettings: Partial<typeof filterSettings>) => {
     const updatedSettings = { ...filterSettings, ...newSettings };
+    if (newSettings.chronological !== undefined) {
+      setChronological(newSettings.chronological);
+    }
     setFilterSettings(updatedSettings);
     localStorage.setItem(FILTER_SETTINGS_KEY, JSON.stringify(updatedSettings));
   };
 
   // Load filter settings from localStorage on initial render
   useEffect(() => {
+    if (!router.isReady) return;
+    if (chronological !== (router.query.chronological === 'true')) {
+      setChronological(router.query.chronological === 'true');
+    }
+  }, [router.query]);
+  useEffect(() => {
+    if (!router.isReady) return;
+    if (chronological === undefined) return;
     const savedSettings = localStorage.getItem(FILTER_SETTINGS_KEY);
     if (savedSettings) {
-      setFilterSettings(JSON.parse(savedSettings));
+      const newSettings = JSON.parse(savedSettings);
+      if (newSettings.chronological === undefined) {
+        newSettings.chronological = chronological;
+      }
+      if (router.isReady && chronological !== undefined && newSettings.chronological !== chronological.toString()) {
+        setChronological(newSettings.chronological);
+      }
+      setFilterSettings(newSettings);
     }
-  }, []);
+  }, [router.query, chronological]);
 
   const handleServerChange = (newServer: string) => {
     router.push(`/${newServer}/${category}`);
@@ -165,8 +187,8 @@ export default function CategoryPage() {
     }
   
     const fetchId = ++latestFetchId.current;
-    const seenFrom = posts[posts.length - 1].created_at; // Oldest post
-    const seenTo = posts[0].created_at; // Latest post
+    const seenFrom = posts[chronological ? 0 : posts.length - 1].created_at; // Oldest post
+    const seenTo = posts[chronological ? posts.length - 1 : 0].created_at; // Latest post
   
     try {
       const res = await fetch(`/api/mark-seen?server=${server}&seenFrom=${seenFrom}&seenTo=${seenTo}&bucket=${bucket}`, {
@@ -315,7 +337,7 @@ export default function CategoryPage() {
           onDestroy={handleDestroy}
         />
         <div className="p-0 sm:p-8">
-          <CategoryNavigation 
+          <CategoryNavigation
             currentSlug={category as string}
             counts={countsData?.counts as Record<string, number>}
             server={server as string}
@@ -328,25 +350,26 @@ export default function CategoryPage() {
             <>
               <PostList
                 posts={posts}
-                  server={server as string}
-                  filterSettings={filterSettings}
+                server={server as string}
+                filterSettings={filterSettings}
+                invalidateTimeline={invalidateTimeline}
               />
-                <div className="flex justify-center items-center space-x-4 py-4">
-                  <button
-                    onClick={handleMarkSeen}
-                    className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                  >
-                    Mark Seen
-                  </button>
-                  {hasNextPage && (
-                    <AsyncButton
-                      callback={handleLoadMore}
-                      loadingText="Loading..."
-                      defaultText={`Load More (${totalCount - posts.length} remaining)`}
-                      color="blue"
-                    />
-                  )}
-                </div>
+              <div className="flex justify-center items-center space-x-4 py-4">
+                <button
+                  onClick={handleMarkSeen}
+                  className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                >
+                  Mark Seen
+                </button>
+                {hasNextPage && (
+                  <AsyncButton
+                    callback={handleLoadMore}
+                    loadingText="Loading..."
+                    defaultText={`Load More (${totalCount - posts.length} remaining)`}
+                    color="blue"
+                  />
+                )}
+              </div>
             </>
           )}
         </div>

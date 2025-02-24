@@ -12,14 +12,16 @@ const fetchTimelinePosts = async ({
   category,
   offset,
   limit,
+  chronological,
 }: {
   server: string;
   category: string;
   offset: number;
   limit: number;
+  chronological: boolean | undefined;
 }) => {
   const res = await fetch(
-    `/api/timeline?server=${server}&category=${category}&offset=${offset}&limit=${limit}`
+    `/api/timeline?server=${server}&category=${category}&offset=${offset}&limit=${limit}&chronological=${chronological}`
   );
   if (!res.ok) throw new Error('Failed to fetch timeline posts');
   return res.json();
@@ -28,10 +30,12 @@ const fetchTimelinePosts = async ({
 export const useTimeline = ({
   server,
   category,
+  chronological,
   postsPerPage = 25,
 }: {
   server: string | undefined;
   category: string | undefined;
+  chronological: boolean | undefined;
   postsPerPage?: number;
 }) => {
   const queryClient = useQueryClient();
@@ -43,15 +47,16 @@ export const useTimeline = ({
   });
 
   const postsQuery = useInfiniteQuery({
-    queryKey: ['timelinePosts', server, category],
+    queryKey: ['timelinePosts', server, category, chronological],
     queryFn: ({ pageParam = 0 }) =>
       fetchTimelinePosts({
         server: server!,
         category: category!,
         offset: pageParam * postsPerPage,
         limit: postsPerPage,
+        chronological: chronological,
       }),
-    enabled: !!server && !!category, // Fetch only if both server and category are defined
+    enabled: !!server && !!category && chronological !== undefined, // Fetch only if both server and category are defined
     getNextPageParam: (lastPage, allPages) => {
       const totalFetched = allPages.reduce(
         (acc, page) => acc + (page?.buckets[category!] || []).length,

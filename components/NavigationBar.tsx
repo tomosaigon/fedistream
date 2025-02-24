@@ -18,6 +18,7 @@ interface NavigationBarProps {
   counts: Record<string, number> | null;
 
   filterSettings: {
+    chronological: boolean; // order
     showNonStopWords: boolean;
     highlightThreshold: number | null;
     enableForeignBots: boolean;
@@ -207,6 +208,15 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                 </Link>
               ))}
               <div className="px-4 py-3">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={filterSettings.chronological}
+                    onChange={() => updateFilterSettings({ chronological: !filterSettings.chronological })}
+                    className="form-checkbox"
+                  />
+                  <span>Chronological order</span>
+                </label>
                 <label className="flex items-center space-x-2 mt-2">
                   <input
                     type="checkbox"

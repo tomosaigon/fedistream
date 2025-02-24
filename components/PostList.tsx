@@ -31,12 +31,14 @@ interface PostListProps {
   posts: Post[];
   server: string;
   filterSettings: {
+    chronological: boolean;
     showNonStopWords: boolean;
     highlightThreshold: number | null;
   };
+  invalidateTimeline: () => void;
 }
 
-const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filterSettings }) => {
+const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filterSettings, invalidateTimeline }) => {
   const { reasons } = useReasons();
   const { mutedWords, createMutedWord, deleteMutedWord } = useMutedWords();
   const { handleTag, handleClearTag, getAccountTagCount } = useTags();
@@ -102,11 +104,62 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
     }
   }
 
+  // "Do not show new boosts for posts that have been recently boosted (only affects newly-received boosts)""
+  // TODO Group boosts in timelines
+  const postIDsReblogged = posts.reduce((acc, post) => {
+    if (post.reblog) {
+      if (!acc.has(post.reblog.id)) {
+        acc.set(post.reblog.id, []);
+      }
+      acc.get(post.reblog.id)!.push(post.id);
+    }
+    return acc;
+  }, new Map<string, string[]>());
+
+  const postIDs = new Set(posts.map(p => p.id));
+
   return (
     <div className="w-full sm:max-w-4xl mx-0 sm:mx-auto p-0">
       <div className="space-y-1 sm:space-y-2">
-        {posts.map((post) => {
-          // console.log('Post:', post.account_tags);
+        {posts.map((post, _idx) => {
+          if (post.reblog && 
+            (( filterSettings.chronological && postIDs.has(post.reblog.id)) ||
+             (!filterSettings.chronological && postIDsReblogged.has(post.reblog.id) && postIDsReblogged.get(post.reblog.id)![0] !== post.id))) {
+            return (
+              <div key={post.id} className="flex items-center space-x-2 text-sm sm:text-base text-gray-500 italic p-4">
+                    <ArrowPathIcon className="w-5 h-5 text-gray-400" />
+                    <span>
+                      <a
+                        href={post.account_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline font-semibold"
+                      >
+                        {post.account_avatar && (
+                        <img
+                          src={post.account_avatar}
+                          alt=""
+                          className="inline mr-1 w-6 h-6 rounded-full hover:opacity-90 transition-opacity"
+                        />
+                      )}
+                        {post.account_display_name}
+                      </a>{" "}
+                      <a href={`#${post.reblog.id}`} >boosted</a> {post.reblog.account_display_name} on{" "}
+                      <a
+                        href={post.uri}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline"
+                      >{formatDateTime(post.created_at)}</a>
+                    </span>
+                  </div>
+            );
+            // return <span key={post.id} className="hidden">duplicate {post.id}</span>;
+          }
+          if (postIDsReblogged.has(post.id) && !filterSettings.chronological) {
+            return (<div key={post.id} className="hidden">origin {post.id}</div>);
+          }
+
           const matchingReason = reasons.find(
             (reason) =>
               reason.filter === 1 &&
@@ -117,6 +170,9 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
           if (post.reblog) {
             reblogger = { ...post };
             post = post.reblog;
+          // } else if (filterSettings.chronological && postIDsReblogged.has(post.id)) {
+          //   // XXX
+          //   reblogger = posts.find(p => p.id === postIDsReblogged.get(post.id)![0]);
           }
 
           const postText = [
@@ -134,7 +190,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
           // TODO - Add way to reveal the muted post
 
           return (
-            <div key={post.id} className="flex flex-col bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden max-w-full">
+            <div id={reblogger ? reblogger.id : post.id}  key={reblogger ? reblogger.id : post.id} className="flex flex-col bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden max-w-full">
 
               <article className={`flex-grow min-w-0 ${
                 // containsMutedWord(nonStopWords, mutedWords) ? 'bg-blue-50 opacity-10 hover:opacity-75'
