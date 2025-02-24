@@ -160,6 +160,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-500 hover:underline font-semibold"
+                        title={reblogger.account_display_name}
                       >
                         {reblogger.account_display_name}
                       </a>{" "}
@@ -270,6 +271,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                                       ? 'bg-red-500 text-white hover:bg-red-600' // Styling for hashtags
                                       : 'bg-orange-500 text-white hover:bg-red-600'  // Styling for regular words
                                     }`}
+                                  title={`Unmute "${word}"`}
                                 >
                                   {word}
                                 </button>
@@ -326,19 +328,26 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                     <div
                       className="flex items-center space-x-2 cursor-pointer"
                       onClick={() => setActiveRepliesPost(post)}
+                      title='View replies'
                     >
-                      <ChatBubbleOvalLeftEllipsisIcon className="w-5 h-5" />
-                      <span className="text-sm">{post.replies_count || 0}</span>
+                      <ChatBubbleOvalLeftEllipsisIcon
+                        className="w-5 h-5 cursor-pointer hover:text-yellow-500 transition-colors"
+                      />
+                        <span className="text-sm">{post.replies_count || 0}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <ArrowsRightLeftIcon className="w-5 h-5" />
                       <span className="text-sm">{post.reblogs_count || 0}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <StarIcon
+                      {hasApiCredentials ? (<StarIcon
                         onClick={() => handleFavorite(post.url)}
                         className="w-5 h-5 cursor-pointer hover:text-yellow-500 transition-colors"
-                      />
+                        title='Favorite'
+                      />) : (<StarIcon 
+                        className="w-5 h-5 text-gray-400"
+                        title='You need to configure API credentials to favorite'
+                      />)}
                       <span className="text-sm">{post.favourites_count || 0}</span>
                     </div>
                   </div>
@@ -359,6 +368,7 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                               ? 'bg-red-500 text-white hover:bg-red-600' // Styling for hashtags
                               : 'bg-orange-500 text-white hover:bg-red-600'  // Styling for regular words
                           }`}
+                          title='Click to mute/unmute'
                         >
                           {word}
                         </button>
