@@ -324,8 +324,8 @@ export class DatabaseManager {
         COALESCE(@replies_count, 0),
         @server_slug, @bucket, @card, @poll
       )
-      ON CONFLICT(id, server_slug) DO NOTHING
     `);
+      // ON CONFLICT(id, server_slug) DO NOTHING
   
     const postData = {
       ...post,
@@ -339,13 +339,20 @@ export class DatabaseManager {
   
     // console.log('Inserting post:', postData);
   
-    const result = stmt.run(postData);
-  
-    if (result.changes === 0) {
-      console.log(`No new post inserted (ID: ${post.id}, Server: ${post.server_slug})`);
+    try {
+      const result = stmt.run(postData);
+    
+      if (result.changes === 0) {
+        console.log(`No new post inserted (ID: ${post.id}, Server: ${post.server_slug})`);
+      }
+    
+      return result;
+    } catch (error: any) {
+      if (error.code === 'SQLITE_CONSTRAINT' || error.code === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
+        console.log(`Post already exists (ID: ${post.id}, Server: ${post.server_slug})`);
+      }
     }
-  
-    return result;
+    return undefined;
   }
 
   public getServerStats(serverSlug: string | null): ServerStatsPayload {
