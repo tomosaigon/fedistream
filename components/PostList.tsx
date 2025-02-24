@@ -12,7 +12,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Post, IMediaAttachment, AccountTag } from '../db/database';
 import { getNonStopWords, postContainsMutedWord, getMutedWordsFoundInPost } from '@/utils/nonStopWords';
-import { formatDateTime } from '@/utils/format';
+import { formatDateTime, trimString } from '@/utils/format';
 import { useServers } from '../context/ServersContext';
 import { useMutedWords } from '../hooks/useMutedWords';
 import { useMastodonAccount } from '../hooks/useMastodonAccount';  
@@ -199,46 +199,35 @@ const PostList: React.FC<PostListProps> = ({ posts: initialPosts, server, filter
                         <img
                           src={post.account_avatar}
                           alt=""
-                          className="w-12 h-12 rounded-full hover:opacity-90 transition-opacity"
+                          className="w-10 h-10 rounded-full hover:opacity-90 transition-opacity"
                         />
                       )}
                     </a>
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex  justify-between">
-                      <div>
-                        {post.account_url ? (
-                          <a
-                            href={post.account_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:underline inline-block"
-                          >
-                            {matchingReason || isMuted ? null : (
-                              <div className="font-medium text-xs sm:text-base text-gray-900">
-                                {post.account_display_name}
-                              </div>
-                            )}
-                            <div className="text-sm text-gray-500">
-                              @{post.account_acct ? post.account_acct : post.account_username}
-                            </div>
-                          </a>
-                        ) : (
-                          <>
-                            <div className="font-medium text-gray-900">
-                              {post.account_display_name}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              @{post.account_acct ? post.account_acct : post.account_username}
-                            </div>
-                          </>
-                        )}
+                      <div className="flex">
+                        <a
+                          href={post.account_url ? post.account_url : '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline inline-block"
+                        >
+                          <div className="font-medium text-xs sm:text-base text-gray-900">
+                            {matchingReason || isMuted ? trimString(post.account_display_name) : post.account_display_name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            @{post.account_username}
+                          </div>
+                        </a>
+
                         <button
                           onClick={() => setActiveAccount(post.account_id)}
                           // className="flex items-center space-x-2 text-blue-500 hover:underline focus:outline-none"
-                          className="ml-2 inline-block hover:underline focus:outline-none"
+                          className="ml-2 inline-block"
+                          title="Show all posts from account"
                         >
-                          <FolderOpenIcon className="w-4 sm:w-6 h-4 sm:h-8 text-gray-400" />
+                          <FolderOpenIcon className="w-4 sm:w-6 h-4 sm:h-8 text-blue-300" />
                         </button>
                       </div>
 
